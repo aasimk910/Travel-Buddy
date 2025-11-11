@@ -6,8 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>frontend</title>
   </head>
-  <body>
+     <body>
     <div id="root"></div>
+
+    <!-- Google Identity Services script (must be before main.jsx) -->
+    <script
+      src="https://accounts.google.com/gsi/client"
+      async
+      defer
+    ></script>
+
+    <!-- Your React app -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
+
+
