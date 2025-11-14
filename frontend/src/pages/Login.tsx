@@ -6,10 +6,14 @@ import { useAuth } from "../context/AuthContext";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-// 🔑 Put your real Google Client ID here
-const GOOGLE_CLIENT_ID = "253733992578-35p1b3ot8cg3nqb6roimesugqlv2oh7c.apps.googleusercontent.com";
+// Backend base URL
+const API_BASE_URL = "http://localhost:5000";
 
-// Helper to decode the JWT from Google (front-end only)
+// Your Google Client ID
+const GOOGLE_CLIENT_ID =
+  "253733992578-35p1b3ot8cg3nqb6roimesugqlv2oh7c.apps.googleusercontent.com";
+
+// Helper to decode Google JWT
 const parseJwt = (token: string): any => {
   const base64Url = token.split(".")[1];
   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -29,11 +33,72 @@ interface LoginFormValues {
 }
 
 const Login: React.FC = () => {
-  const { login, loginWithGoogle } = useAuth();
+  const { loginWithProfile, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
 
-  // Formik setup
+  // ---------- Google Login ----------
+  const handleGoogleResponse = (response: any) => {
+    try {
+      const credential = response.credential;
+      if (!credential) return;
+
+      const payload = parseJwt(credential) as {
+        name?: string;
+        given_name?: string;
+        email?: string;
+        picture?: string;
+      };
+
+      if (!payload.email) return;
+
+      loginWithGoogle({
+        name: payload.name || payload.given_name || "Traveler",
+        email: payload.email,
+        avatarUrl: payload.picture,
+        provider: "google",
+      });
+
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      formik.setStatus("Google login failed. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    const initGoogle = () => {
+      const w = window as any;
+      if (!w.google || !googleButtonRef.current) return;
+
+      w.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleResponse,
+      });
+
+      w.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: "outline",
+        size: "large",
+        width: "100%",
+        type: "standard",
+        text: "continue_with",
+      });
+    };
+
+    const w = window as any;
+    if (!w.google) {
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initGoogle;
+      document.body.appendChild(script);
+    } else {
+      initGoogle();
+    }
+  }, []);
+
+  // ---------- Email/password Login (backend) ----------
   const formik = useFormik<LoginFormValues>({
     initialValues: {
       email: "",
@@ -53,9 +118,38 @@ const Login: React.FC = () => {
       setStatus(undefined);
 
       try {
-        // Here you could call your backend /api/auth/login
-        // For now we keep using AuthContext login()
-        login(values.email, values.password);
+        const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: values.email,
+            password: values.password,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setStatus(data.message || "Login failed. Please try again.");
+          return;
+        }
+
+        if (data.token) {
+          localStorage.setItem("travelBuddyToken", data.token);
+        }
+
+        if (data.user) {
+          loginWithProfile({
+            name: data.user.name,
+            email: data.user.email,
+            country: data.user.country,
+            travelStyle: data.user.travelStyle,
+            budgetRange: data.user.budgetRange,
+            interests: data.user.interests,
+            avatarUrl: data.user.avatarUrl,
+            provider: data.user.provider || "password",
+          });
+        }
 
         if (values.remember) {
           localStorage.setItem("travelBuddyRememberEmail", values.email);
@@ -82,178 +176,128 @@ const Login: React.FC = () => {
     touched,
     isSubmitting,
     status,
-    setFieldValue,
   } = formik;
 
-  // Load remembered email if stored
+  // Prefill remembered email
   useEffect(() => {
-    const storedEmail = localStorage.getItem("travelBuddyRememberEmail");
-    if (storedEmail) {
-      setFieldValue("email", storedEmail, false);
-      setFieldValue("remember", true, false);
+    const remembered = localStorage.getItem("travelBuddyRememberEmail");
+    if (remembered) {
+      formik.setFieldValue("email", remembered);
+      formik.setFieldValue("remember", true);
     }
-  }, [setFieldValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Initialize Google Identity button
-  useEffect(() => {
-    const google = (window as any).google;
-    if (!google || !googleButtonRef.current || !GOOGLE_CLIENT_ID) return;
-
-    try {
-      google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: (response: any) => {
-          try {
-            const payload = parseJwt(response.credential);
-            if (!payload || !payload.email) {
-              formik.setStatus("Google login failed. Please try again.");
-              return;
-            }
-
-            // Save logged in Google user in AuthContext
-            loginWithGoogle({
-              name: payload.name || payload.given_name || "Traveler",
-              email: payload.email,
-              avatarUrl: payload.picture,
-              provider: "google",
-            });
-
-            navigate("/dashboard");
-          } catch (err) {
-            console.error(err);
-            formik.setStatus("Google login failed. Please try again.");
-          }
-        },
-      });
-
-      google.accounts.id.renderButton(googleButtonRef.current, {
-        theme: "outline",
-        size: "large",
-        width: "350",
-      });
-    } catch (err) {
-      console.error("Google init error", err);
-    }
-  }, [loginWithGoogle, navigate, formik]);
-
+  // ---------- UI (same single-card design as before) ----------
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      {/* Logo + heading */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <Map className="h-9 w-9 text-gray-900" />
+        <div className="flex items-center justify-center gap-2">
+          <div className="bg-gray-900 text-white p-2 rounded-lg shadow-sm">
+            <Map className="w-5 h-5" />
+          </div>
+          <span className="text-xl font-semibold text-gray-900">
+            Travel Buddy
+          </span>
         </div>
-        <h2 className="mt-6 text-center text-2xl font-semibold text-gray-900">
-          Welcome back to Travel Buddy
+        <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-gray-900">
+          Sign in to your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Sign in to manage your trips, buddies, and itineraries.
+          Access your trips, matches, and saved destinations.
         </p>
       </div>
 
+      {/* Card */}
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-sm sm:rounded-xl sm:px-10 border border-gray-100">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* Global form error / status */}
+        <div className="bg-white py-8 px-4 shadow rounded-lg sm:px-10 border border-gray-100">
+          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
             {status && (
-              <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-md">
+              <div className="rounded-md bg-red-50 border border-red-100 px-3 py-2 text-xs text-red-700">
                 {status}
-              </p>
+              </div>
             )}
 
             {/* Email */}
-            <div className="space-y-1">
+            <div>
               <label
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700"
               >
                 Email address
               </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                value={values.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 sm:text-sm ${
-                  touched.email && errors.email
-                    ? "border-red-400"
-                    : "border-gray-300"
-                }`}
-              />
+              <div className="mt-1">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={values.email}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm ${
+                    touched.email && errors.email
+                      ? "border-red-400"
+                      : "border-gray-300"
+                  }`}
+                />
+              </div>
               {touched.email && errors.email && (
-                <p className="text-xs text-red-600 mt-1">{errors.email}</p>
+                <p className="mt-1 text-xs text-red-600">{errors.email}</p>
               )}
             </div>
 
             {/* Password */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Password
-                </label>
-                <button
-                  type="button"
-                  className="text-xs text-gray-500 hover:text-gray-800"
-                  onClick={() =>
-                    alert(
-                      "Forgot password flow is not connected to a real backend yet."
-                    )
-                  }
-                >
-                  Forgot password?
-                </button>
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <div className="mt-1">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  value={values.password}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm ${
+                    touched.password && errors.password
+                      ? "border-red-400"
+                      : "border-gray-300"
+                  }`}
+                />
               </div>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                placeholder="••••••••"
-                value={values.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 sm:text-sm ${
-                  touched.password && errors.password
-                    ? "border-red-400"
-                    : "border-gray-300"
-                }`}
-              />
               {touched.password && errors.password && (
-                <p className="text-xs text-red-600 mt-1">{errors.password}</p>
+                <p className="mt-1 text-xs text-red-600">{errors.password}</p>
               )}
             </div>
 
-            {/* Remember + link */}
+            {/* Remember me / Forgot password */}
             <div className="flex items-center justify-between">
-              <label className="flex items-center">
+              <label className="flex items-center gap-2 text-sm text-gray-600">
                 <input
                   id="remember"
                   name="remember"
                   type="checkbox"
                   checked={values.remember}
                   onChange={handleChange}
-                  className="h-4 w-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded"
+                  className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
                 />
-                <span className="ml-2 block text-sm text-gray-700">
-                  Remember this device
-                </span>
+                <span>Remember me</span>
               </label>
-
-              <div className="text-sm text-gray-600">
-                New here?{" "}
-                <Link
-                  to="/signup"
-                  className="font-medium text-gray-900 hover:underline"
-                >
-                  Create an account
-                </Link>
-              </div>
+              <button
+                type="button"
+                className="text-xs font-medium text-gray-900 hover:text-black"
+              >
+                Forgot password?
+              </button>
             </div>
 
             {/* Submit */}
@@ -261,39 +305,42 @@ const Login: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-70"
+                className="flex w-full justify-center rounded-md border border-transparent bg-gray-900 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-60"
               >
-                {isSubmitting ? "Signing you in..." : "Sign in"}
+                {isSubmitting ? "Signing in..." : "Sign in"}
               </button>
             </div>
           </form>
 
-          {/* Social login section */}
+          {/* Divider */}
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
+                <span className="w-full border-t border-gray-200" />
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="px-2 bg-white text-gray-500">
-                  Or continue with
+                <span className="bg-white px-2 text-gray-400">
+                  or continue with
                 </span>
               </div>
             </div>
 
-            <div className="mt-4 flex flex-col space-y-3">
-              {/* Google button rendered by Google script */}
-              <div
-                ref={googleButtonRef}
-                className="flex justify-center"
-              ></div>
+            {/* Google button */}
+            <div className="mt-4">
+              <div ref={googleButtonRef} />
             </div>
-
-            <p className="mt-4 text-[11px] text-gray-500 text-center">
-              By continuing, you agree to Travel Buddy’s Terms &amp; Privacy
-              Policy.
-            </p>
           </div>
+
+          {/* Link to signup */}
+          <p className="mt-6 text-center text-sm text-gray-600">
+            Don&apos;t have an account?{" "}
+            <Link
+              to="/signup"
+              className="font-medium text-gray-900 hover:text-black"
+            >
+              Sign up
+            </Link>
+          </p>
         </div>
       </div>
     </div>

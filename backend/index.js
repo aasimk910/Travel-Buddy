@@ -24,22 +24,20 @@ app.use(cors());
 app.use(express.json());
 
 // === Routes ===
-
-// Simple test route
 app.get("/", (req, res) => {
   res.send("Travel Buddy API is running ✅");
 });
 
-// ⬇️ later you can mount your routes like this:
-// const authRoutes = require("./routes/auth");
-// app.use("/api/auth", authRoutes);
+// ⬇️ NEW: Auth routes
+const authRoutes = require("./routes/auth");
+app.use("/api/auth", authRoutes);
 
-// 404 handler for unknown routes
+// 404 handler
 app.use((req, res, next) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// Global error handler (optional but useful)
+// Global error handler
 app.use((err, req, res, next) => {
   console.error("💥 Server error:", err);
   res.status(500).json({ error: "Something went wrong on the server" });
@@ -49,7 +47,7 @@ app.use((err, req, res, next) => {
 async function startServer() {
   try {
     await mongoose.connect(MONGO_URI, {
-      dbName: "travelbuddy", // this will be your DB name
+      dbName: "travelbuddy",
     });
     console.log("✅ Connected to MongoDB");
 

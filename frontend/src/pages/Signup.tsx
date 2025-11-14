@@ -17,6 +17,8 @@ type SignupFormValues = {
   interests: string;
 };
 
+const API_BASE_URL = "http://localhost:5000";
+
 const GOOGLE_CLIENT_ID =
   "253733992578-35p1b3ot8cg3nqb6roimesugqlv2oh7c.apps.googleusercontent.com";
 
@@ -25,6 +27,7 @@ const Signup: React.FC = () => {
   const { loginWithProfile } = useAuth();
   const googleSignupButtonRef = useRef<HTMLDivElement | null>(null);
 
+  // ---------- Google signup ----------
   const handleGoogleResponse = (response: any) => {
     try {
       const credential = response.credential;
@@ -47,31 +50,45 @@ const Signup: React.FC = () => {
         provider: "google",
       });
 
-      // Google signup → go to dashboard
       navigate("/dashboard");
-    } catch (error) {
-      console.error("Google signup failed:", error);
+    } catch (err) {
+      console.error("Google signup error:", err);
     }
   };
 
   useEffect(() => {
-    const google = (window as any).google;
-    if (!google || !googleSignupButtonRef.current || !GOOGLE_CLIENT_ID) return;
+    const initGoogle = () => {
+      const w = window as any;
+      if (!w.google || !googleSignupButtonRef.current) return;
 
-    google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: handleGoogleResponse,
-    });
+      w.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleResponse,
+      });
 
-    google.accounts.id.renderButton(googleSignupButtonRef.current, {
-      theme: "outline",
-      size: "large",
-      width: "100%",
-      type: "standard",
-      text: "continue_with",
-    });
+      w.google.accounts.id.renderButton(googleSignupButtonRef.current, {
+        theme: "outline",
+        size: "large",
+        width: "100%",
+        type: "standard",
+        text: "signup_with",
+      });
+    };
+
+    const w = window as any;
+    if (!w.google) {
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initGoogle;
+      document.body.appendChild(script);
+    } else {
+      initGoogle();
+    }
   }, []);
 
+  // ---------- Email/password signup (backend) ----------
   const {
     handleSubmit,
     handleChange,
@@ -114,19 +131,29 @@ const Signup: React.FC = () => {
     onSubmit: async (formValues, { setSubmitting }) => {
       setStatus(undefined);
       try {
-        // Pretend signup is successful and send user to login
-        loginWithProfile({
-          name: formValues.name,
-          email: formValues.email,
-          country: formValues.country || undefined,
-          travelStyle: formValues.travelStyle || undefined,
-          budgetRange: formValues.budgetRange || undefined,
-          interests: formValues.interests || undefined,
-          provider: "password",
+        const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formValues.name,
+            email: formValues.email,
+            password: formValues.password,
+            country: formValues.country || undefined,
+            travelStyle: formValues.travelStyle || undefined,
+            budgetRange: formValues.budgetRange || undefined,
+            interests: formValues.interests || undefined,
+          }),
         });
 
+        const data = await res.json();
+
+        if (!res.ok) {
+          setStatus(data.message || "Signup failed. Please try again.");
+          return;
+        }
+
+        // Keep same UX as before: show message & send to login
         setStatus("Account created! You can now sign in.");
-        // ✅ Create account → go to login
         navigate("/login");
       } catch (err) {
         console.error(err);
@@ -137,33 +164,43 @@ const Signup: React.FC = () => {
     },
   });
 
+  // ---------- UI (same centered card style) ----------
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       {/* Logo & Heading */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <Map className="h-9 w-9 text-gray-900" />
+        <div className="flex items-center justify-center gap-2">
+          <div className="bg-gray-900 text-white p-2 rounded-lg shadow-sm">
+            <Map className="w-5 h-5" />
+          </div>
+          <span className="text-xl font-semibold text-gray-900">
+            Travel Buddy
+          </span>
         </div>
-        <h2 className="mt-6 text-center text-2xl font-semibold text-gray-900">
+        <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-gray-900">
           Create your Travel Buddy account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Tell us a bit about how you like to travel so we can personalize trips
-          for you.
+          Set up your profile and start connecting with other travelers.
         </p>
       </div>
 
       {/* Card */}
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
-        <div className="bg-white py-8 px-6 shadow-sm sm:rounded-xl sm:px-10 border border-gray-100">
-          {status && (
-            <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-800">
-              {status}
-            </div>
-          )}
-
-          {/* Email/password form */}
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow rounded-lg sm:px-10 border border-gray-100">
           <form className="space-y-6" onSubmit={handleSubmit} noValidate>
+            {status && (
+              <div
+                className={`rounded-md px-3 py-2 text-xs ${
+                  status.toLowerCase().includes("created")
+                    ? "bg-emerald-50 border border-emerald-100 text-emerald-700"
+                    : "bg-red-50 border border-red-100 text-red-700"
+                }`}
+              >
+                {status}
+              </div>
+            )}
+
             {/* Name + Email */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -188,7 +225,7 @@ const Signup: React.FC = () => {
                   }`}
                 />
                 {touched.name && errors.name && (
-                  <p className="text-xs text-red-600 mt-1">{errors.name}</p>
+                  <p className="mt-1 text-xs text-red-600">{errors.name}</p>
                 )}
               </div>
 
@@ -215,7 +252,7 @@ const Signup: React.FC = () => {
                   }`}
                 />
                 {touched.email && errors.email && (
-                  <p className="text-xs text-red-600 mt-1">{errors.email}</p>
+                  <p className="mt-1 text-xs text-red-600">{errors.email}</p>
                 )}
               </div>
             </div>
@@ -245,7 +282,7 @@ const Signup: React.FC = () => {
                   }`}
                 />
                 {touched.password && errors.password && (
-                  <p className="text-xs text-red-600 mt-1">
+                  <p className="mt-1 text-xs text-red-600">
                     {errors.password}
                   </p>
                 )}
@@ -274,7 +311,7 @@ const Signup: React.FC = () => {
                   }`}
                 />
                 {touched.confirmPassword && errors.confirmPassword && (
-                  <p className="text-xs text-red-600 mt-1">
+                  <p className="mt-1 text-xs text-red-600">
                     {errors.confirmPassword}
                   </p>
                 )}
@@ -298,7 +335,7 @@ const Signup: React.FC = () => {
                   value={values.country}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm border-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm"
+                  className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm border-gray-300"
                 />
               </div>
 
@@ -315,25 +352,23 @@ const Signup: React.FC = () => {
                   value={values.travelStyle}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm"
+                  className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm border-gray-300"
                 >
-                  <option value="">Select one</option>
-                  <option value="budget">Budget backpacker</option>
-                  <option value="comfort">Comfort / mid-range</option>
+                  <option value="">Select style</option>
+                  <option value="backpacker">Backpacker</option>
                   <option value="luxury">Luxury</option>
-                  <option value="adventure">Adventure & hiking</option>
-                  <option value="city">City explorer</option>
+                  <option value="digital_nomad">Digital nomad</option>
+                  <option value="weekend_getaways">Weekend getaways</option>
+                  <option value="road_trips">Road trips</option>
                 </select>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label
                   htmlFor="budgetRange"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Budget per trip (optional)
+                  Budget range (optional)
                 </label>
                 <select
                   id="budgetRange"
@@ -341,13 +376,12 @@ const Signup: React.FC = () => {
                   value={values.budgetRange}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm border-gray-300 bg-white focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm"
+                  className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm border-gray-300"
                 >
-                  <option value="">Select range</option>
-                  <option value="<$500">Under $500</option>
-                  <option value="$500-$1000">$500 – $1,000</option>
-                  <option value="$1000-$2500">$1,000 – $2,500</option>
-                  <option value=">$2500">Over $2,500</option>
+                  <option value="">Select budget</option>
+                  <option value="low">Budget-friendly</option>
+                  <option value="medium">Comfort</option>
+                  <option value="high">High-end</option>
                 </select>
               </div>
 
@@ -362,58 +396,56 @@ const Signup: React.FC = () => {
                   id="interests"
                   name="interests"
                   type="text"
-                  placeholder="Beaches, mountains, nightlife..."
+                  placeholder="Food, hiking, museums..."
                   value={values.interests}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm border-gray-300 focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm"
+                  className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm border-gray-300"
                 />
               </div>
             </div>
 
-            {/* Submit + link */}
-            <div className="space-y-3">
-              {/* ✅ Create account → goes to login via navigate("/login") in onSubmit */}
+            {/* Submit */}
+            <div>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex justify-center items-center rounded-md border border-transparent bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-70"
+                className="flex w-full justify-center rounded-md border border-transparent bg-gray-900 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-60"
               >
-                {isSubmitting ? "Creating your account..." : "Create account"}
+                {isSubmitting ? "Creating account..." : "Create account"}
               </button>
-
-              {/* ✅ Already have an account → direct Link to /login */}
-              <p className="text-sm text-center text-gray-600">
-                Already have an account?{" "}
-                <Link
-                  to="/login"
-                  className="font-medium text-gray-900 hover:underline"
-                >
-                  Sign in
-                </Link>
-              </p>
             </div>
           </form>
 
-          {/* Divider + Google button at the bottom */}
+          {/* Divider + Google */}
           <div className="mt-6">
-            <div className="flex items-center mb-4">
-              <div className="w-full border-t border-gray-200" />
-              <span className="px-3 text-xs uppercase tracking-wider text-gray-400">
-                or continue with Google
-              </span>
-              <div className="w-full border-t border-gray-200" />
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-white px-2 text-gray-400">
+                  or sign up with
+                </span>
+              </div>
             </div>
-            <div className="flex justify-center">
+
+            <div className="mt-4">
               <div ref={googleSignupButtonRef} />
             </div>
           </div>
-        </div>
 
-        <p className="mt-4 text-[11px] text-gray-500 text-center">
-          By creating an account, you agree to Travel Buddy’s Terms &amp; Privacy
-          Policy.
-        </p>
+          {/* Link to login */}
+          <p className="mt-6 text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="font-medium text-gray-900 hover:text-black"
+            >
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
