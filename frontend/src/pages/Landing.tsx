@@ -8,9 +8,9 @@ const Landing: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Top navigation – full width */}
+      {/* Top navigation */}
       <header className="border-b border-gray-100 bg-white/80 backdrop-blur">
-        <div className="w-full px-6 lg:px-16 xl:px-24 flex items-center justify-between h-16">
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           {/* Logo */}
           <button
             type="button"
@@ -27,16 +27,28 @@ const Landing: React.FC = () => {
 
           {/* Nav links (desktop) */}
           <nav className="hidden md:flex items-center gap-6 text-sm">
-            <a href="#hikes" className="text-gray-600 hover:text-gray-900">
+            <Link
+              to="/"
+              className="text-gray-900 font-medium border-b-2 border-gray-900 pb-1"
+            >
+              Home
+            </Link>
+            <Link
+              to="/hikes"
+              className="text-gray-600 hover:text-gray-900 transition-colors"
+            >
               Hikes
+            </Link>
+            <a
+              href="#how-it-works"
+              className="text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              How it works
             </a>
-            <a href="#map" className="text-gray-600 hover:text-gray-900">
-              Map
-            </a>
-            <a href="#features" className="text-gray-600 hover:text-gray-900">
-              Features
-            </a>
-            <a href="#community" className="text-gray-600 hover:text-gray-900">
+            <a
+              href="#community"
+              className="text-gray-600 hover:text-gray-900 transition-colors"
+            >
               Community
             </a>
           </nav>
@@ -51,7 +63,7 @@ const Landing: React.FC = () => {
             </Link>
             <Link
               to="/signup"
-              className="inline-flex items-center justify-center rounded-md bg-gray-900 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-black"
+              className="inline-flex items-center justify-center rounded-full bg-gray-900 px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-black"
             >
               Get started
             </Link>
@@ -61,10 +73,10 @@ const Landing: React.FC = () => {
 
       {/* Main content */}
       <main className="flex-1">
-        {/* Hero – full width */}
-        <section className="border-b border-gray-100 bg-white">
-          <div className="w-full px-6 lg:px-16 xl:px-24 py-12 lg:py-20 grid gap-10 lg:grid-cols-2 items-center">
-            {/* Left: Text */}
+        {/* Hero section */}
+        <section className="bg-white border-b border-gray-100">
+          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20 grid gap-10 lg:grid-cols-2 items-center">
+            {/* Left: text */}
             <div className="max-w-xl">
               <p className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 mb-4">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
@@ -88,119 +100,179 @@ const Landing: React.FC = () => {
               <div className="flex flex-wrap gap-3 mb-6">
                 <Link
                   to="/signup"
-                  className="inline-flex items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-black"
+                  className="inline-flex items-center justify-center rounded-full bg-gray-900 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-black"
                 >
                   Start for free
                 </Link>
                 <Link
-                  to="/login"
-                  className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
+                  to="/hikes"
+                  className="inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
                 >
-                  I already have an account
+                  Explore hikes
                 </Link>
               </div>
 
-              <div className="flex flex-wrap gap-4 text-xs text-gray-500">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-gray-400" />
-                  <span>Find buddies by destination & dates</span>
+              <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                <div className="flex items-center gap-1.5">
+                  <Users className="w-4 h-4" />
+                  <span>Trusted by small travel groups worldwide</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-gray-400" />
-                  <span>Profile-based matching for safer trips</span>
+                <div className="flex items-center gap-1.5">
+                  <Shield className="w-4 h-4" />
+                  <span>Profile checks & safety tips built in</span>
                 </div>
               </div>
             </div>
 
-            {/* Right: Mock "app" preview */}
-            <div className="flex justify-center lg:justify-end">
-              <div className="w-full max-w-sm bg-gray-900 text-white rounded-2xl shadow-xl p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-white/10 rounded-lg p-2">
-                      <Map className="w-4 h-4" />
+            {/* Right: preview card */}
+            <div className="lg:justify-self-end w-full max-w-md">
+              <div className="rounded-2xl bg-gray-900 text-white p-5 sm:p-6 shadow-xl">
+                <p className="text-xs font-medium text-gray-300 mb-2">
+                  Upcoming group hikes
+                </p>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center justify-between rounded-xl bg-gray-800/70 px-3 py-2">
+                    <div>
+                      <p className="font-semibold">Sunrise ridge walk</p>
+                      <p className="text-[11px] text-gray-300">
+                        Banff • Easy • 4 people going
+                      </p>
                     </div>
-                    <span className="text-sm font-semibold">
-                      Upcoming trips
+                    <span className="text-[11px] rounded-full bg-emerald-500/20 text-emerald-300 px-2 py-0.5">
+                      2 spots left
                     </span>
                   </div>
-                  <span className="text-xs text-gray-300">Sample preview</span>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="bg-white/5 rounded-xl p-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-sm font-semibold">
-                        Lisbon &amp; Porto
-                      </p>
-                      <span className="text-[11px] text-emerald-300 bg-emerald-900/40 px-2 py-0.5 rounded-full">
-                        3 buddies matched
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-300">
-                      Street food, hostels, and viewpoints – shared by travelers
-                      who like slow, budget-friendly trips.
-                    </p>
-                    <div className="mt-2 flex items-center justify-between text-[11px] text-gray-400">
-                      <span>Apr 12–20 · Budget</span>
-                      <span>Split stays &amp; rides</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-white/5 rounded-xl p-3 flex gap-3 items-start">
-                    <div className="bg-gray-800 rounded-full p-2">
-                      <Users className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs font-semibold">Match by vibe</p>
+                  <div className="flex items-center justify-between rounded-xl bg-gray-800/70 px-3 py-2">
+                    <div>
+                      <p className="font-semibold">Alpine lake loop</p>
                       <p className="text-[11px] text-gray-300">
-                        Filter by destination, budget, travel style, and
-                        interests – not just random profiles.
+                        Switzerland • Moderate • 6 people going
                       </p>
                     </div>
+                    <span className="text-[11px] rounded-full bg-gray-100 text-gray-900 px-2 py-0.5">
+                      New
+                    </span>
                   </div>
-
-                  <div className="bg-white/5 rounded-xl p-3 flex gap-3 items-start">
-                    <div className="bg-gray-800 rounded-full p-2">
-                      <MessageCircle className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs font-semibold">Plan together</p>
+                  <div className="flex items-center justify-between rounded-xl bg-gray-800/70 px-3 py-2">
+                    <div>
+                      <p className="font-semibold">Weekend city foodie tour</p>
                       <p className="text-[11px] text-gray-300">
-                        Share itineraries, collect suggestions, and keep
-                        everything in one place before you fly.
+                        Lisbon • Budget • 3–5 travelers
                       </p>
                     </div>
+                    <span className="text-[11px] rounded-full bg-gray-700 px-2 py-0.5">
+                      City trip
+                    </span>
                   </div>
                 </div>
-
-                <div className="mt-4 border-t border-white/10 pt-3 flex items-center justify-between text-[11px] text-gray-300">
-                  <span>Log in to see your real trips</span>
-                  <button
-                    type="button"
-                    className="text-xs font-medium text-white hover:underline"
-                    onClick={() => navigate("/login")}
-                  >
-                    Go to dashboard →
-                  </button>
-                </div>
+                <p className="mt-4 text-[11px] text-gray-300">
+                  Log in to see trips that match your dates, budget, and travel
+                  style.
+                </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* How it works – full width */}
+        {/* Preview hikes section */}
+        <section id="hikes" className="bg-gray-50 border-b border-gray-100">
+          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+            <div className="flex items-center justify-between gap-3 mb-6">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
+                  Join group hikes near you
+                </h2>
+                <p className="text-sm text-gray-600">
+                  A quick preview of what you’ll find on the Hikes page.
+                </p>
+              </div>
+              <Link
+                to="/hikes"
+                className="hidden sm:inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-4 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-50"
+              >
+                View all hikes
+              </Link>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="h-28 bg-[url('https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
+                <div className="p-4">
+                  <p className="text-xs text-gray-400 mb-1">
+                    Banff National Park • Canada
+                  </p>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Hot Springs Sunrise Hike
+                  </h3>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Easy pace, perfect for first-time group hikers.
+                  </p>
+                  <p className="mt-3 text-[11px] text-gray-500">
+                    Difficulty: 1/5 • 3 spots left
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="h-28 bg-[url('https://images.pexels.com/photos/552785/pexels-photo-552785.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
+                <div className="p-4">
+                  <p className="text-xs text-gray-400 mb-1">
+                    Dolomites • Italy
+                  </p>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Through the Heart of the Peaks
+                  </h3>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Full-day route with big views and shared snacks.
+                  </p>
+                  <p className="mt-3 text-[11px] text-gray-500">
+                    Difficulty: 4/5 • 6 spots left
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="h-28 bg-[url('https://images.pexels.com/photos/1028225/pexels-photo-1028225.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
+                <div className="p-4">
+                  <p className="text-xs text-gray-400 mb-1">
+                    Lisbon • Portugal
+                  </p>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    City View Sunset Walk
+                  </h3>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Short evening walk ending at a lookout with snacks.
+                  </p>
+                  <p className="mt-3 text-[11px] text-gray-500">
+                    Difficulty: 2/5 • 4 spots left
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 sm:hidden">
+              <Link
+                to="/hikes"
+                className="inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-4 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-50"
+              >
+                View all hikes
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* How it works */}
         <section
           id="how-it-works"
           className="bg-gray-50 border-b border-gray-100"
         >
-          <div className="w-full px-6 lg:px-16 xl:px-24 py-10 sm:py-14">
+          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 text-center mb-2">
               How Travel Buddy works
             </h2>
-            <p className="text-sm text-gray-600 text-center max-w-2xl mx-auto mb-8">
-              In a few steps, you go from “I want to travel” to “I have a plan –
-              and people to go with.”
+            <p className="text-sm text-gray-600 text-center max-w-xl mx-auto mb-8">
+              We keep things simple: share how you like to travel, match with
+              compatible people, and build trips together that feel natural.
             </p>
 
             <div className="grid gap-6 sm:grid-cols-3">
@@ -226,8 +298,8 @@ const Landing: React.FC = () => {
                   Match with compatible buddies
                 </h3>
                 <p className="text-xs text-gray-600">
-                  Browse travelers going to the same destinations and dates. Use
-                  filters to find people who share your pace and priorities.
+                  Filter by destination, dates, and travel style. Join existing
+                  trips or start your own and invite others.
                 </p>
               </div>
 
@@ -236,114 +308,139 @@ const Landing: React.FC = () => {
                   3
                 </div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                  Plan the trip together
+                  Plan safely & share costs
                 </h3>
                 <p className="text-xs text-gray-600">
-                  Share itineraries, collect ideas, and keep stays, activities,
-                  and costs in one organized space – before you ever pack.
+                  Use group chat, shared itineraries, and safety tips to plan
+                  everything – from hostels and rides to activities and food.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Features – full width */}
+        {/* Features */}
         <section id="features" className="bg-white border-b border-gray-100">
-          <div className="w-full px-6 lg:px-16 xl:px-24 py-10 sm:py-14">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
-              <div className="max-w-xl">
-                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
-                  Built for real travelers, not just “followers”
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  Travel Buddy is about people who actually want to go –
-                  coordinate dates, share routes, and make decisions together.
-                </p>
-              </div>
-            </div>
+          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6">
+              Built for real travelers, not just influencers
+            </h2>
 
             <div className="grid gap-6 md:grid-cols-3">
               <div className="bg-gray-50 rounded-xl border border-gray-100 p-5">
-                <div className="w-9 h-9 rounded-lg bg-gray-900 text-white flex items-center justify-center mb-3">
-                  <Users className="w-4 h-4" />
-                </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                  Matches by travel style
-                </h3>
-                <p className="text-xs text-gray-600">
-                  Introvert backpacker? Food-obsessed city explorer? You&apos;re
-                  more than just &quot;looking for a trip&quot; – your profile
-                  highlights what makes you a good match.
-                </p>
-              </div>
-
-              <div className="bg-gray-50 rounded-xl border border-gray-100 p-5">
-                <div className="w-9 h-9 rounded-lg bg-gray-900 text-white flex items-center justify-center mb-3">
+                <div className="w-8 h-8 rounded-lg bg-gray-900 text-white flex items-center justify-center mb-3">
                   <Compass className="w-4 h-4" />
                 </div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                  Shared planning tools
+                  Match by travel style
                 </h3>
                 <p className="text-xs text-gray-600">
-                  Keep dates, locations, and ideas in one place instead of 10
-                  different chats. You stay aligned from &quot;let&apos;s
-                  go&quot; to landing at the airport.
+                  Backpacker, slow traveler, weekend hiker – match with people
+                  who move through the world like you do.
                 </p>
               </div>
 
               <div className="bg-gray-50 rounded-xl border border-gray-100 p-5">
-                <div className="w-9 h-9 rounded-lg bg-gray-900 text-white flex items-center justify-center mb-3">
+                <div className="w-8 h-8 rounded-lg bg-gray-900 text-white flex items-center justify-center mb-3">
+                  <Users className="w-4 h-4" />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                  Small groups, big memories
+                </h3>
+                <p className="text-xs text-gray-600">
+                  Keep trips small and flexible. Perfect for 2–6 people instead
+                  of huge tour buses.
+                </p>
+              </div>
+
+              <div className="bg-gray-50 rounded-xl border border-gray-100 p-5">
+                <div className="w-8 h-8 rounded-lg bg-gray-900 text-white flex items-center justify-center mb-3">
                   <Shield className="w-4 h-4" />
                 </div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                  Safer connections
+                  Safety-first design
                 </h3>
                 <p className="text-xs text-gray-600">
-                  Profiles are built around travel – not swiping. You decide who
-                  to message, who to add to your trip, and when to share
-                  details.
+                  Safety tips, profile transparency, and shared planning tools
+                  help you feel confident before you say yes.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Community CTA – full width */}
+        {/* Community / testimonials */}
         <section id="community" className="bg-gray-50 border-b border-gray-100">
-          <div className="w-full px-6 lg:px-16 xl:px-24 py-10 sm:py-14">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-8 sm:px-8 sm:py-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-              <div className="max-w-xl">
-                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
-                  Ready to find your next Travel Buddy?
+          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+            <div className="grid gap-8 md:grid-cols-[1.3fr_minmax(0,1fr)] items-center">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">
+                  A community of travelers who actually reply
                 </h2>
-                <p className="text-sm text-gray-600">
-                  Whether you&apos;re planning a weekend escape or a long-term
-                  adventure, Travel Buddy helps you find people who actually
-                  want to go when you do.
+                <p className="text-sm text-gray-600 mb-5">
+                  No ghosting, no endless scrolling. Travel Buddy is designed
+                  around real conversations, shared planning, and mutual
+                  respect.
                 </p>
+                <ul className="space-y-2 text-xs text-gray-700">
+                  <li>• Join or create focused groups around cities or hikes</li>
+                  <li>• Share itineraries, maps, and packing lists</li>
+                  <li>• Keep everything in one place instead of random chats</li>
+                </ul>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <Link
-                  to="/signup"
-                  className="inline-flex items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-black"
-                >
-                  Create my profile
-                </Link>
-                <Link
-                  to="/login"
-                  className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
-                >
-                  Log in instead
-                </Link>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center">
+                    <MessageCircle className="w-4 h-4" />
+                  </div>
+                  <p className="text-xs font-medium text-gray-800">
+                    Real story from a small hiking group
+                  </p>
+                </div>
+                <p className="text-xs text-gray-700 mb-2">
+                  “We were three strangers who met on Travel Buddy for a weekend
+                  trip. Now we plan at least one hike together every month.”
+                </p>
+                <p className="text-[11px] text-gray-500">— Lina, Prague</p>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="bg-gray-900">
+          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-semibold text-white mb-2">
+                Ready to find your next travel buddy?
+              </h2>
+              <p className="text-sm text-gray-300 max-w-xl">
+                Create a free profile in under two minutes. You can decide later
+                which trips to actually say yes to.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                to="/signup"
+                className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100"
+              >
+                Get started
+              </Link>
+              <Link
+                to="/login"
+                className="inline-flex items-center justify-center rounded-full border border-gray-400 bg-transparent px-5 py-2 text-sm font-medium text-gray-100 hover:bg-gray-800"
+              >
+                Log in
+              </Link>
             </div>
           </div>
         </section>
       </main>
 
-      {/* Footer – full width */}
+      {/* Footer */}
       <footer className="bg-white border-t border-gray-100">
-        <div className="w-full px-6 lg:px-16 xl:px-24 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-gray-500">
             © {new Date().getFullYear()} Travel Buddy. Built for real travelers.
           </p>
