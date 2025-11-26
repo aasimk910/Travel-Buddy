@@ -13,19 +13,6 @@ const API_BASE_URL = "http://localhost:5000";
 const GOOGLE_CLIENT_ID =
   "253733992578-35p1b3ot8cg3nqb6roimesugqlv2oh7c.apps.googleusercontent.com";
 
-// Helper to decode Google JWT
-const parseJwt = (token: string): any => {
-  const base64Url = token.split(".")[1];
-  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-  const jsonPayload = decodeURIComponent(
-    atob(base64)
-      .split("")
-      .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-      .join("")
-  );
-  return JSON.parse(jsonPayload);
-};
-
 interface LoginFormValues {
   email: string;
   password: string;
@@ -33,70 +20,9 @@ interface LoginFormValues {
 }
 
 const Login: React.FC = () => {
-  const { loginWithProfile, loginWithGoogle } = useAuth();
+  const { loginWithProfile } = useAuth();
   const navigate = useNavigate();
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
-
-  // ---------- Google Login ----------
-  const handleGoogleResponse = (response: any) => {
-    try {
-      const credential = response.credential;
-      if (!credential) return;
-
-      const payload = parseJwt(credential) as {
-        name?: string;
-        given_name?: string;
-        email?: string;
-        picture?: string;
-      };
-
-      if (!payload.email) return;
-
-      loginWithGoogle({
-        name: payload.name || payload.given_name || "Traveler",
-        email: payload.email,
-        avatarUrl: payload.picture,
-        provider: "google",
-      });
-
-      navigate("/dashboard");
-    } catch (err) {
-      console.error(err);
-      formik.setStatus("Google login failed. Please try again.");
-    }
-  };
-
-  useEffect(() => {
-    const initGoogle = () => {
-      const w = window as any;
-      if (!w.google || !googleButtonRef.current) return;
-
-      w.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleResponse,
-      });
-
-      w.google.accounts.id.renderButton(googleButtonRef.current, {
-        theme: "outline",
-        size: "large",
-        width: "100%",
-        type: "standard",
-        text: "continue_with",
-      });
-    };
-
-    const w = window as any;
-    if (!w.google) {
-      const script = document.createElement("script");
-      script.src = "https://accounts.google.com/gsi/client";
-      script.async = true;
-      script.defer = true;
-      script.onload = initGoogle;
-      document.body.appendChild(script);
-    } else {
-      initGoogle();
-    }
-  }, []);
 
   // ---------- Email/password Login (backend) ----------
   const formik = useFormik<LoginFormValues>({
@@ -157,7 +83,7 @@ const Login: React.FC = () => {
           localStorage.removeItem("travelBuddyRememberEmail");
         }
 
-        navigate("/dashboard");
+        navigate("/");
       } catch (err) {
         console.error(err);
         setStatus("Something went wrong. Please try again.");
@@ -178,6 +104,82 @@ const Login: React.FC = () => {
     status,
   } = formik;
 
+  // ---------- Google Login (hits backend & saves to DB) ----------
+  const handleGoogleResponse = async (response: any) => {
+    try {
+      const credential = response.credential;
+      if (!credential) return;
+
+      const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        formik.setStatus(
+          data.message || "Google login failed. Please try again."
+        );
+        return;
+      }
+
+      if (data.token) {
+        localStorage.setItem("travelBuddyToken", data.token);
+      }
+
+      if (data.user) {
+        loginWithProfile({
+          name: data.user.name,
+          email: data.user.email,
+          country: data.user.country,
+          travelStyle: data.user.travelStyle,
+          budgetRange: data.user.budgetRange,
+          interests: data.user.interests,
+          avatarUrl: data.user.avatarUrl,
+          provider: data.user.provider || "google",
+        });
+      }
+
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      formik.setStatus("Google login failed. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    const initGoogle = () => {
+      const w = window as any;
+      if (!w.google || !googleButtonRef.current) return;
+
+      w.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleResponse,
+      });
+
+      w.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: "outline",
+        size: "large",
+        type: "standard",
+        text: "continue_with",
+      });
+    };
+
+    const w = window as any;
+    if (!w.google) {
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initGoogle;
+      document.body.appendChild(script);
+    } else {
+      initGoogle();
+    }
+  }, []);
+
   // Prefill remembered email
   useEffect(() => {
     const remembered = localStorage.getItem("travelBuddyRememberEmail");
@@ -188,7 +190,7 @@ const Login: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ---------- UI (same single-card design as before) ----------
+  // ---------- UI ----------
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       {/* Logo + heading */}
@@ -312,7 +314,7 @@ const Login: React.FC = () => {
             </div>
           </form>
 
-          {/* Divider */}
+          {/* Divider + Google button at bottom (matches Signup) */}
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -320,14 +322,13 @@ const Login: React.FC = () => {
               </div>
               <div className="relative flex justify-center text-xs">
                 <span className="bg-white px-2 text-gray-400">
-                  or continue with
+                  Or continue with Google
                 </span>
               </div>
             </div>
 
-            {/* Google button */}
-            <div className="mt-4">
-              <div ref={googleButtonRef} />
+            <div className="flex justify-center mt-2">
+              <div ref={googleButtonRef} className="w-full max-w-xs" />
             </div>
           </div>
 

@@ -178,12 +178,6 @@ const Hikes: React.FC = () => {
             >
               Hikes
             </Link>
-            <button
-              type="button"
-              className="text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              How it works
-            </button>
           </nav>
 
           {/* Auth buttons */}
@@ -437,7 +431,9 @@ const Hikes: React.FC = () => {
               <p className="mb-3 font-semibold text-gray-700">Legal</p>
               <ul className="space-y-2">
                 <li>
-                  <button className="hover:text-gray-800">Privacy Policy</button>
+                  <button className="hover:text-gray-800">
+                    Privacy Policy
+                  </button>
                 </li>
                 <li>
                   <button className="hover:text-gray-800">
@@ -445,7 +441,9 @@ const Hikes: React.FC = () => {
                   </button>
                 </li>
                 <li>
-                  <button className="hover:text-gray-800">Cookie Policy</button>
+                  <button className="hover:text-gray-800">
+                    Cookie Policy
+                  </button>
                 </li>
               </ul>
             </div>

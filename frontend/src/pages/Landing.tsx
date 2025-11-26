@@ -39,18 +39,6 @@ const Landing: React.FC = () => {
             >
               Hikes
             </Link>
-            <a
-              href="#how-it-works"
-              className="text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              How it works
-            </a>
-            <a
-              href="#community"
-              className="text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Community
-            </a>
           </nav>
 
           {/* Auth buttons */}
