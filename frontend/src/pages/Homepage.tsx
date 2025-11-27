@@ -151,7 +151,7 @@ const Homepage: React.FC = () => {
           </div>
         </div>
 
-        {/* Main content grid - Location review and Points */}
+        {/* Location Review and Photo Upload Cards */}
         <div className="grid gap-6 lg:grid-cols-2 mb-8">
           {/* Location Review Card */}
           <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl shadow-sm border border-gray-100 p-8">
@@ -200,113 +200,76 @@ const Homepage: React.FC = () => {
               <span>🔄</span>
               Show another
             </button>
-            <p className="text-center text-xs text-gray-600 mt-3">
-              15 points per review
-            </p>
           </div>
 
-          {/* How to Earn Points Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <button className="w-full flex items-center justify-between mb-6 group">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-lg">
-                  🎯
-                </div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  How to Earn Points
-                </h3>
+          {/* Upload Trail Photos Card */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-sm border border-gray-100 p-8">
+            <div className="flex flex-col items-center text-center mb-6">
+              <div className="w-20 h-20 mb-4 flex items-center justify-center">
+                <span className="text-6xl">📸</span>
               </div>
-              <span className="text-gray-400 group-hover:text-gray-600 transition-colors">
-                ▼
-              </span>
-            </button>
-
-            <div className="space-y-4">
-              <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-blue-50 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-sm">
-                  🔥
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-semibold text-gray-900 text-sm">
-                      Upload GPS Tracks
-                    </h4>
-                    <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-0.5 rounded">
-                      ⭐ Highest
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-600">
-                    100 points per GPS track upload
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-blue-50 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 text-sm">
-                  🎯
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900 text-sm mb-1">
-                    Complete Routes
-                  </h4>
-                  <p className="text-xs text-gray-600">
-                    50 points per route completion
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-green-50 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0 text-sm">
-                  ⛰️
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900 text-sm mb-1">
-                    Complete Mountains
-                  </h4>
-                  <p className="text-xs text-gray-600">
-                    25 points per mountain completion
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-orange-50 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 text-sm">
-                  ✍️
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900 text-sm mb-1">
-                    Write Trail Reviews
-                  </h4>
-                  <p className="text-xs text-gray-600">15 points per review</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-yellow-50 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center flex-shrink-0 text-sm">
-                  📍
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900 text-sm mb-1">
-                    Share Location Updates
-                  </h4>
-                  <p className="text-xs text-gray-600">
-                    10 points per status update
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-purple-50 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0 text-sm">
-                  📸
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900 text-sm mb-1">
-                    Upload Trail Photos
-                  </h4>
-                  <p className="text-xs text-gray-600">5 points per photo upload</p>
-                </div>
-              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Share your{" "}
+                <span className="underline decoration-2 decoration-gray-900">
+                  Trail Photos
+                </span>
+              </h3>
+              <p className="text-sm text-gray-600">
+                Upload photos from your hikes, treks, and adventures
+              </p>
             </div>
+            
+            {/* Upload Area */}
+            <div className="mb-4">
+              <label
+                htmlFor="photo-upload"
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 hover:bg-white/50 transition-all"
+              >
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <svg
+                    className="w-10 h-10 mb-2 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                  <p className="text-sm text-gray-600 font-medium">
+                    Click to upload or drag and drop
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    PNG, JPG up to 10MB
+                  </p>
+                </div>
+                <input
+                  id="photo-upload"
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  multiple
+                />
+              </label>
+            </div>
+
+            <textarea
+              placeholder="Add a caption or description..."
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none mb-4"
+              rows={3}
+            />
+            
+            <button className="w-full bg-gradient-to-r from-blue-100 to-indigo-100 text-gray-900 font-semibold py-3 px-4 rounded-lg hover:from-blue-200 hover:to-indigo-200 transition-all mb-3 flex items-center justify-center gap-2">
+              <span>📤</span>
+              Upload Photos
+            </button>
+            <button className="w-full bg-gradient-to-r from-purple-100 to-pink-100 text-gray-900 font-medium py-3 px-4 rounded-lg hover:from-purple-200 hover:to-pink-200 transition-all flex items-center justify-center gap-2">
+              <span>🖼️</span>
+              View Gallery
+            </button>
           </div>
         </div>
 
