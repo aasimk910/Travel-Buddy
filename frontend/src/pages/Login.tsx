@@ -83,7 +83,7 @@ const Login: React.FC = () => {
           localStorage.removeItem("travelBuddyRememberEmail");
         }
 
-        navigate("/");
+        navigate("/homepage");
       } catch (err) {
         console.error(err);
         setStatus("Something went wrong. Please try again.");
@@ -142,7 +142,7 @@ const Login: React.FC = () => {
         });
       }
 
-      navigate("/");
+      navigate("/homepage");
     } catch (err) {
       console.error(err);
       formik.setStatus("Google login failed. Please try again.");

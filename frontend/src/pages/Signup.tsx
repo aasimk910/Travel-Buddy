@@ -109,7 +109,7 @@ const Signup: React.FC = () => {
         }
 
         setStatus("Account created! Redirecting...");
-        navigate("/");
+        navigate("/homepage");
       } catch (err) {
         console.error(err);
         setStatus("Something went wrong. Please try again.");
@@ -155,7 +155,7 @@ const Signup: React.FC = () => {
         });
       }
 
-      navigate("/");
+      navigate("/homepage");
     } catch (err) {
       console.error("Google signup error:", err);
       setStatus("Google signup failed. Please try again.");

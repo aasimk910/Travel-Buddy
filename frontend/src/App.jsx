@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Landing from "./pages/Landing";
+import Homepage from "./pages/Homepage";
 import Hikes from "./pages/Hikes";
 
 const App = () => {
@@ -15,6 +16,7 @@ const App = () => {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/homepage" element={<Homepage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/hikes" element={<Hikes />} />
       </Routes>
