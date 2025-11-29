@@ -1,5 +1,5 @@
 // src/pages/Homepage.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Map,
@@ -33,6 +33,15 @@ const getRandomLocation = (current?: string) => {
   return list[Math.floor(Math.random() * list.length)];
 };
 
+type PhotoItem = {
+  _id: string;
+  userName: string;
+  caption?: string;
+  images?: string[];
+  imageData?: string;
+  createdAt?: string;
+};
+
 const convertFileToBase64 = (file: File) =>
   new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -56,16 +65,69 @@ const Homepage: React.FC = () => {
     text: string;
   } | null>(null);
 
-  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
   const [photoCaption, setPhotoCaption] = useState<string>("");
-  const [photoName, setPhotoName] = useState<string>("");
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [photoMessage, setPhotoMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
+  const [isLoadingPhotos, setIsLoadingPhotos] = useState(false);
+  const [photosError, setPhotosError] = useState<string | null>(null);
+  const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
+  const [photoIndices, setPhotoIndices] = useState<Record<string, number>>({});
 
   const safeUserName = user?.name || "Traveler";
+
+  const fetchLatestPhotos = async () => {
+    setIsLoadingPhotos(true);
+    setPhotosError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/photos/latest`);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Unable to load photos.");
+      }
+      setPhotos(data);
+    } catch (err) {
+      setPhotosError(
+        err instanceof Error
+          ? err.message
+          : "Unable to load photos. Please try again."
+      );
+    } finally {
+      setIsLoadingPhotos(false);
+    }
+  };
+
+  const handleDeletePhoto = async (id: string) => {
+    setDeletingPhotoId(id);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/photos/${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Unable to delete photo.");
+      }
+      setPhotos((prev) => prev.filter((photo) => photo._id !== id));
+    } catch (err) {
+      setPhotosError(
+        err instanceof Error
+          ? err.message
+          : "Unable to delete photo. Please try again."
+      );
+    } finally {
+      setDeletingPhotoId(null);
+    }
+  };
+
+  useEffect(() => {
+    fetchLatestPhotos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleReviewSubmit = async (
     event: React.FormEvent<HTMLFormElement>
@@ -126,26 +188,34 @@ const Homepage: React.FC = () => {
     setReviewMessage(null);
   };
 
-  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
-    setSelectedPhoto(file);
-    setPhotoName(file?.name || "");
+  const handlePhotoChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = Array.from(event.target.files ?? []);
     setPhotoMessage(null);
-  };
 
-  const handlePhotoSubmit = async () => {
-    if (!selectedPhoto) {
-      setPhotoMessage({
-        type: "error",
-        text: "Please choose a photo to upload.",
-      });
+    if (!files.length) {
+      setSelectedPhotos([]);
+      setPhotoPreviews([]);
       return;
     }
 
-    if (selectedPhoto.size > MAX_PHOTO_SIZE_BYTES) {
+    setSelectedPhotos(files);
+
+    try {
+      const previews = await Promise.all(files.map(convertFileToBase64));
+      setPhotoPreviews(previews);
+    } catch (err) {
+      console.error("Failed to create photo previews", err);
+      setPhotoPreviews([]);
+    }
+  };
+
+  const handlePhotoSubmit = async () => {
+    if (!selectedPhotos.length) {
       setPhotoMessage({
         type: "error",
-        text: "Photo must be smaller than 6MB.",
+        text: "Please choose at least one photo to upload.",
       });
       return;
     }
@@ -154,7 +224,15 @@ const Homepage: React.FC = () => {
     setPhotoMessage(null);
 
     try {
-      const imageData = await convertFileToBase64(selectedPhoto);
+      for (const file of selectedPhotos) {
+        if (file.size > MAX_PHOTO_SIZE_BYTES) {
+          throw new Error(`Each photo must be smaller than 6MB.`);
+        }
+      }
+
+      const imagesData = await Promise.all(
+        selectedPhotos.map((file) => convertFileToBase64(file))
+      );
 
       const res = await fetch(`${API_BASE_URL}/api/photos`, {
         method: "POST",
@@ -162,22 +240,23 @@ const Homepage: React.FC = () => {
         body: JSON.stringify({
           userName: safeUserName,
           caption: photoCaption,
-          imageData,
+          images: imagesData,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || "Unable to upload photo.");
+        throw new Error(data.message || "Unable to upload photo(s).");
       }
 
       setPhotoMessage({
         type: "success",
-        text: "Photo uploaded successfully!",
+        text: "Photo(s) uploaded successfully!",
       });
-      setSelectedPhoto(null);
-      setPhotoName("");
+      setSelectedPhotos([]);
+      setPhotoPreviews([]);
       setPhotoCaption("");
+      await fetchLatestPhotos();
     } catch (err) {
       setPhotoMessage({
         type: "error",
@@ -451,13 +530,31 @@ const Homepage: React.FC = () => {
                   type="file"
                   className="hidden"
                   accept="image/*"
+                  multiple
                   onChange={handlePhotoChange}
                 />
               </label>
-              {photoName && (
-                <p className="mt-2 text-xs text-gray-600 text-center">
-                  Selected file: <span className="font-medium">{photoName}</span>
-                </p>
+              {selectedPhotos.length > 0 && (
+                <>
+                  <p className="mt-2 text-xs text-gray-600 text-center">
+                    Selected {selectedPhotos.length}{" "}
+                    {selectedPhotos.length === 1 ? "photo" : "photos"}
+                  </p>
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {photoPreviews.map((preview, index) => (
+                      <div
+                        key={index}
+                        className="rounded-lg overflow-hidden border border-gray-200 h-20"
+                      >
+                        <img
+                          src={preview}
+                          alt={`Selected trail preview ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
 
@@ -528,181 +625,134 @@ const Homepage: React.FC = () => {
           </button>
         </div>
 
-        {/* Quick actions */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          <Link
-            to="/hikes"
-            className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow"
-          >
-            <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center mb-3">
-              <Compass className="w-5 h-5" />
-            </div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-1">
-              Explore Hikes
-            </h3>
-            <p className="text-xs text-gray-600">
-              Find group hikes near your favorite destinations
-            </p>
-          </Link>
-
-          <Link
-            to="/dashboard"
-            className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow"
-          >
-            <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center mb-3">
-              <Users className="w-5 h-5" />
-            </div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-1">
-              Find Buddies
-            </h3>
-            <p className="text-xs text-gray-600">
-              Connect with travelers who share your style
-            </p>
-          </Link>
-
-          <Link
-            to="/dashboard"
-            className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow"
-          >
-            <div className="w-10 h-10 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center mb-3">
-              <Calendar className="w-5 h-5" />
-            </div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-1">
-              Plan Trip
-            </h3>
-            <p className="text-xs text-gray-600">
-              Create a new trip and invite others to join
-            </p>
-          </Link>
-
-          <Link
-            to="/dashboard"
-            className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow"
-          >
-            <div className="w-10 h-10 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center mb-3">
-              <MapPin className="w-5 h-5" />
-            </div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-1">
-              My Trips
-            </h3>
-            <p className="text-xs text-gray-600">
-              View and manage your upcoming adventures
-            </p>
-          </Link>
-        </div>
-
-        {/* Suggested hikes */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
+        {/* Photo feed */}
+        {(isLoadingPhotos || photos.length > 0 || photosError) && (
+          <section className="mb-8">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-900">
-                Suggested Hikes for You
+                Latest trail photos
               </h2>
-              <p className="text-sm text-gray-600">
-                Based on your travel style and interests
+              <p className="text-xs text-gray-500">
+                Shared by the Travel Buddy community
               </p>
             </div>
-            <Link
-              to="/hikes"
-              className="text-sm text-gray-600 hover:text-gray-900 font-medium"
-            >
-              View all →
-            </Link>
-          </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-              <div className="h-32 bg-[url('https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
-              <div className="p-4">
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 mb-2">
-                  <TrendingUp className="w-3 h-3" />
-                  Trending
-                </span>
-                <p className="text-xs text-gray-400 mb-1">
-                  Banff National Park • Canada
-                </p>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                  Hot Springs Sunrise Hike
-                </h3>
-                <p className="text-xs text-gray-600 mb-3">
-                  Easy pace, perfect for first-time group hikers.
-                </p>
-                <div className="flex items-center justify-between text-[11px] text-gray-500">
-                  <span>Difficulty: 1/5</span>
-                  <span className="text-emerald-600 font-medium">
-                    3 spots left
-                  </span>
-                </div>
+            {photosError && (
+              <div className="mb-4 rounded-md bg-red-50 border border-red-100 px-3 py-2 text-xs text-red-700">
+                {photosError}
               </div>
-            </div>
+            )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-              <div className="h-32 bg-[url('https://images.pexels.com/photos/552785/pexels-photo-552785.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
-              <div className="p-4">
-                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 mb-2">
-                  New
-                </span>
-                <p className="text-xs text-gray-400 mb-1">
-                  Dolomites • Italy
-                </p>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                  Through the Heart of the Peaks
-                </h3>
-                <p className="text-xs text-gray-600 mb-3">
-                  Full-day route with big views and shared snacks.
-                </p>
-                <div className="flex items-center justify-between text-[11px] text-gray-500">
-                  <span>Difficulty: 4/5</span>
-                  <span className="text-emerald-600 font-medium">
-                    6 spots left
-                  </span>
-                </div>
+            {isLoadingPhotos && photos.length === 0 ? (
+              <p className="text-sm text-gray-500">Loading photos…</p>
+            ) : photos.length === 0 ? (
+              <p className="text-sm text-gray-500">
+                No photos have been shared yet. Be the first to upload one!
+              </p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                {photos.map((photo) => {
+                  const imageList =
+                    photo.images && photo.images.length
+                      ? photo.images
+                      : photo.imageData
+                      ? [photo.imageData]
+                      : [];
+
+                  const totalImages = imageList.length;
+                  const currentIndex =
+                    photoIndices[photo._id] && photoIndices[photo._id] < totalImages
+                      ? photoIndices[photo._id]
+                      : 0;
+
+                  const handleChangeIndex = (delta: number) => {
+                    setPhotoIndices((prev) => {
+                      const current =
+                        prev[photo._id] && prev[photo._id] < totalImages
+                          ? prev[photo._id]
+                          : 0;
+                      const next =
+                        (current + delta + totalImages) % Math.max(totalImages, 1);
+                      return { ...prev, [photo._id]: next };
+                    });
+                  };
+
+                  return (
+                    <article
+                      key={photo._id}
+                      className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col relative"
+                    >
+                      {photo.userName === safeUserName && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePhoto(photo._id)}
+                          disabled={deletingPhotoId === photo._id}
+                          className="absolute top-2 right-2 z-10 inline-flex items-center justify-center rounded-full bg-white/90 px-2 py-1 text-[10px] font-medium text-gray-700 shadow-sm hover:bg-red-50 hover:text-red-700 disabled:opacity-60"
+                        >
+                          {deletingPhotoId === photo._id ? "Deleting…" : "Delete"}
+                        </button>
+                      )}
+
+                      <div className="relative aspect-[4/5] bg-gray-200">
+                        {totalImages > 1 && (
+                          <div className="absolute top-2 left-2 z-10 rounded-full bg-black/60 px-2 py-1 text-[10px] font-medium text-white">
+                            {currentIndex + 1}/{totalImages}
+                          </div>
+                        )}
+                        {totalImages > 1 && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleChangeIndex(-1)}
+                              className="absolute left-1 top-1/2 -translate-y-1/2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white text-xs hover:bg-black/70"
+                            >
+                              ‹
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleChangeIndex(1)}
+                              className="absolute right-1 top-1/2 -translate-y-1/2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white text-xs hover:bg-black/70"
+                            >
+                              ›
+                            </button>
+                          </>
+                        )}
+                        {imageList[currentIndex] && (
+                          <img
+                            src={imageList[currentIndex]}
+                            alt={
+                              photo.caption ||
+                              `Trail photo shared by ${photo.userName}`
+                            }
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+
+                      <div className="p-3 flex-1 flex flex-col">
+                        <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                          <span className="font-medium text-gray-800">
+                            {photo.userName}
+                          </span>
+                          {photo.createdAt && (
+                            <span>
+                              {new Date(photo.createdAt).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                        {photo.caption && (
+                          <p className="text-sm text-gray-700 mt-1 line-clamp-3">
+                            {photo.caption}
+                          </p>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-              <div className="h-32 bg-[url('https://images.pexels.com/photos/1028225/pexels-photo-1028225.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
-              <div className="p-4">
-                <span className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-medium text-purple-700 mb-2">
-                  Popular
-                </span>
-                <p className="text-xs text-gray-400 mb-1">
-                  Lisbon • Portugal
-                </p>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                  City View Sunset Walk
-                </h3>
-                <p className="text-xs text-gray-600 mb-3">
-                  Short evening walk ending at a lookout with snacks.
-                </p>
-                <div className="flex items-center justify-between text-[11px] text-gray-500">
-                  <span>Difficulty: 2/5</span>
-                  <span className="text-emerald-600 font-medium">
-                    4 spots left
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Travel Tips */}
-        <div className="bg-gradient-to-r from-gray-900 to-gray-700 rounded-xl p-6 text-white">
-          <h2 className="text-xl font-semibold mb-2">
-            Travel Tip of the Day 💡
-          </h2>
-          <p className="text-sm text-gray-200 mb-4">
-            Always meet your travel buddies in a public place before committing
-            to a trip together. It's a great way to ensure compatibility and
-            build trust!
-          </p>
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center text-sm font-medium text-white hover:text-gray-200"
-          >
-            Read more tips →
-          </Link>
-        </div>
+            )}
+          </section>
+        )}
       </main>
 
       {/* Footer */}

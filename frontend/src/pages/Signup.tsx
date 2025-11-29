@@ -18,11 +18,12 @@ type SignupFormValues = {
 };
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+  (import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:5000";
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+const GOOGLE_CLIENT_ID =
+  (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || "";
 
-if (!import.meta.env.VITE_API_BASE_URL) {
+if (!(import.meta as any).env?.VITE_API_BASE_URL) {
   console.warn(
     "VITE_API_BASE_URL is not set. Falling back to http://localhost:5000"
   );
@@ -38,7 +39,7 @@ type LocationState = {
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation<LocationState>();
+  const location = useLocation();
   const redirectPath = location.state?.from || "/homepage";
   const { loginWithProfile, isAuthenticated } = useAuth();
   const googleSignupButtonRef = useRef<HTMLDivElement | null>(null);

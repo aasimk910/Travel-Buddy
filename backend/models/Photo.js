@@ -12,10 +12,10 @@ const PhotoSchema = new mongoose.Schema(
       trim: true,
       maxlength: 200,
     },
-    imageData: {
-      type: String,
-      required: true,
-    },
+  images: {
+    type: [String],
+    required: true,
+  },
   },
   {
     timestamps: true,

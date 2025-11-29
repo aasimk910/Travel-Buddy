@@ -7,11 +7,12 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+  (import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:5000";
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+const GOOGLE_CLIENT_ID =
+  (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || "";
 
-if (!import.meta.env.VITE_API_BASE_URL) {
+if (!(import.meta as any).env?.VITE_API_BASE_URL) {
   console.warn(
     "VITE_API_BASE_URL is not set. Falling back to http://localhost:5000"
   );
@@ -34,7 +35,7 @@ type LocationState = {
 const Login: React.FC = () => {
   const { loginWithProfile, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation<LocationState>();
+  const location = useLocation();
   const redirectPath = location.state?.from || "/homepage";
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
 
