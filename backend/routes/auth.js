@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const User = require("../models/User");
+const { sendWelcomeEmail } = require("../utils/email");
 
 const router = express.Router();
 
@@ -69,6 +70,8 @@ router.post("/signup", async (req, res) => {
       interests,
       provider: "password",
     });
+
+    await sendWelcomeEmail({ name, email });
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
       expiresIn: "7d",

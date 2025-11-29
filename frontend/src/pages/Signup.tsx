@@ -1,6 +1,6 @@
 // src/pages/Signup.tsx
 import React, { useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Map } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useFormik } from "formik";
@@ -22,10 +22,22 @@ const API_BASE_URL = "http://localhost:5000";
 const GOOGLE_CLIENT_ID =
   "253733992578-35p1b3ot8cg3nqb6roimesugqlv2oh7c.apps.googleusercontent.com";
 
+type LocationState = {
+  from?: string;
+};
+
 const Signup: React.FC = () => {
   const navigate = useNavigate();
-  const { loginWithProfile } = useAuth();
+  const location = useLocation<LocationState>();
+  const redirectPath = location.state?.from || "/homepage";
+  const { loginWithProfile, isAuthenticated } = useAuth();
   const googleSignupButtonRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(redirectPath, { replace: true });
+    }
+  }, [isAuthenticated, navigate, redirectPath]);
 
   // ---------- Formik setup ----------
   const {
@@ -109,7 +121,7 @@ const Signup: React.FC = () => {
         }
 
         setStatus("Account created! Redirecting...");
-        navigate("/homepage");
+        navigate(redirectPath, { replace: true });
       } catch (err) {
         console.error(err);
         setStatus("Something went wrong. Please try again.");
@@ -155,7 +167,7 @@ const Signup: React.FC = () => {
         });
       }
 
-      navigate("/homepage");
+      navigate(redirectPath, { replace: true });
     } catch (err) {
       console.error("Google signup error:", err);
       setStatus("Google signup failed. Please try again.");
@@ -473,6 +485,7 @@ const Signup: React.FC = () => {
             Already have an account?{" "}
             <Link
               to="/login"
+              state={{ from: redirectPath }}
               className="font-medium text-gray-900 hover:text-black"
             >
               Sign in

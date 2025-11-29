@@ -87,11 +87,8 @@ const Homepage: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Welcome back, {user?.name || "Traveler"}! 👋
           </h1>
-          <p className="text-gray-600 mb-1">
+          <p className="text-gray-600">
             Welcome to the mountain lovers community!
-          </p>
-          <p className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
-            Explore exciting routes, upload GPS tracks, join hikes, or organize your own
           </p>
         </div>
 

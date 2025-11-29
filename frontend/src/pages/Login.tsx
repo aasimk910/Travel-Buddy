@@ -1,6 +1,6 @@
 // src/pages/Login.tsx
 import React, { useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Map } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useFormik } from "formik";
@@ -19,10 +19,22 @@ interface LoginFormValues {
   remember: boolean;
 }
 
+type LocationState = {
+  from?: string;
+};
+
 const Login: React.FC = () => {
-  const { loginWithProfile } = useAuth();
+  const { loginWithProfile, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation<LocationState>();
+  const redirectPath = location.state?.from || "/homepage";
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(redirectPath, { replace: true });
+    }
+  }, [isAuthenticated, navigate, redirectPath]);
 
   // ---------- Email/password Login (backend) ----------
   const formik = useFormik<LoginFormValues>({
@@ -83,7 +95,7 @@ const Login: React.FC = () => {
           localStorage.removeItem("travelBuddyRememberEmail");
         }
 
-        navigate("/homepage");
+        navigate(redirectPath, { replace: true });
       } catch (err) {
         console.error(err);
         setStatus("Something went wrong. Please try again.");
@@ -142,7 +154,7 @@ const Login: React.FC = () => {
         });
       }
 
-      navigate("/homepage");
+      navigate(redirectPath, { replace: true });
     } catch (err) {
       console.error(err);
       formik.setStatus("Google login failed. Please try again.");
@@ -337,6 +349,7 @@ const Login: React.FC = () => {
             Don&apos;t have an account?{" "}
             <Link
               to="/signup"
+              state={{ from: redirectPath }}
               className="font-medium text-gray-900 hover:text-black"
             >
               Sign up
