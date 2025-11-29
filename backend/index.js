@@ -28,9 +28,17 @@ app.get("/", (req, res) => {
   res.send("Travel Buddy API is running ✅");
 });
 
-// ⬇️ NEW: Auth routes
 const authRoutes = require("./routes/auth");
+const reviewRoutes = require("./routes/reviews");
+const photoRoutes = require("./routes/photos");
+const hikeRoutes = require("./routes/hikes");
+const tripRoutes = require("./routes/trips");
+
 app.use("/api/auth", authRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/photos", photoRoutes);
+app.use("/api/hikes", hikeRoutes);
+app.use("/api/trips", tripRoutes);
 
 // 404 handler
 app.use((req, res, next) => {

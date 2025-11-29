@@ -1,0 +1,46 @@
+const mongoose = require("mongoose");
+
+const HikeSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    location: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    difficulty: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+      default: 1,
+    },
+    date: {
+      type: Date,
+      required: true,
+    },
+    spotsLeft: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+    imageUrl: {
+      type: String,
+    },
+    description: {
+      type: String,
+      trim: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+module.exports = mongoose.model("Hike", HikeSchema);
+

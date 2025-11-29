@@ -6,12 +6,20 @@ import { useAuth } from "../context/AuthContext";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-// Backend base URL
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
-// Your Google Client ID
-const GOOGLE_CLIENT_ID =
-  "253733992578-35p1b3ot8cg3nqb6roimesugqlv2oh7c.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+
+if (!import.meta.env.VITE_API_BASE_URL) {
+  console.warn(
+    "VITE_API_BASE_URL is not set. Falling back to http://localhost:5000"
+  );
+}
+
+if (!GOOGLE_CLIENT_ID) {
+  console.warn("VITE_GOOGLE_CLIENT_ID is not set. Google login is disabled.");
+}
 
 interface LoginFormValues {
   email: string;
@@ -162,6 +170,8 @@ const Login: React.FC = () => {
   };
 
   useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+
     const initGoogle = () => {
       const w = window as any;
       if (!w.google || !googleButtonRef.current) return;

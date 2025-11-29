@@ -8,7 +8,11 @@ const { sendWelcomeEmail } = require("../utils/email");
 
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is not set in the environment.");
+}
+
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
 if (!GOOGLE_CLIENT_ID) {
@@ -17,7 +21,9 @@ if (!GOOGLE_CLIENT_ID) {
   );
 }
 
-const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+const googleClient = GOOGLE_CLIENT_ID
+  ? new OAuth2Client(GOOGLE_CLIENT_ID)
+  : null;
 
 // Helper to shape user object for frontend
 const buildUserResponse = (user) => ({
@@ -138,7 +144,7 @@ router.post("/google", async (req, res) => {
     return res.status(400).json({ message: "Missing Google credential." });
   }
 
-  if (!GOOGLE_CLIENT_ID) {
+  if (!googleClient) {
     return res.status(500).json({
       message:
         "GOOGLE_CLIENT_ID is not configured on the server. Google login is disabled.",

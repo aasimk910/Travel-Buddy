@@ -1,5 +1,5 @@
 // src/pages/Homepage.tsx
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Map,
@@ -13,9 +13,183 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+const MAX_PHOTO_SIZE_BYTES = 6 * 1024 * 1024; // 6MB
+
+const FEATURED_LOCATIONS = [
+  "Chamlang Central",
+  "Nagarkot View Tower",
+  "Sarangkot Viewpoint",
+  "Dhulikhel Sunrise Point",
+  "Poon Hill",
+  "Shivapuri Peak",
+];
+
+const getRandomLocation = (current?: string) => {
+  const filtered = FEATURED_LOCATIONS.filter((loc) => loc !== current);
+  const list = filtered.length ? filtered : FEATURED_LOCATIONS;
+  return list[Math.floor(Math.random() * list.length)];
+};
+
+const convertFileToBase64 = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+
 const Homepage: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const [reviewLocation, setReviewLocation] = useState<string>(
+    () => getRandomLocation()
+  );
+  const [reviewRating, setReviewRating] = useState<number>(0);
+  const [reviewComment, setReviewComment] = useState<string>("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewMessage, setReviewMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const [photoCaption, setPhotoCaption] = useState<string>("");
+  const [photoName, setPhotoName] = useState<string>("");
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [photoMessage, setPhotoMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  const safeUserName = user?.name || "Traveler";
+
+  const handleReviewSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+
+    if (!reviewRating) {
+      setReviewMessage({
+        type: "error",
+        text: "Please rate the location before submitting.",
+      });
+      return;
+    }
+
+    setIsSubmittingReview(true);
+    setReviewMessage(null);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userName: safeUserName,
+          locationName: reviewLocation,
+          rating: reviewRating,
+          comment: reviewComment,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Unable to submit review.");
+      }
+
+      setReviewMessage({
+        type: "success",
+        text: "Thanks for sharing your review!",
+      });
+      setReviewComment("");
+      setReviewRating(0);
+    } catch (err) {
+      setReviewMessage({
+        type: "error",
+        text:
+          err instanceof Error
+            ? err.message
+            : "Unable to submit review. Please try again.",
+      });
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
+  const handleShowAnotherLocation = () => {
+    setReviewLocation(getRandomLocation(reviewLocation));
+    setReviewRating(0);
+    setReviewComment("");
+    setReviewMessage(null);
+  };
+
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setSelectedPhoto(file);
+    setPhotoName(file?.name || "");
+    setPhotoMessage(null);
+  };
+
+  const handlePhotoSubmit = async () => {
+    if (!selectedPhoto) {
+      setPhotoMessage({
+        type: "error",
+        text: "Please choose a photo to upload.",
+      });
+      return;
+    }
+
+    if (selectedPhoto.size > MAX_PHOTO_SIZE_BYTES) {
+      setPhotoMessage({
+        type: "error",
+        text: "Photo must be smaller than 6MB.",
+      });
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+    setPhotoMessage(null);
+
+    try {
+      const imageData = await convertFileToBase64(selectedPhoto);
+
+      const res = await fetch(`${API_BASE_URL}/api/photos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userName: safeUserName,
+          caption: photoCaption,
+          imageData,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Unable to upload photo.");
+      }
+
+      setPhotoMessage({
+        type: "success",
+        text: "Photo uploaded successfully!",
+      });
+      setSelectedPhoto(null);
+      setPhotoName("");
+      setPhotoCaption("");
+    } catch (err) {
+      setPhotoMessage({
+        type: "error",
+        text:
+          err instanceof Error
+            ? err.message
+            : "Unable to upload photo. Please try again.",
+      });
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -152,51 +326,80 @@ const Homepage: React.FC = () => {
         <div className="grid gap-6 lg:grid-cols-2 mb-8">
           {/* Location Review Card */}
           <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl shadow-sm border border-gray-100 p-8">
-            <div className="flex flex-col items-center text-center mb-6">
-              <div className="w-20 h-20 mb-4">
-                <svg viewBox="0 0 100 100" className="w-full h-full">
-                  <defs>
-                    <linearGradient id="mountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" style={{ stopColor: "#10b981", stopOpacity: 1 }} />
-                      <stop offset="100%" style={{ stopColor: "#059669", stopOpacity: 1 }} />
-                    </linearGradient>
-                  </defs>
-                  <polygon points="50,20 70,60 30,60" fill="url(#mountainGrad)" />
-                  <polygon points="35,60 55,30 75,60" fill="#047857" opacity="0.8" />
-                  <rect x="0" y="60" width="100" height="40" fill="#86efac" />
-                </svg>
+            <form onSubmit={handleReviewSubmit}>
+              <div className="flex flex-col items-center text-center mb-6">
+                <div className="w-20 h-20 mb-4">
+                  <svg viewBox="0 0 100 100" className="w-full h-full">
+                    <defs>
+                      <linearGradient id="mountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: "#10b981", stopOpacity: 1 }} />
+                        <stop offset="100%" style={{ stopColor: "#059669", stopOpacity: 1 }} />
+                      </linearGradient>
+                    </defs>
+                    <polygon points="50,20 70,60 30,60" fill="url(#mountainGrad)" />
+                    <polygon points="35,60 55,30 75,60" fill="#047857" opacity="0.8" />
+                    <rect x="0" y="60" width="100" height="40" fill="#86efac" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Have you been to{" "}
+                  <span className="underline decoration-2 decoration-gray-900">
+                    {reviewLocation}
+                  </span>
+                  ?
+                </h3>
+                <div className="flex gap-1 mb-4" aria-label="Select a rating out of five stars">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      type="button"
+                      key={star}
+                      onClick={() => setReviewRating(star)}
+                      className={`text-2xl transition-colors ${
+                        reviewRating >= star ? "text-yellow-400" : "text-gray-300"
+                      }`}
+                      aria-pressed={reviewRating === star}
+                    >
+                      ★
+                    </button>
+                  ))}
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Have you been to{" "}
-                <span className="underline decoration-2 decoration-gray-900">
-                  Chamlang Central
-                </span>
-                ?
-              </h3>
-              <div className="flex gap-1 mb-4">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    className="text-2xl text-gray-300 hover:text-yellow-400 transition-colors"
-                  >
-                    ★
-                  </button>
-                ))}
-              </div>
-            </div>
-            <textarea
-              placeholder="Write your review or a comment here..."
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none mb-4"
-              rows={4}
-            />
-            <button className="w-full bg-gradient-to-r from-pink-100 to-purple-100 text-gray-900 font-semibold py-3 px-4 rounded-lg hover:from-pink-200 hover:to-purple-200 transition-all mb-3 flex items-center justify-center gap-2">
-              <span>✍️</span>
-              Submit Review
-            </button>
-            <button className="w-full bg-gradient-to-r from-yellow-100 to-orange-100 text-gray-900 font-medium py-3 px-4 rounded-lg hover:from-yellow-200 hover:to-orange-200 transition-all flex items-center justify-center gap-2">
-              <span>🔄</span>
-              Show another
-            </button>
+              <textarea
+                value={reviewComment}
+                onChange={(event) => setReviewComment(event.target.value)}
+                placeholder="Write your review or a comment here..."
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none mb-4"
+                rows={4}
+              />
+              {reviewMessage && (
+                <div
+                  className={`mb-3 rounded-lg px-3 py-2 text-sm ${
+                    reviewMessage.type === "success"
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {reviewMessage.text}
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={isSubmittingReview}
+                className="w-full bg-gradient-to-r from-pink-100 to-purple-100 text-gray-900 font-semibold py-3 px-4 rounded-lg hover:from-pink-200 hover:to-purple-200 transition-all mb-3 flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                <span>✍️</span>
+                {isSubmittingReview ? "Submitting..." : "Submit Review"}
+              </button>
+              <button
+                type="button"
+                onClick={handleShowAnotherLocation}
+                disabled={isSubmittingReview}
+                className="w-full bg-gradient-to-r from-yellow-100 to-orange-100 text-gray-900 font-medium py-3 px-4 rounded-lg hover:from-yellow-200 hover:to-orange-200 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                <span>🔄</span>
+                Show another
+              </button>
+            </form>
           </div>
 
           {/* Upload Trail Photos Card */}
@@ -248,20 +451,44 @@ const Homepage: React.FC = () => {
                   type="file"
                   className="hidden"
                   accept="image/*"
-                  multiple
+                  onChange={handlePhotoChange}
                 />
               </label>
+              {photoName && (
+                <p className="mt-2 text-xs text-gray-600 text-center">
+                  Selected file: <span className="font-medium">{photoName}</span>
+                </p>
+              )}
             </div>
 
             <textarea
+              value={photoCaption}
+              onChange={(event) => setPhotoCaption(event.target.value)}
               placeholder="Add a caption or description..."
               className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none mb-4"
               rows={3}
             />
-            
-            <button className="w-full bg-gradient-to-r from-blue-100 to-indigo-100 text-gray-900 font-semibold py-3 px-4 rounded-lg hover:from-blue-200 hover:to-indigo-200 transition-all mb-3 flex items-center justify-center gap-2">
+
+            {photoMessage && (
+              <div
+                className={`mb-3 rounded-lg px-3 py-2 text-sm ${
+                  photoMessage.type === "success"
+                    ? "bg-emerald-100 text-emerald-800"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                {photoMessage.text}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handlePhotoSubmit}
+              disabled={isUploadingPhoto}
+              className="w-full bg-gradient-to-r from-blue-100 to-indigo-100 text-gray-900 font-semibold py-3 px-4 rounded-lg hover:from-blue-200 hover:to-indigo-200 transition-all mb-3 flex items-center justify-center gap-2 disabled:opacity-60"
+            >
               <span>📤</span>
-              Upload Photos
+              {isUploadingPhoto ? "Uploading..." : "Upload Photos"}
             </button>
             <button className="w-full bg-gradient-to-r from-purple-100 to-pink-100 text-gray-900 font-medium py-3 px-4 rounded-lg hover:from-purple-200 hover:to-pink-200 transition-all flex items-center justify-center gap-2">
               <span>🖼️</span>

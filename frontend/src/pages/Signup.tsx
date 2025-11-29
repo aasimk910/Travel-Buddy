@@ -17,10 +17,20 @@ type SignupFormValues = {
   interests: string;
 };
 
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
-const GOOGLE_CLIENT_ID =
-  "253733992578-35p1b3ot8cg3nqb6roimesugqlv2oh7c.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+
+if (!import.meta.env.VITE_API_BASE_URL) {
+  console.warn(
+    "VITE_API_BASE_URL is not set. Falling back to http://localhost:5000"
+  );
+}
+
+if (!GOOGLE_CLIENT_ID) {
+  console.warn("VITE_GOOGLE_CLIENT_ID is not set. Google signup is disabled.");
+}
 
 type LocationState = {
   from?: string;
@@ -175,6 +185,8 @@ const Signup: React.FC = () => {
   };
 
   useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+
     const initGoogle = () => {
       const w = window as any;
       if (!w.google || !googleSignupButtonRef.current) return;
