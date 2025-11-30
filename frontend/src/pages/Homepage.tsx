@@ -86,7 +86,8 @@ const Homepage: React.FC = () => {
   const [hikeDate, setHikeDate] = useState("");
   const [hikeDifficulty, setHikeDifficulty] = useState<number>(1);
   const [hikeSpotsLeft, setHikeSpotsLeft] = useState<number>(10);
-  const [hikeImageUrl, setHikeImageUrl] = useState("");
+  const [hikeImageFile, setHikeImageFile] = useState<File | null>(null);
+  const [hikeImagePreview, setHikeImagePreview] = useState<string>("");
   const [hikeDescription, setHikeDescription] = useState("");
   const [isCreatingHike, setIsCreatingHike] = useState(false);
   const [hikeMessage, setHikeMessage] = useState<{
@@ -310,6 +311,12 @@ const Homepage: React.FC = () => {
     setHikeMessage(null);
 
     try {
+      // Convert image file to base64 if present
+      let imageBase64: string | undefined;
+      if (hikeImageFile) {
+        imageBase64 = await convertFileToBase64(hikeImageFile);
+      }
+
       const res = await fetch(`${API_BASE_URL}/api/hikes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -319,7 +326,7 @@ const Homepage: React.FC = () => {
           date: hikeDate,
           difficulty: hikeDifficulty,
           spotsLeft: hikeSpotsLeft,
-          imageUrl: hikeImageUrl || undefined,
+          imageUrl: imageBase64 || undefined,
           description: hikeDescription || undefined,
         }),
       });
@@ -340,7 +347,8 @@ const Homepage: React.FC = () => {
       setHikeDate("");
       setHikeDifficulty(1);
       setHikeSpotsLeft(10);
-      setHikeImageUrl("");
+      setHikeImageFile(null);
+      setHikeImagePreview("");
       setHikeDescription("");
 
       // Close modal after 1.5 seconds
@@ -358,6 +366,44 @@ const Homepage: React.FC = () => {
       });
     } finally {
       setIsCreatingHike(false);
+    }
+  };
+
+  const handleHikeImageChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setHikeImageFile(null);
+      setHikeImagePreview("");
+      return;
+    }
+
+    // Check file size
+    if (file.size > MAX_PHOTO_SIZE_BYTES) {
+      setHikeMessage({
+        type: "error",
+        text: `Image size must be less than ${MAX_PHOTO_SIZE_BYTES / (1024 * 1024)}MB.`,
+      });
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith("image/")) {
+      setHikeMessage({
+        type: "error",
+        text: "Please select an image file.",
+      });
+      return;
+    }
+
+    setHikeImageFile(file);
+    try {
+      const preview = await convertFileToBase64(file);
+      setHikeImagePreview(preview);
+    } catch (err) {
+      console.error("Failed to create image preview", err);
+      setHikeImagePreview("");
     }
   };
 
@@ -1064,15 +1110,26 @@ const Homepage: React.FC = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-black mb-2">
-                        Image URL (optional)
+                        Upload Photo (optional)
                       </label>
                       <input
-                        type="url"
-                        value={hikeImageUrl}
-                        onChange={(e) => setHikeImageUrl(e.target.value)}
-                        placeholder="https://example.com/image.jpg"
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleHikeImageChange}
+                        className="w-full px-4 py-2.5 border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-black file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 file:cursor-pointer"
                       />
+                      {hikeImagePreview && (
+                        <div className="mt-3">
+                          <p className="text-xs text-gray-600 mb-2">Preview:</p>
+                          <div className="relative w-full h-48 rounded-lg overflow-hidden border border-black">
+                            <img
+                              src={hikeImagePreview}
+                              alt="Hike preview"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

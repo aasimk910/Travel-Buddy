@@ -1,5 +1,5 @@
 // src/pages/Hikes.tsx
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Map,
@@ -10,92 +10,42 @@ import {
   Users,
 } from "lucide-react";
 
+const API_BASE_URL =
+  (import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:5000";
+
 type Hike = {
-  id: number;
+  _id: string;
   title: string;
-  location: string; // specific spot
-  place: string; // area/region within Nepal
+  location: string;
   difficulty: number; // 1–5
-  date: string; // ISO
-  dateLabel: string; // for display
-  imageUrl: string;
+  date: string; // ISO date string
   spotsLeft: number;
+  imageUrl?: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
-const hikesData: Hike[] = [
-  {
-    id: 1,
-    title: "Nagarkot Sunrise View Hike",
-    location: "Nagarkot View Tower",
-    place: "Kathmandu Valley",
-    difficulty: 1,
-    date: "2025-11-16",
-    dateLabel: "November 16, 2025",
-    imageUrl:
-      "https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    spotsLeft: 5,
-  },
-  {
-    id: 2,
-    title: "Shivapuri Day Hike",
-    location: "Shivapuri National Park",
-    place: "Kathmandu Valley",
-    difficulty: 3,
-    date: "2025-11-02",
-    dateLabel: "November 2, 2025",
-    imageUrl:
-      "https://images.pexels.com/photos/552785/pexels-photo-552785.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    spotsLeft: 4,
-  },
-  {
-    id: 3,
-    title: "Australian Camp Viewpoint",
-    location: "Australian Camp",
-    place: "Pokhara",
-    difficulty: 2,
-    date: "2025-09-28",
-    dateLabel: "September 28, 2025",
-    imageUrl:
-      "https://images.pexels.com/photos/4482900/pexels-photo-4482900.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    spotsLeft: 6,
-  },
-  {
-    id: 4,
-    title: "Sarangkot Sunrise Trail",
-    location: "Sarangkot Viewpoint",
-    place: "Pokhara",
-    difficulty: 2,
-    date: "2025-09-11",
-    dateLabel: "September 11, 2025",
-    imageUrl:
-      "https://images.pexels.com/photos/221455/pexels-photo-221455.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    spotsLeft: 3,
-  },
-  {
-    id: 5,
-    title: "Dhulikhel – Namo Buddha Hike",
-    location: "Dhulikhel & Namo Buddha",
-    place: "Kavre",
-    difficulty: 3,
-    date: "2025-08-22",
-    dateLabel: "August 22, 2025",
-    imageUrl:
-      "https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    spotsLeft: 8,
-  },
-  {
-    id: 6,
-    title: "Poon Hill Sunrise Trek (Short)",
-    location: "Poon Hill Viewpoint",
-    place: "Annapurna Region",
-    difficulty: 4,
-    date: "2025-08-21",
-    dateLabel: "August 21, 2025",
-    imageUrl:
-      "https://images.pexels.com/photos/1028225/pexels-photo-1028225.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    spotsLeft: 2,
-  },
-];
+// Helper function to format date
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+// Helper function to extract place from location (fallback)
+const extractPlace = (location: string): string => {
+  // Try to extract place from common patterns
+  if (location.toLowerCase().includes("kathmandu")) return "Kathmandu Valley";
+  if (location.toLowerCase().includes("pokhara")) return "Pokhara";
+  if (location.toLowerCase().includes("annapurna")) return "Annapurna Region";
+  if (location.toLowerCase().includes("kavre") || location.toLowerCase().includes("dhulikhel")) return "Kavre";
+  // Default fallback
+  return "Nepal";
+};
 
 const difficultyLabel = (value: number) => `Difficulty: ${value}/5`;
 
@@ -107,15 +57,45 @@ const Hikes: React.FC = () => {
   >("all");
   const [sortBy, setSortBy] = useState<"dateDesc" | "dateAsc">("dateDesc");
   const [place, setPlace] = useState<string>("all");
+  const [hikes, setHikes] = useState<Hike[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch hikes from API
+  useEffect(() => {
+    const fetchHikes = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/hikes`);
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.message || "Unable to fetch hikes.");
+        }
+        setHikes(data);
+      } catch (err) {
+        console.error("Error fetching hikes:", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load hikes. Please try again."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchHikes();
+  }, []);
 
   // unique list of places inside Nepal
   const places = useMemo(
-    () => Array.from(new Set(hikesData.map((hike) => hike.place))),
-    []
+    () => Array.from(new Set(hikes.map((hike) => extractPlace(hike.location)))),
+    [hikes]
   );
 
   const filteredHikes = useMemo(() => {
-    let list = [...hikesData];
+    let list = [...hikes];
 
     if (search.trim()) {
       const term = search.toLowerCase();
@@ -123,7 +103,7 @@ const Hikes: React.FC = () => {
         (hike) =>
           hike.title.toLowerCase().includes(term) ||
           hike.location.toLowerCase().includes(term) ||
-          hike.place.toLowerCase().includes(term)
+          extractPlace(hike.location).toLowerCase().includes(term)
       );
     }
 
@@ -133,7 +113,7 @@ const Hikes: React.FC = () => {
     }
 
     if (place !== "all") {
-      list = list.filter((hike) => hike.place === place);
+      list = list.filter((hike) => extractPlace(hike.location) === place);
     }
 
     list.sort((a, b) => {
@@ -143,12 +123,12 @@ const Hikes: React.FC = () => {
     });
 
     return list;
-  }, [search, difficulty, place, sortBy]);
+  }, [hikes, search, difficulty, place, sortBy]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Header */}
-      <header className="border-b border-gray-100 bg-white/80 backdrop-blur">
+      <header className="border-b border-black bg-white">
         <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 flex items-center justify-between h-16">
           {/* Logo */}
           <button
@@ -156,10 +136,10 @@ const Hikes: React.FC = () => {
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <div className="bg-gray-900 text-white p-2 rounded-lg shadow-sm">
+            <div className="bg-black text-white p-2 rounded-lg shadow-sm">
               <Map className="w-5 h-5" />
             </div>
-            <span className="text-base sm:text-lg font-semibold text-gray-900">
+            <span className="text-base sm:text-lg font-semibold text-black">
               Travel Buddy
             </span>
           </button>
@@ -168,13 +148,13 @@ const Hikes: React.FC = () => {
           <nav className="hidden md:flex items-center gap-6 text-sm">
             <Link
               to="/"
-              className="text-gray-600 hover:text-gray-900 transition-colors"
+              className="text-gray-600 hover:text-black transition-colors"
             >
               Home
             </Link>
             <Link
               to="/hikes"
-              className="text-gray-900 font-medium border-b-2 border-gray-900 pb-1"
+              className="text-black font-medium border-b-2 border-black pb-1"
             >
               Hikes
             </Link>
@@ -190,7 +170,7 @@ const Hikes: React.FC = () => {
             </Link>
             <Link
               to="/signup"
-              className="inline-flex items-center justify-center rounded-full bg-gray-900 px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-black"
+              className="inline-flex items-center justify-center rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-gray-800"
             >
               Get started
             </Link>
@@ -201,7 +181,7 @@ const Hikes: React.FC = () => {
       {/* Main content */}
       <main className="flex-1">
         {/* Hero + filters */}
-        <section className="border-b border-gray-100 bg-white">
+        <section className="border-b border-black bg-white">
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8 lg:py-10">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
@@ -209,7 +189,7 @@ const Hikes: React.FC = () => {
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
                   <span>Hikes in Nepal • Find your next trail buddy</span>
                 </p>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-900 mb-2">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-black mb-2">
                   Join group hikes in the hills and mountains of Nepal
                 </h1>
                 <p className="text-sm sm:text-base text-gray-600 max-w-2xl">
@@ -303,7 +283,7 @@ const Hikes: React.FC = () => {
                 <p className="text-xs text-gray-500">
                   Showing{" "}
                   <span className="font-medium">{filteredHikes.length}</span> of{" "}
-                  {hikesData.length} hikes
+                  {hikes.length} hikes
                 </p>
               </div>
             </div>
@@ -313,57 +293,83 @@ const Hikes: React.FC = () => {
         {/* Hikes grid */}
         <section className="py-8 lg:py-10">
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-              {filteredHikes.map((hike) => (
-                <article
-                  key={hike.id}
-                  className="bg-white rounded-xl shadow-sm border border-black overflow-hidden flex flex-col hover:shadow-md transition-shadow"
+            {isLoading ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600">Loading hikes...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <p className="text-red-600 mb-4">{error}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
                 >
-                  <div className="relative h-48 bg-gray-200">
-                    <img
-                      src={hike.imageUrl}
-                      alt={hike.title}
-                      className="h-full w-full object-cover"
-                    />
-                    <span className="absolute top-3 right-3 inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium text-gray-800 shadow-sm">
-                      {difficultyLabel(hike.difficulty)}
-                    </span>
-                  </div>
-
-                  <div className="flex-1 flex flex-col p-4">
-                    <div className="mb-2">
-                      <p className="text-xs uppercase tracking-wide text-gray-400">
-                        {hike.location} • {hike.place}
-                      </p>
-                      <h2 className="mt-1 text-base font-semibold text-black">
-                        {hike.title}
-                      </h2>
+                  Retry
+                </button>
+              </div>
+            ) : filteredHikes.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600">
+                  {hikes.length === 0
+                    ? "No hikes available yet. Be the first to create one!"
+                    : "No hikes match your filters."}
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                {filteredHikes.map((hike) => (
+                  <article
+                    key={hike._id}
+                    className="bg-white rounded-xl shadow-sm border border-black overflow-hidden flex flex-col hover:shadow-md transition-shadow"
+                  >
+                    <div className="relative h-48 bg-gray-200">
+                      {hike.imageUrl ? (
+                        <img
+                          src={hike.imageUrl}
+                          alt={hike.title}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center bg-gray-100">
+                          <Map className="w-12 h-12 text-gray-400" />
+                        </div>
+                      )}
+                      <span className="absolute top-3 right-3 inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium text-black shadow-sm">
+                        {difficultyLabel(hike.difficulty)}
+                      </span>
                     </div>
 
-                    <div className="mt-auto pt-2 flex items-center justify-between text-xs text-gray-500">
-                      <div className="inline-flex items-center gap-1">
-                        <CalendarDays className="w-3.5 h-3.5" />
-                        <span>{hike.dateLabel}</span>
+                    <div className="flex-1 flex flex-col p-4">
+                      <div className="mb-2">
+                        <p className="text-xs uppercase tracking-wide text-gray-400">
+                          {hike.location} • {extractPlace(hike.location)}
+                        </p>
+                        <h2 className="mt-1 text-base font-semibold text-black">
+                          {hike.title}
+                        </h2>
+                        {hike.description && (
+                          <p className="mt-2 text-xs text-gray-600 line-clamp-2">
+                            {hike.description}
+                          </p>
+                        )}
                       </div>
-                      <div className="inline-flex items-center gap-1">
-                        <Users className="w-3.5 h-3.5" />
-                        <span>{hike.spotsLeft} spots left</span>
+
+                      <div className="mt-auto pt-2 flex items-center justify-between text-xs text-gray-500">
+                        <div className="inline-flex items-center gap-1">
+                          <CalendarDays className="w-3.5 h-3.5" />
+                          <span>{formatDate(hike.date)}</span>
+                        </div>
+                        <div className="inline-flex items-center gap-1">
+                          <Users className="w-3.5 h-3.5" />
+                          <span>{hike.spotsLeft} spots left</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  </article>
+                ))}
+              </div>
+            )}
 
-            {/* Load more */}
-            <div className="mt-8 flex justify-center">
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-5 py-2 text-sm font-medium text-emerald-900 hover:bg-emerald-200 transition-colors"
-              >
-                Load more
-              </button>
-            </div>
           </div>
         </section>
       </main>
