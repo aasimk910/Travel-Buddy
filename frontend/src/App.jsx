@@ -12,7 +12,7 @@ import PrivateRoute from "./components/PrivateRoute";
 const App = () => {
   return (
     // No max-width, no inner container – let each page control its own layout
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />

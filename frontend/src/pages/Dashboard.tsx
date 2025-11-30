@@ -3,9 +3,9 @@ import React from "react";
 
 const Dashboard: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-8 max-w-xl w-full">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4">
+      <div className="bg-white rounded-xl shadow-sm border border-black px-6 py-8 max-w-xl w-full">
+        <h1 className="text-2xl font-semibold text-black mb-2">
           Travel Buddy Dashboard
         </h1>
         <p className="text-gray-600">

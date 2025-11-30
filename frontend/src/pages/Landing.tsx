@@ -7,20 +7,20 @@ const Landing: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Top navigation */}
-      <header className="border-b border-gray-100 bg-white/80 backdrop-blur">
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <header className="border-b border-black bg-white">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 flex items-center justify-between h-16">
           {/* Logo */}
           <button
             type="button"
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <div className="bg-gray-900 text-white p-2 rounded-lg shadow-sm">
+            <div className="bg-black text-white p-2 rounded-lg shadow-sm">
               <Map className="w-5 h-5" />
             </div>
-            <span className="text-base sm:text-lg font-semibold text-gray-900">
+            <span className="text-base sm:text-lg font-semibold text-black">
               Travel Buddy
             </span>
           </button>
@@ -29,13 +29,13 @@ const Landing: React.FC = () => {
           <nav className="hidden md:flex items-center gap-6 text-sm">
             <Link
               to="/"
-              className="text-gray-900 font-medium border-b-2 border-gray-900 pb-1"
+              className="text-black font-medium border-b-2 border-black pb-1"
             >
               Home
             </Link>
             <Link
               to="/hikes"
-              className="text-gray-600 hover:text-gray-900 transition-colors"
+              className="text-gray-600 hover:text-black transition-colors"
             >
               Hikes
             </Link>
@@ -51,7 +51,7 @@ const Landing: React.FC = () => {
             </Link>
             <Link
               to="/signup"
-              className="inline-flex items-center justify-center rounded-full bg-gray-900 px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-black"
+              className="inline-flex items-center justify-center rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-gray-800"
             >
               Get started
             </Link>
@@ -62,8 +62,8 @@ const Landing: React.FC = () => {
       {/* Main content */}
       <main className="flex-1">
         {/* Hero section */}
-        <section className="bg-white border-b border-gray-100">
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20 grid gap-10 lg:grid-cols-2 items-center">
+        <section className="bg-white border-b border-black">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-12 lg:py-20 grid gap-10 lg:grid-cols-2 items-center">
             {/* Left: text */}
             <div className="max-w-xl">
               <p className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 mb-4">
@@ -71,9 +71,9 @@ const Landing: React.FC = () => {
                 Find people who travel like you
               </p>
 
-              <h1 className="text-3xl sm:text-4xl xl:text-5xl font-bold tracking-tight text-gray-900 mb-4">
+              <h1 className="text-3xl sm:text-4xl xl:text-5xl font-bold tracking-tight text-black mb-4">
                 Find your next{" "}
-                <span className="inline-block bg-gradient-to-r from-gray-900 to-gray-500 bg-clip-text text-transparent">
+                <span className="inline-block bg-gradient-to-r from-black to-gray-600 bg-clip-text text-transparent">
                   Travel Buddy
                 </span>
                 , not just your next trip.
@@ -88,13 +88,13 @@ const Landing: React.FC = () => {
               <div className="flex flex-wrap gap-3 mb-6">
                 <Link
                   to="/signup"
-                  className="inline-flex items-center justify-center rounded-full bg-gray-900 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-black"
+                  className="inline-flex items-center justify-center rounded-full bg-black px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800"
                 >
                   Start for free
                 </Link>
                 <Link
                   to="/hikes"
-                  className="inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50"
+                  className="inline-flex items-center justify-center rounded-full border border-black bg-white px-5 py-2 text-sm font-medium text-black hover:bg-gray-100"
                 >
                   Explore hikes
                 </Link>
@@ -114,7 +114,7 @@ const Landing: React.FC = () => {
 
             {/* Right: preview card */}
             <div className="lg:justify-self-end w-full max-w-md">
-              <div className="rounded-2xl bg-gray-900 text-white p-5 sm:p-6 shadow-xl">
+              <div className="rounded-2xl bg-black text-white p-5 sm:p-6 shadow-xl">
                 <p className="text-xs font-medium text-gray-300 mb-2">
                   Upcoming group hikes
                 </p>
@@ -163,11 +163,11 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Preview hikes section */}
-        <section id="hikes" className="bg-gray-50 border-b border-gray-100">
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+        <section id="hikes" className="bg-white border-b border-black">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-10 sm:py-14">
             <div className="flex items-center justify-between gap-3 mb-6">
               <div>
-                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
+                <h2 className="text-xl sm:text-2xl font-semibold text-black">
                   Join group hikes near you
                 </h2>
                 <p className="text-sm text-gray-600">
@@ -176,20 +176,20 @@ const Landing: React.FC = () => {
               </div>
               <Link
                 to="/hikes"
-                className="hidden sm:inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-4 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-50"
+                className="hidden sm:inline-flex items-center justify-center rounded-full border border-black bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-gray-100"
               >
                 View all hikes
               </Link>
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-xl shadow-sm border border-black overflow-hidden">
                 <div className="h-28 bg-[url('https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
                 <div className="p-4">
                   <p className="text-xs text-gray-400 mb-1">
                     Banff National Park • Canada
                   </p>
-                  <h3 className="text-sm font-semibold text-gray-900">
+                  <h3 className="text-sm font-semibold text-black">
                     Hot Springs Sunrise Hike
                   </h3>
                   <p className="text-xs text-gray-600 mt-1">
@@ -201,13 +201,13 @@ const Landing: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-xl shadow-sm border border-black overflow-hidden">
                 <div className="h-28 bg-[url('https://images.pexels.com/photos/552785/pexels-photo-552785.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
                 <div className="p-4">
                   <p className="text-xs text-gray-400 mb-1">
                     Dolomites • Italy
                   </p>
-                  <h3 className="text-sm font-semibold text-gray-900">
+                  <h3 className="text-sm font-semibold text-black">
                     Through the Heart of the Peaks
                   </h3>
                   <p className="text-xs text-gray-600 mt-1">
@@ -219,13 +219,13 @@ const Landing: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-white rounded-xl shadow-sm border border-black overflow-hidden">
                 <div className="h-28 bg-[url('https://images.pexels.com/photos/1028225/pexels-photo-1028225.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
                 <div className="p-4">
                   <p className="text-xs text-gray-400 mb-1">
                     Lisbon • Portugal
                   </p>
-                  <h3 className="text-sm font-semibold text-gray-900">
+                  <h3 className="text-sm font-semibold text-black">
                     City View Sunset Walk
                   </h3>
                   <p className="text-xs text-gray-600 mt-1">
@@ -241,7 +241,7 @@ const Landing: React.FC = () => {
             <div className="mt-6 sm:hidden">
               <Link
                 to="/hikes"
-                className="inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-4 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-50"
+                className="inline-flex items-center justify-center rounded-full border border-black bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-gray-100"
               >
                 View all hikes
               </Link>
@@ -252,10 +252,10 @@ const Landing: React.FC = () => {
         {/* How it works */}
         <section
           id="how-it-works"
-          className="bg-gray-50 border-b border-gray-100"
+          className="bg-white border-b border-black"
         >
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 text-center mb-2">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-10 sm:py-14">
+            <h2 className="text-xl sm:text-2xl font-semibold text-black text-center mb-2">
               How Travel Buddy works
             </h2>
             <p className="text-sm text-gray-600 text-center max-w-xl mx-auto mb-8">
@@ -263,12 +263,12 @@ const Landing: React.FC = () => {
               compatible people, and build trips together that feel natural.
             </p>
 
-            <div className="grid gap-6 sm:grid-cols-3">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                <div className="w-9 h-9 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs font-semibold mb-3">
+            <div className="grid gap-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              <div className="bg-white rounded-xl shadow-sm border border-black p-5">
+                <div className="w-9 h-9 rounded-full bg-black text-white flex items-center justify-center text-xs font-semibold mb-3">
                   1
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                <h3 className="text-sm font-semibold text-black mb-2">
                   Create your travel profile
                 </h3>
                 <p className="text-xs text-gray-600">
@@ -278,11 +278,11 @@ const Landing: React.FC = () => {
                 </p>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                <div className="w-9 h-9 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs font-semibold mb-3">
+              <div className="bg-white rounded-xl shadow-sm border border-black p-5">
+                <div className="w-9 h-9 rounded-full bg-black text-white flex items-center justify-center text-xs font-semibold mb-3">
                   2
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                <h3 className="text-sm font-semibold text-black mb-2">
                   Match with compatible buddies
                 </h3>
                 <p className="text-xs text-gray-600">
@@ -291,11 +291,11 @@ const Landing: React.FC = () => {
                 </p>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                <div className="w-9 h-9 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs font-semibold mb-3">
+              <div className="bg-white rounded-xl shadow-sm border border-black p-5">
+                <div className="w-9 h-9 rounded-full bg-black text-white flex items-center justify-center text-xs font-semibold mb-3">
                   3
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                <h3 className="text-sm font-semibold text-black mb-2">
                   Plan safely & share costs
                 </h3>
                 <p className="text-xs text-gray-600">
@@ -308,18 +308,18 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Features */}
-        <section id="features" className="bg-white border-b border-gray-100">
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6">
+        <section id="features" className="bg-white border-b border-black">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-10 sm:py-14">
+            <h2 className="text-xl sm:text-2xl font-semibold text-black mb-6">
               Built for real travelers, not just influencers
             </h2>
 
-            <div className="grid gap-6 md:grid-cols-3">
-              <div className="bg-gray-50 rounded-xl border border-gray-100 p-5">
-                <div className="w-8 h-8 rounded-lg bg-gray-900 text-white flex items-center justify-center mb-3">
+            <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              <div className="bg-white rounded-xl border border-black p-5">
+                <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center mb-3">
                   <Compass className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                <h3 className="text-sm font-semibold text-black mb-1">
                   Match by travel style
                 </h3>
                 <p className="text-xs text-gray-600">
@@ -332,7 +332,7 @@ const Landing: React.FC = () => {
                 <div className="w-8 h-8 rounded-lg bg-gray-900 text-white flex items-center justify-center mb-3">
                   <Users className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                <h3 className="text-sm font-semibold text-black mb-1">
                   Small groups, big memories
                 </h3>
                 <p className="text-xs text-gray-600">
@@ -345,7 +345,7 @@ const Landing: React.FC = () => {
                 <div className="w-8 h-8 rounded-lg bg-gray-900 text-white flex items-center justify-center mb-3">
                   <Shield className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                <h3 className="text-sm font-semibold text-black mb-1">
                   Safety-first design
                 </h3>
                 <p className="text-xs text-gray-600">
@@ -358,11 +358,11 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Community / testimonials */}
-        <section id="community" className="bg-gray-50 border-b border-gray-100">
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+        <section id="community" className="bg-white border-b border-black">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-10 sm:py-14">
             <div className="grid gap-8 md:grid-cols-[1.3fr_minmax(0,1fr)] items-center">
               <div>
-                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">
+                <h2 className="text-xl sm:text-2xl font-semibold text-black mb-3">
                   A community of travelers who actually reply
                 </h2>
                 <p className="text-sm text-gray-600 mb-5">
@@ -377,9 +377,9 @@ const Landing: React.FC = () => {
                 </ul>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+              <div className="bg-white rounded-xl shadow-sm border border-black p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center">
                     <MessageCircle className="w-4 h-4" />
                   </div>
                   <p className="text-xs font-medium text-gray-800">
@@ -397,8 +397,8 @@ const Landing: React.FC = () => {
         </section>
 
         {/* CTA */}
-        <section className="bg-gray-900">
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <section className="bg-black">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-10 sm:py-14 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-xl sm:text-2xl font-semibold text-white mb-2">
                 Ready to find your next travel buddy?
@@ -427,8 +427,8 @@ const Landing: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100">
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <footer className="bg-white border-t border-black">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-gray-500">
             © {new Date().getFullYear()} Travel Buddy. Built for real travelers.
           </p>

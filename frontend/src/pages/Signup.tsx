@@ -221,18 +221,18 @@ const Signup: React.FC = () => {
 
   // ---------- UI ----------
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       {/* Logo & Heading */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex items-center justify-center gap-2">
-          <div className="bg-gray-900 text-white p-2 rounded-lg shadow-sm">
+          <div className="bg-black text-white p-2 rounded-lg shadow-sm">
             <Map className="w-5 h-5" />
           </div>
-          <span className="text-2xl font-semibold tracking-tight text-gray-900">
+          <span className="text-2xl font-semibold tracking-tight text-black">
             Travel Buddy
           </span>
         </div>
-        <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-gray-900">
+        <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-black">
           Create your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
@@ -242,11 +242,11 @@ const Signup: React.FC = () => {
 
       {/* Card */}
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
-        <div className="bg-white py-8 px-6 shadow-sm rounded-lg sm:px-10 border border-gray-100">
+        <div className="bg-white py-8 px-6 shadow-sm rounded-lg sm:px-10 border border-black">
           <form className="space-y-6" onSubmit={handleSubmit} noValidate>
             {/* Status alert */}
             {status && (
-              <div className="rounded-md bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-800">
+              <div className="rounded-md bg-white border border-black px-4 py-2 text-sm text-black">
                 {status}
               </div>
             )}
@@ -269,10 +269,10 @@ const Signup: React.FC = () => {
                   value={values.name}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm ${
+                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-black sm:text-sm ${
                     touched.name && errors.name
-                      ? "border-red-400"
-                      : "border-gray-300"
+                      ? "border-black"
+                      : "border-black"
                   }`}
                 />
                 {touched.name && errors.name && (
@@ -296,10 +296,10 @@ const Signup: React.FC = () => {
                   value={values.email}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm ${
+                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-black sm:text-sm ${
                     touched.email && errors.email
-                      ? "border-red-400"
-                      : "border-gray-300"
+                      ? "border-black"
+                      : "border-black"
                   }`}
                 />
                 {touched.email && errors.email && (
@@ -326,10 +326,10 @@ const Signup: React.FC = () => {
                   value={values.password}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm ${
+                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-black sm:text-sm ${
                     touched.password && errors.password
-                      ? "border-red-400"
-                      : "border-gray-300"
+                      ? "border-black"
+                      : "border-black"
                   }`}
                 />
                 {touched.password && errors.password && (
@@ -355,10 +355,10 @@ const Signup: React.FC = () => {
                   value={values.confirmPassword}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm ${
+                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-black sm:text-sm ${
                     touched.confirmPassword && errors.confirmPassword
                       ? "border-red-400"
-                      : "border-gray-300"
+                      : "border-black"
                   }`}
                 />
                 {touched.confirmPassword && errors.confirmPassword && (
@@ -386,7 +386,7 @@ const Signup: React.FC = () => {
                   value={values.country}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm"
+                  className="mt-1 block w-full px-3 py-2 border border-black rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-black sm:text-sm"
                 />
               </div>
 
@@ -403,7 +403,7 @@ const Signup: React.FC = () => {
                   value={values.travelStyle}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm bg-white"
+                  className="mt-1 block w-full px-3 py-2 border border-black rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-black sm:text-sm bg-white"
                 >
                   <option value="">Select a style</option>
                   <option value="budget">Budget backpacker</option>
@@ -429,7 +429,7 @@ const Signup: React.FC = () => {
                   value={values.budgetRange}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm bg-white"
+                  className="mt-1 block w-full px-3 py-2 border border-black rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-black sm:text-sm bg-white"
                 >
                   <option value="">Choose a range</option>
                   <option value="<30">&lt; $30</option>
@@ -455,7 +455,7 @@ const Signup: React.FC = () => {
                   value={values.interests}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-gray-900 sm:text-sm"
+                  className="mt-1 block w-full px-3 py-2 border border-black rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-black sm:text-sm"
                 />
               </div>
             </div>
@@ -465,7 +465,7 @@ const Signup: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-70"
+                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-70"
               >
                 {isSubmitting ? "Creating account..." : "Create account"}
               </button>
@@ -499,7 +499,7 @@ const Signup: React.FC = () => {
             <Link
               to="/login"
               state={{ from: redirectPath }}
-              className="font-medium text-gray-900 hover:text-black"
+              className="font-medium text-black hover:text-black"
             >
               Sign in
             </Link>

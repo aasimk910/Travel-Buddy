@@ -149,7 +149,7 @@ const Hikes: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
       <header className="border-b border-gray-100 bg-white/80 backdrop-blur">
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 flex items-center justify-between h-16">
           {/* Logo */}
           <button
             type="button"
@@ -202,7 +202,7 @@ const Hikes: React.FC = () => {
       <main className="flex-1">
         {/* Hero + filters */}
         <section className="border-b border-gray-100 bg-white">
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8 lg:py-10">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
                 <p className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 mb-3">
@@ -312,12 +312,12 @@ const Hikes: React.FC = () => {
 
         {/* Hikes grid */}
         <section className="py-8 lg:py-10">
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {filteredHikes.map((hike) => (
                 <article
                   key={hike.id}
-                  className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition-shadow"
+                  className="bg-white rounded-xl shadow-sm border border-black overflow-hidden flex flex-col hover:shadow-md transition-shadow"
                 >
                   <div className="relative h-48 bg-gray-200">
                     <img
@@ -335,7 +335,7 @@ const Hikes: React.FC = () => {
                       <p className="text-xs uppercase tracking-wide text-gray-400">
                         {hike.location} • {hike.place}
                       </p>
-                      <h2 className="mt-1 text-base font-semibold text-gray-900">
+                      <h2 className="mt-1 text-base font-semibold text-black">
                         {hike.title}
                       </h2>
                     </div>
@@ -369,8 +369,8 @@ const Hikes: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100">
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+      <footer className="bg-white border-t border-black">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           {/* Brand + stores */}
           <div className="space-y-3 max-w-sm">
             <div className="flex items-center gap-2">
@@ -452,7 +452,7 @@ const Hikes: React.FC = () => {
 
         {/* Bottom row */}
         <div className="border-t border-gray-100">
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[11px] text-gray-500">
               © {new Date().getFullYear()} Travel Buddy. All rights reserved.
             </p>

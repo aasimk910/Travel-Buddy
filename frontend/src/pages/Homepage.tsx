@@ -14,7 +14,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+  (import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:5000";
 
 const MAX_PHOTO_SIZE_BYTES = 6 * 1024 * 1024; // 6MB
 
@@ -79,7 +79,32 @@ const Homepage: React.FC = () => {
   const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
   const [photoIndices, setPhotoIndices] = useState<Record<string, number>>({});
 
+  // Create Hike Modal State
+  const [isCreateHikeModalOpen, setIsCreateHikeModalOpen] = useState(false);
+  const [hikeTitle, setHikeTitle] = useState("");
+  const [hikeLocation, setHikeLocation] = useState("");
+  const [hikeDate, setHikeDate] = useState("");
+  const [hikeDifficulty, setHikeDifficulty] = useState<number>(1);
+  const [hikeSpotsLeft, setHikeSpotsLeft] = useState<number>(10);
+  const [hikeImageUrl, setHikeImageUrl] = useState("");
+  const [hikeDescription, setHikeDescription] = useState("");
+  const [isCreatingHike, setIsCreatingHike] = useState(false);
+  const [hikeMessage, setHikeMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(true);
+  const [isHikeDetailsExpanded, setIsHikeDetailsExpanded] = useState(false);
+
   const safeUserName = user?.name || "Traveler";
+
+  const difficultyLabels = [
+    "Very Easy",
+    "Easy",
+    "Moderate",
+    "Hard",
+    "Expert",
+  ];
 
   const fetchLatestPhotos = async () => {
     setIsLoadingPhotos(true);
@@ -270,26 +295,92 @@ const Homepage: React.FC = () => {
     }
   };
 
+  const handleCreateHike = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!hikeTitle || !hikeLocation || !hikeDate) {
+      setHikeMessage({
+        type: "error",
+        text: "Please fill in all required fields (Title, Location, Date).",
+      });
+      return;
+    }
+
+    setIsCreatingHike(true);
+    setHikeMessage(null);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/hikes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: hikeTitle,
+          location: hikeLocation,
+          date: hikeDate,
+          difficulty: hikeDifficulty,
+          spotsLeft: hikeSpotsLeft,
+          imageUrl: hikeImageUrl || undefined,
+          description: hikeDescription || undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Unable to create hike.");
+      }
+
+      setHikeMessage({
+        type: "success",
+        text: "Hike created successfully!",
+      });
+
+      // Reset form
+      setHikeTitle("");
+      setHikeLocation("");
+      setHikeDate("");
+      setHikeDifficulty(1);
+      setHikeSpotsLeft(10);
+      setHikeImageUrl("");
+      setHikeDescription("");
+
+      // Close modal after 1.5 seconds
+      setTimeout(() => {
+        setIsCreateHikeModalOpen(false);
+        setHikeMessage(null);
+      }, 1500);
+    } catch (err) {
+      setHikeMessage({
+        type: "error",
+        text:
+          err instanceof Error
+            ? err.message
+            : "Unable to create hike. Please try again.",
+      });
+    } finally {
+      setIsCreatingHike(false);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Top navigation */}
-      <header className="border-b border-gray-100 bg-white/80 backdrop-blur sticky top-0 z-10">
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <header className="border-b border-black bg-white sticky top-0 z-10">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 flex items-center justify-between h-16">
           {/* Logo */}
           <button
             type="button"
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/homepage")}
           >
-            <div className="bg-gray-900 text-white p-2 rounded-lg shadow-sm">
+            <div className="bg-black text-white p-2 rounded-lg shadow-sm">
               <Map className="w-5 h-5" />
             </div>
-            <span className="text-base sm:text-lg font-semibold text-gray-900">
+            <span className="text-base sm:text-lg font-semibold text-black">
               Travel Buddy
             </span>
           </button>
@@ -298,19 +389,19 @@ const Homepage: React.FC = () => {
           <nav className="hidden md:flex items-center gap-6 text-sm">
             <Link
               to="/homepage"
-              className="text-gray-900 font-medium border-b-2 border-gray-900 pb-1"
+              className="text-black font-medium border-b-2 border-black pb-1"
             >
               Home
             </Link>
             <Link
               to="/hikes"
-              className="text-gray-600 hover:text-gray-900 transition-colors"
+              className="text-gray-600 hover:text-black transition-colors"
             >
               Hikes
             </Link>
             <Link
               to="/dashboard"
-              className="text-gray-600 hover:text-gray-900 transition-colors"
+              className="text-gray-600 hover:text-black transition-colors"
             >
               Dashboard
             </Link>
@@ -318,13 +409,13 @@ const Homepage: React.FC = () => {
 
           {/* User menu */}
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 text-sm text-gray-700">
+            <div className="hidden sm:flex items-center gap-2 text-sm text-black">
               <User className="w-4 h-4" />
               <span>{user?.name || "User"}</span>
             </div>
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-2 justify-center rounded-full bg-gray-900 px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-black"
+              className="inline-flex items-center gap-2 justify-center rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-gray-800"
             >
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">Logout</span>
@@ -334,10 +425,10 @@ const Homepage: React.FC = () => {
       </header>
 
       {/* Main content */}
-      <main className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8">
         {/* Welcome section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-black mb-2">
             Welcome back, {user?.name || "Traveler"}! 👋
           </h1>
           <p className="text-gray-600">
@@ -346,14 +437,14 @@ const Homepage: React.FC = () => {
         </div>
 
         {/* Profile summary card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+        <div className="bg-white rounded-xl shadow-sm border border-black p-6 mb-8">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gray-900 text-white flex items-center justify-center text-xl font-semibold">
+              <div className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center text-xl font-semibold">
                 {user?.name?.[0]?.toUpperCase() || "U"}
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">
+                <h2 className="text-xl font-semibold text-black">
                   {user?.name || "User"}
                 </h2>
                 <p className="text-sm text-gray-600">{user?.email}</p>
@@ -366,18 +457,18 @@ const Homepage: React.FC = () => {
             </div>
             <Link
               to="/dashboard"
-              className="text-sm text-gray-600 hover:text-gray-900 font-medium"
+              className="text-sm text-gray-600 hover:text-black font-medium"
             >
               Edit Profile
             </Link>
           </div>
 
           {/* Travel preferences */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-gray-300">
             {user?.travelStyle && (
               <div>
                 <p className="text-xs text-gray-500 mb-1">Travel Style</p>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-black">
                   {user.travelStyle}
                 </p>
               </div>
@@ -385,7 +476,7 @@ const Homepage: React.FC = () => {
             {user?.budgetRange && (
               <div>
                 <p className="text-xs text-gray-500 mb-1">Budget Range</p>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-black">
                   {user.budgetRange}
                 </p>
               </div>
@@ -393,7 +484,7 @@ const Homepage: React.FC = () => {
             {user?.interests && (
               <div>
                 <p className="text-xs text-gray-500 mb-1">Interests</p>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-black">
                   {user.interests}
                 </p>
               </div>
@@ -404,7 +495,7 @@ const Homepage: React.FC = () => {
         {/* Location Review and Photo Upload Cards */}
         <div className="grid gap-6 lg:grid-cols-2 mb-8">
           {/* Location Review Card */}
-          <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl shadow-sm border border-gray-100 p-8">
+          <div className="bg-white rounded-xl shadow-sm border border-black p-8">
             <form onSubmit={handleReviewSubmit}>
               <div className="flex flex-col items-center text-center mb-6">
                 <div className="w-20 h-20 mb-4">
@@ -420,13 +511,13 @@ const Homepage: React.FC = () => {
                     <rect x="0" y="60" width="100" height="40" fill="#86efac" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Have you been to{" "}
-                  <span className="underline decoration-2 decoration-gray-900">
-                    {reviewLocation}
-                  </span>
-                  ?
-                </h3>
+              <h3 className="text-xl font-bold text-black mb-2">
+                Have you been to{" "}
+                <span className="underline decoration-2 decoration-black">
+                  {reviewLocation}
+                </span>
+                ?
+              </h3>
                 <div className="flex gap-1 mb-4" aria-label="Select a rating out of five stars">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -434,7 +525,7 @@ const Homepage: React.FC = () => {
                       key={star}
                       onClick={() => setReviewRating(star)}
                       className={`text-2xl transition-colors ${
-                        reviewRating >= star ? "text-yellow-400" : "text-gray-300"
+                        reviewRating >= star ? "text-black" : "text-gray-300"
                       }`}
                       aria-pressed={reviewRating === star}
                     >
@@ -447,15 +538,15 @@ const Homepage: React.FC = () => {
                 value={reviewComment}
                 onChange={(event) => setReviewComment(event.target.value)}
                 placeholder="Write your review or a comment here..."
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none mb-4"
+                className="w-full px-4 py-3 border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-none mb-4 bg-white text-black"
                 rows={4}
               />
               {reviewMessage && (
                 <div
-                  className={`mb-3 rounded-lg px-3 py-2 text-sm ${
+                  className={`mb-3 rounded-lg px-3 py-2 text-sm border ${
                     reviewMessage.type === "success"
-                      ? "bg-emerald-100 text-emerald-800"
-                      : "bg-red-100 text-red-700"
+                      ? "bg-white text-black border-black"
+                      : "bg-black text-white border-black"
                   }`}
                 >
                   {reviewMessage.text}
@@ -464,7 +555,7 @@ const Homepage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmittingReview}
-                className="w-full bg-gradient-to-r from-pink-100 to-purple-100 text-gray-900 font-semibold py-3 px-4 rounded-lg hover:from-pink-200 hover:to-purple-200 transition-all mb-3 flex items-center justify-center gap-2 disabled:opacity-60"
+                className="w-full bg-black text-white font-semibold py-3 px-4 rounded-lg hover:bg-gray-800 transition-all mb-3 flex items-center justify-center gap-2 disabled:opacity-60"
               >
                 <span>✍️</span>
                 {isSubmittingReview ? "Submitting..." : "Submit Review"}
@@ -473,7 +564,7 @@ const Homepage: React.FC = () => {
                 type="button"
                 onClick={handleShowAnotherLocation}
                 disabled={isSubmittingReview}
-                className="w-full bg-gradient-to-r from-yellow-100 to-orange-100 text-gray-900 font-medium py-3 px-4 rounded-lg hover:from-yellow-200 hover:to-orange-200 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                className="w-full bg-white border-2 border-black text-black font-medium py-3 px-4 rounded-lg hover:bg-gray-100 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
               >
                 <span>🔄</span>
                 Show another
@@ -482,14 +573,14 @@ const Homepage: React.FC = () => {
           </div>
 
           {/* Upload Trail Photos Card */}
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-sm border border-gray-100 p-8">
+          <div className="bg-white rounded-xl shadow-sm border border-black p-8">
             <div className="flex flex-col items-center text-center mb-6">
               <div className="w-20 h-20 mb-4 flex items-center justify-center">
                 <span className="text-6xl">📸</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
+              <h3 className="text-xl font-bold text-black mb-2">
                 Share your{" "}
-                <span className="underline decoration-2 decoration-gray-900">
+                <span className="underline decoration-2 decoration-black">
                   Trail Photos
                 </span>
               </h3>
@@ -502,7 +593,7 @@ const Homepage: React.FC = () => {
             <div className="mb-4">
               <label
                 htmlFor="photo-upload"
-                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 hover:bg-white/50 transition-all"
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-black rounded-lg cursor-pointer hover:border-gray-700 hover:bg-gray-50 transition-all"
               >
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   <svg
@@ -562,16 +653,16 @@ const Homepage: React.FC = () => {
               value={photoCaption}
               onChange={(event) => setPhotoCaption(event.target.value)}
               placeholder="Add a caption or description..."
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none mb-4"
+              className="w-full px-4 py-3 border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-none mb-4 bg-white text-black"
               rows={3}
             />
 
             {photoMessage && (
               <div
-                className={`mb-3 rounded-lg px-3 py-2 text-sm ${
+                className={`mb-3 rounded-lg px-3 py-2 text-sm border ${
                   photoMessage.type === "success"
-                    ? "bg-emerald-100 text-emerald-800"
-                    : "bg-red-100 text-red-700"
+                    ? "bg-white text-black border-black"
+                    : "bg-black text-white border-black"
                 }`}
               >
                 {photoMessage.text}
@@ -582,20 +673,16 @@ const Homepage: React.FC = () => {
               type="button"
               onClick={handlePhotoSubmit}
               disabled={isUploadingPhoto}
-              className="w-full bg-gradient-to-r from-blue-100 to-indigo-100 text-gray-900 font-semibold py-3 px-4 rounded-lg hover:from-blue-200 hover:to-indigo-200 transition-all mb-3 flex items-center justify-center gap-2 disabled:opacity-60"
+              className="w-full bg-black text-white font-semibold py-3 px-4 rounded-lg hover:bg-gray-800 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
             >
               <span>📤</span>
               {isUploadingPhoto ? "Uploading..." : "Upload Photos"}
-            </button>
-            <button className="w-full bg-gradient-to-r from-purple-100 to-pink-100 text-gray-900 font-medium py-3 px-4 rounded-lg hover:from-purple-200 hover:to-pink-200 transition-all flex items-center justify-center gap-2">
-              <span>🖼️</span>
-              View Gallery
             </button>
           </div>
         </div>
 
         {/* Create Hike Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8 flex items-center justify-between">
+        <div className="bg-white rounded-xl shadow-sm border border-black p-6 mb-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 flex-shrink-0">
               <svg viewBox="0 0 100 100" className="w-full h-full">
@@ -612,7 +699,7 @@ const Homepage: React.FC = () => {
               </svg>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-1">
+              <h3 className="text-lg font-bold text-black mb-1">
                 Create Hike
               </h3>
               <p className="text-sm text-gray-600">
@@ -620,7 +707,10 @@ const Homepage: React.FC = () => {
               </p>
             </div>
           </div>
-          <button className="bg-gradient-to-r from-orange-400 to-red-400 text-white font-semibold py-2.5 px-6 rounded-full hover:from-orange-500 hover:to-red-500 transition-all shadow-md">
+          <button
+            onClick={() => setIsCreateHikeModalOpen(true)}
+            className="bg-black text-white font-semibold py-2.5 px-6 rounded-full hover:bg-gray-800 transition-all shadow-md"
+          >
             Create Hike
           </button>
         </div>
@@ -629,7 +719,7 @@ const Homepage: React.FC = () => {
         {(isLoadingPhotos || photos.length > 0 || photosError) && (
           <section className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-black">
                 Latest trail photos
               </h2>
               <p className="text-xs text-gray-500">
@@ -650,7 +740,7 @@ const Homepage: React.FC = () => {
                 No photos have been shared yet. Be the first to upload one!
               </p>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {photos.map((photo) => {
                   const imageList =
                     photo.images && photo.images.length
@@ -680,7 +770,7 @@ const Homepage: React.FC = () => {
                   return (
                     <article
                       key={photo._id}
-                      className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col relative"
+                      className="bg-white rounded-xl shadow-sm border border-black overflow-hidden flex flex-col relative"
                     >
                       {photo.userName === safeUserName && (
                         <button
@@ -756,8 +846,8 @@ const Homepage: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 mt-12">
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <footer className="bg-white border-t border-black mt-12">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-gray-500">
             © {new Date().getFullYear()} Travel Buddy. Built for real travelers.
           </p>
@@ -768,6 +858,240 @@ const Homepage: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Create Hike Modal */}
+      {isCreateHikeModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-black flex items-center justify-center">
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-black">Create Hike</h2>
+                  <p className="text-sm text-gray-600">
+                    Organize and join group hiking events
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCreateHikeModalOpen(false);
+                  setHikeMessage(null);
+                  setIsDescriptionExpanded(true);
+                  setIsHikeDetailsExpanded(false);
+                }}
+                className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg font-medium transition-colors"
+              >
+                Hide
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateHike} className="p-8">
+              {hikeMessage && (
+                <div
+                  className={`mb-6 rounded-lg px-4 py-3 text-sm ${
+                    hikeMessage.type === "success"
+                      ? "bg-gray-100 text-black border border-gray-300"
+                      : "bg-black text-white"
+                  }`}
+                >
+                  {hikeMessage.text}
+                </div>
+              )}
+
+              {/* Description Section */}
+              <div className="mb-6 bg-white border border-gray-200 rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setIsDescriptionExpanded(!isDescriptionExpanded)
+                  }
+                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Users className="w-5 h-5 text-black" />
+                    <span className="font-semibold text-black">Description</span>
+                  </div>
+                  <span className="text-gray-400">
+                    {isDescriptionExpanded ? "▲" : "▼"}
+                  </span>
+                </button>
+
+                {isDescriptionExpanded && (
+                  <div className="px-6 pb-6 space-y-4 border-t border-gray-200">
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Hike Title <span className="text-black">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={hikeTitle}
+                        onChange={(e) => setHikeTitle(e.target.value)}
+                        placeholder="Give your hike a catchy title."
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Description
+                      </label>
+                      <textarea
+                        value={hikeDescription}
+                        onChange={(e) => setHikeDescription(e.target.value)}
+                        placeholder="Describe the hike, its route, start time and location, what to bring."
+                        rows={5}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-y bg-white text-black"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-3">
+                        Difficulty <span className="text-black">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="range"
+                          min="1"
+                          max="5"
+                          value={hikeDifficulty}
+                          onChange={(e) =>
+                            setHikeDifficulty(Number(e.target.value))
+                          }
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                          style={{
+                            background: `linear-gradient(to right, #000 0%, #000 ${
+                              ((hikeDifficulty - 1) / 4) * 100
+                            }%, #e5e7eb ${
+                              ((hikeDifficulty - 1) / 4) * 100
+                            }%, #e5e7eb 100%)`,
+                          }}
+                        />
+                        <div className="flex justify-between mt-2">
+                          {[1, 2, 3, 4, 5].map((num) => (
+                            <button
+                              key={num}
+                              type="button"
+                              onClick={() => setHikeDifficulty(num)}
+                              className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-medium transition-all ${
+                                hikeDifficulty === num
+                                  ? "bg-black border-black text-white scale-110"
+                                  : "bg-white border-gray-300 text-gray-600 hover:border-black"
+                              }`}
+                            >
+                              {num}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="mt-2 text-right">
+                          <span className="inline-block px-3 py-1 bg-gray-100 text-black text-sm font-medium rounded-full border border-gray-300">
+                            {difficultyLabels[hikeDifficulty - 1]}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Hike Details Section */}
+              <div className="mb-6 bg-white border border-gray-200 rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setIsHikeDetailsExpanded(!isHikeDetailsExpanded)}
+                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <MapPin className="w-5 h-5 text-black" />
+                    <span className="font-semibold text-black">Hike Details</span>
+                  </div>
+                  <span className="text-gray-400">
+                    {isHikeDetailsExpanded ? "▲" : "▼"}
+                  </span>
+                </button>
+
+                {isHikeDetailsExpanded && (
+                  <div className="px-6 pb-6 space-y-4 border-t border-gray-200">
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Location <span className="text-black">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={hikeLocation}
+                        onChange={(e) => setHikeLocation(e.target.value)}
+                        placeholder="e.g., Nagarkot View Tower, Kathmandu Valley"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-black mb-2">
+                          Date <span className="text-black">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={hikeDate}
+                          onChange={(e) => setHikeDate(e.target.value)}
+                          min={new Date().toISOString().split("T")[0]}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-black mb-2">
+                          Spots Available
+                        </label>
+                        <input
+                          type="number"
+                          value={hikeSpotsLeft}
+                          onChange={(e) =>
+                            setHikeSpotsLeft(Number(e.target.value))
+                          }
+                          min="0"
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-black mb-2">
+                        Image URL (optional)
+                      </label>
+                      <input
+                        type="url"
+                        value={hikeImageUrl}
+                        onChange={(e) => setHikeImageUrl(e.target.value)}
+                        placeholder="https://example.com/image.jpg"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isCreatingHike}
+                  className="px-8 py-3 bg-black text-white rounded-full hover:bg-gray-800 font-semibold disabled:opacity-60 transition-colors shadow-lg"
+                >
+                  {isCreatingHike ? "Creating..." : "Create Hike"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
