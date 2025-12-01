@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const User = require("../models/User");
 const { sendWelcomeEmail } = require("../utils/email");
+const { authLimiter } = require("../middleware/rateLimiter");
 
 const router = express.Router();
 
@@ -39,7 +40,7 @@ const buildUserResponse = (user) => ({
 });
 
 // POST /api/auth/signup (email/password)
-router.post("/signup", async (req, res) => {
+router.post("/signup", authLimiter, async (req, res) => {
   try {
     const {
       name,
@@ -97,7 +98,7 @@ router.post("/signup", async (req, res) => {
 });
 
 // POST /api/auth/login (email/password)
-router.post("/login", async (req, res) => {
+router.post("/login", authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -137,7 +138,7 @@ router.post("/login", async (req, res) => {
 });
 
 // POST /api/auth/google  (login OR signup with Google)
-router.post("/google", async (req, res) => {
+router.post("/google", authLimiter, async (req, res) => {
   const { credential } = req.body;
 
   if (!credential) {

@@ -215,31 +215,31 @@ const Login: React.FC = () => {
 
   // ---------- UI ----------
   return (
-    <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       {/* Logo + heading */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex items-center justify-center gap-2">
-          <div className="bg-black text-white p-2 rounded-lg shadow-sm">
-            <Map className="w-5 h-5" />
+          <div className="glass-button-dark p-2 rounded-lg shadow-sm">
+            <Map className="w-5 h-5 text-white" />
           </div>
-          <span className="text-xl font-semibold text-black">
+          <span className="text-xl font-semibold text-white">
             Travel Buddy
           </span>
         </div>
-        <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-black">
+        <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-white">
           Sign in to your account
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-gray-200">
           Access your trips, matches, and saved destinations.
         </p>
       </div>
 
       {/* Card */}
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow rounded-lg sm:px-10 border border-black">
+        <div className="glass-card py-8 px-4 shadow rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit} noValidate>
             {status && (
-              <div className="rounded-md bg-black text-white border border-black px-3 py-2 text-xs">
+              <div className="rounded-md glass-dark text-white px-3 py-2 text-xs">
                 {status}
               </div>
             )}
@@ -248,7 +248,7 @@ const Login: React.FC = () => {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-white"
               >
                 Email address
               </label>
@@ -262,15 +262,15 @@ const Login: React.FC = () => {
                   value={values.email}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-black sm:text-sm ${
+                  className={`block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white placeholder-gray-300 ${
                     touched.email && errors.email
-                      ? "border-black"
-                      : "border-black"
+                      ? "border-red-300"
+                      : ""
                   }`}
                 />
               </div>
               {touched.email && errors.email && (
-                <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+                <p className="mt-1 text-xs text-red-300">{errors.email}</p>
               )}
             </div>
 
@@ -278,7 +278,7 @@ const Login: React.FC = () => {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-white"
               >
                 Password
               </label>
@@ -292,34 +292,34 @@ const Login: React.FC = () => {
                   value={values.password}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-black sm:text-sm ${
+                  className={`block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white placeholder-gray-300 ${
                     touched.password && errors.password
-                      ? "border-black"
-                      : "border-black"
+                      ? "border-red-300"
+                      : ""
                   }`}
                 />
               </div>
               {touched.password && errors.password && (
-                <p className="mt-1 text-xs text-red-600">{errors.password}</p>
+                <p className="mt-1 text-xs text-red-300">{errors.password}</p>
               )}
             </div>
 
             {/* Remember me / Forgot password */}
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 text-sm text-gray-600">
+              <label className="flex items-center gap-2 text-sm text-gray-200">
                 <input
                   id="remember"
                   name="remember"
                   type="checkbox"
                   checked={values.remember}
                   onChange={handleChange}
-                  className="h-4 w-4 rounded border-black text-black focus:ring-black"
+                  className="h-4 w-4 rounded border-white/30 text-white focus:ring-white glass"
                 />
                 <span>Remember me</span>
               </label>
               <button
                 type="button"
-                className="text-xs font-medium text-gray-900 hover:text-black"
+                className="text-xs font-medium text-white hover:text-gray-200"
               >
                 Forgot password?
               </button>
@@ -330,7 +330,7 @@ const Login: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex w-full justify-center rounded-md border border-transparent bg-black py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-60"
+                className="flex w-full justify-center rounded-md glass-button-dark py-2 px-4 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-60"
               >
                 {isSubmitting ? "Signing in..." : "Sign in"}
               </button>
@@ -341,10 +341,10 @@ const Login: React.FC = () => {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-black" />
+                <span className="w-full border-t border-white/30" />
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="bg-white px-2 text-gray-400">
+                <span className="glass-strong px-2 text-gray-300">
                   Or continue with Google
                 </span>
               </div>
@@ -356,12 +356,12 @@ const Login: React.FC = () => {
           </div>
 
           {/* Link to signup */}
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="mt-6 text-center text-sm text-gray-200">
             Don&apos;t have an account?{" "}
             <Link
               to="/signup"
               state={{ from: redirectPath }}
-              className="font-medium text-gray-900 hover:text-black"
+              className="font-medium text-white hover:text-gray-200"
             >
               Sign up
             </Link>

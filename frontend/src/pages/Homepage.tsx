@@ -1,9 +1,8 @@
 // src/pages/Homepage.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Map,
-  LogOut,
   User,
   Compass,
   Users,
@@ -12,6 +11,10 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
+import DOMPurify from "dompurify";
+import { compressImage } from "../utils/imageCompression";
+import LogoutButton from "../components/LogoutButton";
 
 const API_BASE_URL =
   (import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:5000";
@@ -52,6 +55,7 @@ const convertFileToBase64 = (file: File) =>
 
 const Homepage: React.FC = () => {
   const { user, logout } = useAuth();
+  const { showSuccess, showError } = useToast();
   const navigate = useNavigate();
 
   const [reviewLocation, setReviewLocation] = useState<string>(
@@ -116,35 +120,52 @@ const Homepage: React.FC = () => {
       if (!res.ok) {
         throw new Error(data.message || "Unable to load photos.");
       }
-      setPhotos(data);
+      // Handle paginated response - ensure we always set an array
+      const photosArray = Array.isArray(data) 
+        ? data 
+        : (Array.isArray(data.photos) ? data.photos : []);
+      setPhotos(photosArray);
     } catch (err) {
       setPhotosError(
         err instanceof Error
           ? err.message
           : "Unable to load photos. Please try again."
       );
+      // Set empty array on error to prevent map errors
+      setPhotos([]);
     } finally {
       setIsLoadingPhotos(false);
     }
   };
 
   const handleDeletePhoto = async (id: string) => {
+    // Confirmation dialog
+    if (!window.confirm("Are you sure you want to delete this photo?")) {
+      return;
+    }
+
     setDeletingPhotoId(id);
     try {
+      const token = localStorage.getItem("travelBuddyToken");
       const res = await fetch(`${API_BASE_URL}/api/photos/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
       });
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.message || "Unable to delete photo.");
       }
       setPhotos((prev) => prev.filter((photo) => photo._id !== id));
+      showSuccess("Photo deleted successfully!");
     } catch (err) {
-      setPhotosError(
+      const errorMessage =
         err instanceof Error
           ? err.message
-          : "Unable to delete photo. Please try again."
-      );
+          : "Unable to delete photo. Please try again.";
+      setPhotosError(errorMessage);
+      showError(errorMessage);
     } finally {
       setDeletingPhotoId(null);
     }
@@ -160,10 +181,19 @@ const Homepage: React.FC = () => {
   ) => {
     event.preventDefault();
 
-    if (!reviewRating) {
+    // Validation
+    if (!reviewRating || reviewRating < 1 || reviewRating > 5) {
       setReviewMessage({
         type: "error",
-        text: "Please rate the location before submitting.",
+        text: "Please select a rating between 1 and 5 stars.",
+      });
+      return;
+    }
+
+    if (!reviewLocation || !reviewLocation.trim()) {
+      setReviewMessage({
+        type: "error",
+        text: "Location is required.",
       });
       return;
     }
@@ -172,36 +202,71 @@ const Homepage: React.FC = () => {
     setReviewMessage(null);
 
     try {
+      const token = localStorage.getItem("travelBuddyToken");
+      if (!token) {
+        setReviewMessage({
+          type: "error",
+          text: "You must be logged in to submit a review.",
+        });
+        navigate("/login");
+        return;
+      }
+
+      // Sanitize inputs
+      const sanitizedComment = reviewComment
+        ? DOMPurify.sanitize(reviewComment)
+        : undefined;
+
       const res = await fetch(`${API_BASE_URL}/api/reviews`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
-          userName: safeUserName,
-          locationName: reviewLocation,
+          locationName: reviewLocation.trim(),
           rating: reviewRating,
-          comment: reviewComment,
+          comment: sanitizedComment,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || "Unable to submit review.");
+        // Show specific error message from backend
+        const errorMsg = data.message || "Unable to submit review.";
+        setReviewMessage({
+          type: "error",
+          text: errorMsg,
+        });
+        showError(errorMsg);
+        return;
       }
 
       setReviewMessage({
         type: "success",
         text: "Thanks for sharing your review!",
       });
+      showSuccess("Review submitted successfully!");
+      
+      // Reset form
+      setReviewLocation(getRandomLocation(reviewLocation));
       setReviewComment("");
       setReviewRating(0);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setReviewMessage(null);
+      }, 3000);
     } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Unable to submit review. Please try again.";
       setReviewMessage({
         type: "error",
-        text:
-          err instanceof Error
-            ? err.message
-            : "Unable to submit review. Please try again.",
+        text: errorMessage,
       });
+      showError(errorMessage);
     } finally {
       setIsSubmittingReview(false);
     }
@@ -226,14 +291,42 @@ const Homepage: React.FC = () => {
       return;
     }
 
-    setSelectedPhotos(files);
+    // Validate file sizes
+    const oversizedFiles = files.filter(
+      (file) => file.size > MAX_PHOTO_SIZE_BYTES
+    );
+    if (oversizedFiles.length > 0) {
+      showError(
+        `Some files are too large. Maximum size is ${MAX_PHOTO_SIZE_BYTES / (1024 * 1024)}MB per file.`
+      );
+      return;
+    }
 
+    // Validate file types
+    const invalidFiles = files.filter(
+      (file) => !file.type.startsWith("image/")
+    );
+    if (invalidFiles.length > 0) {
+      showError("Please select only image files.");
+      return;
+    }
+
+    // Compress images before setting them
     try {
-      const previews = await Promise.all(files.map(convertFileToBase64));
+      const compressedFiles = await Promise.all(
+        files.map((file) => compressImage(file))
+      );
+      setSelectedPhotos(compressedFiles);
+
+      const previews = await Promise.all(
+        compressedFiles.map(convertFileToBase64)
+      );
       setPhotoPreviews(previews);
     } catch (err) {
-      console.error("Failed to create photo previews", err);
+      console.error("Failed to process images", err);
+      showError("Failed to process images. Please try again.");
       setPhotoPreviews([]);
+      setSelectedPhotos([]);
     }
   };
 
@@ -256,15 +349,19 @@ const Homepage: React.FC = () => {
         }
       }
 
+      // Images are already compressed, just convert to base64
       const imagesData = await Promise.all(
         selectedPhotos.map((file) => convertFileToBase64(file))
       );
 
+      const token = localStorage.getItem("travelBuddyToken");
       const res = await fetch(`${API_BASE_URL}/api/photos`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
         body: JSON.stringify({
-          userName: safeUserName,
           caption: photoCaption,
           images: imagesData,
         }),
@@ -279,18 +376,21 @@ const Homepage: React.FC = () => {
         type: "success",
         text: "Photo(s) uploaded successfully!",
       });
+      showSuccess("Photo(s) uploaded successfully!");
       setSelectedPhotos([]);
       setPhotoPreviews([]);
       setPhotoCaption("");
       await fetchLatestPhotos();
     } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Unable to upload photo. Please try again.";
       setPhotoMessage({
         type: "error",
-        text:
-          err instanceof Error
-            ? err.message
-            : "Unable to upload photo. Please try again.",
+        text: errorMessage,
       });
+      showError(errorMessage);
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -317,17 +417,37 @@ const Homepage: React.FC = () => {
         imageBase64 = await convertFileToBase64(hikeImageFile);
       }
 
+      const token = localStorage.getItem("travelBuddyToken");
+      if (!token) {
+        setHikeMessage({
+          type: "error",
+          text: "You must be logged in to create a hike.",
+        });
+        navigate("/login");
+        return;
+      }
+
+      // Sanitize inputs
+      const sanitizedTitle = DOMPurify.sanitize(hikeTitle);
+      const sanitizedLocation = DOMPurify.sanitize(hikeLocation);
+      const sanitizedDescription = hikeDescription
+        ? DOMPurify.sanitize(hikeDescription)
+        : undefined;
+
       const res = await fetch(`${API_BASE_URL}/api/hikes`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
-          title: hikeTitle,
-          location: hikeLocation,
+          title: sanitizedTitle,
+          location: sanitizedLocation,
           date: hikeDate,
           difficulty: hikeDifficulty,
           spotsLeft: hikeSpotsLeft,
           imageUrl: imageBase64 || undefined,
-          description: hikeDescription || undefined,
+          description: sanitizedDescription,
         }),
       });
 
@@ -340,6 +460,7 @@ const Homepage: React.FC = () => {
         type: "success",
         text: "Hike created successfully!",
       });
+      showSuccess("Hike created successfully!");
 
       // Reset form
       setHikeTitle("");
@@ -357,13 +478,15 @@ const Homepage: React.FC = () => {
         setHikeMessage(null);
       }, 1500);
     } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Unable to create hike. Please try again.";
       setHikeMessage({
         type: "error",
-        text:
-          err instanceof Error
-            ? err.message
-            : "Unable to create hike. Please try again.",
+        text: errorMessage,
       });
+      showError(errorMessage);
     } finally {
       setIsCreatingHike(false);
     }
@@ -407,15 +530,11 @@ const Homepage: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-  };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Top navigation */}
-      <header className="border-b border-black bg-white sticky top-0 z-10">
+      <header className="glass-nav sticky top-0 z-10">
         <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 flex items-center justify-between h-16">
           {/* Logo */}
           <button
@@ -423,49 +542,37 @@ const Homepage: React.FC = () => {
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/homepage")}
           >
-            <div className="bg-black text-white p-2 rounded-lg shadow-sm">
-              <Map className="w-5 h-5" />
+            <div className="glass-button-dark p-2 rounded-lg shadow-sm">
+              <Map className="w-5 h-5 text-white" />
             </div>
-            <span className="text-base sm:text-lg font-semibold text-black">
+            <span className="text-base sm:text-lg font-semibold text-white">
               Travel Buddy
             </span>
           </button>
 
           {/* Nav links (desktop) */}
           <nav className="hidden md:flex items-center gap-6 text-sm">
-            <Link
-              to="/homepage"
-              className="text-black font-medium border-b-2 border-black pb-1"
-            >
-              Home
-            </Link>
-            <Link
-              to="/hikes"
-              className="text-gray-600 hover:text-black transition-colors"
-            >
-              Hikes
-            </Link>
-            <Link
-              to="/dashboard"
-              className="text-gray-600 hover:text-black transition-colors"
-            >
-              Dashboard
-            </Link>
+              <Link
+                to="/homepage"
+                className="text-white font-medium border-b-2 border-white pb-1"
+              >
+                Home
+              </Link>
+              <Link
+                to="/hikes"
+                className="text-gray-200 hover:text-white transition-colors"
+              >
+                Hikes
+              </Link>
           </nav>
 
           {/* User menu */}
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 text-sm text-black">
+            <div className="hidden sm:flex items-center gap-2 text-sm text-white">
               <User className="w-4 h-4" />
               <span>{user?.name || "User"}</span>
             </div>
-            <button
-              onClick={handleLogout}
-              className="inline-flex items-center gap-2 justify-center rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-gray-800"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
+            <LogoutButton />
           </div>
         </div>
       </header>
@@ -474,63 +581,71 @@ const Homepage: React.FC = () => {
       <main className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8">
         {/* Welcome section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-black mb-2">
+          <h1 className="text-3xl font-bold text-white mb-2">
             Welcome back, {user?.name || "Traveler"}! 👋
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-200">
             Welcome to the mountain lovers community!
           </p>
         </div>
 
         {/* Profile summary card */}
-        <div className="bg-white rounded-xl shadow-sm border border-black p-6 mb-8">
+        <div className="glass-card rounded-xl shadow-sm p-6 mb-8">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center text-xl font-semibold">
-                {user?.name?.[0]?.toUpperCase() || "U"}
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-black">
-                  {user?.name || "User"}
-                </h2>
-                <p className="text-sm text-gray-600">{user?.email}</p>
-                {user?.country && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    📍 {user.country}
-                  </p>
+              <div className="w-16 h-16 rounded-full glass-button-dark text-white flex items-center justify-center text-xl font-semibold overflow-hidden border-2 border-white/30">
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name || "User"}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span>{user?.name?.[0]?.toUpperCase() || "U"}</span>
                 )}
               </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-white">
+                    {user?.name || "User"}
+                  </h2>
+                  <p className="text-sm text-gray-200">{user?.email}</p>
+                  {user?.country && (
+                    <p className="text-xs text-gray-300 mt-1">
+                      📍 {user.country}
+                    </p>
+                  )}
+              </div>
             </div>
-            <Link
-              to="/dashboard"
-              className="text-sm text-gray-600 hover:text-black font-medium"
-            >
-              Edit Profile
-            </Link>
+              <Link
+                to="/profile"
+                className="text-sm text-gray-200 hover:text-white font-medium transition-colors"
+              >
+                Edit Profile
+              </Link>
           </div>
 
           {/* Travel preferences */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-gray-300">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-white/20">
             {user?.travelStyle && (
               <div>
-                <p className="text-xs text-gray-500 mb-1">Travel Style</p>
-                <p className="text-sm font-medium text-black">
+                <p className="text-xs text-gray-300 mb-1">Travel Style</p>
+                <p className="text-sm font-medium text-white">
                   {user.travelStyle}
                 </p>
               </div>
             )}
             {user?.budgetRange && (
               <div>
-                <p className="text-xs text-gray-500 mb-1">Budget Range</p>
-                <p className="text-sm font-medium text-black">
+                <p className="text-xs text-gray-300 mb-1">Budget Range</p>
+                <p className="text-sm font-medium text-white">
                   {user.budgetRange}
                 </p>
               </div>
             )}
             {user?.interests && (
               <div>
-                <p className="text-xs text-gray-500 mb-1">Interests</p>
-                <p className="text-sm font-medium text-black">
+                <p className="text-xs text-gray-300 mb-1">Interests</p>
+                <p className="text-sm font-medium text-white">
                   {user.interests}
                 </p>
               </div>
@@ -539,9 +654,9 @@ const Homepage: React.FC = () => {
         </div>
 
         {/* Location Review and Photo Upload Cards */}
-        <div className="grid gap-6 lg:grid-cols-2 mb-8">
-          {/* Location Review Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-black p-8">
+          <div className="grid gap-6 lg:grid-cols-2 mb-8">
+            {/* Location Review Card */}
+            <div className="glass-card rounded-xl shadow-sm p-8">
             <form onSubmit={handleReviewSubmit}>
               <div className="flex flex-col items-center text-center mb-6">
                 <div className="w-20 h-20 mb-4">
@@ -557,9 +672,9 @@ const Homepage: React.FC = () => {
                     <rect x="0" y="60" width="100" height="40" fill="#86efac" />
                   </svg>
                 </div>
-              <h3 className="text-xl font-bold text-black mb-2">
+              <h3 className="text-xl font-bold text-white mb-2">
                 Have you been to{" "}
-                <span className="underline decoration-2 decoration-black">
+                <span className="underline decoration-2 decoration-white">
                   {reviewLocation}
                 </span>
                 ?
@@ -569,10 +684,10 @@ const Homepage: React.FC = () => {
                     <button
                       type="button"
                       key={star}
-                      onClick={() => setReviewRating(star)}
-                      className={`text-2xl transition-colors ${
-                        reviewRating >= star ? "text-black" : "text-gray-300"
-                      }`}
+                        onClick={() => setReviewRating(star)}
+                        className={`text-2xl transition-colors ${
+                          reviewRating >= star ? "text-yellow-200" : "text-gray-300"
+                        }`}
                       aria-pressed={reviewRating === star}
                     >
                       ★
@@ -582,68 +697,68 @@ const Homepage: React.FC = () => {
               </div>
               <textarea
                 value={reviewComment}
-                onChange={(event) => setReviewComment(event.target.value)}
-                placeholder="Write your review or a comment here..."
-                className="w-full px-4 py-3 border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-none mb-4 bg-white text-black"
-                rows={4}
-              />
+                  onChange={(event) => setReviewComment(event.target.value)}
+                  placeholder="Write your review or a comment here..."
+                  className="w-full px-4 py-3 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white resize-none mb-4 text-white placeholder-gray-300"
+                  rows={4}
+                />
               {reviewMessage && (
                 <div
-                  className={`mb-3 rounded-lg px-3 py-2 text-sm border ${
-                    reviewMessage.type === "success"
-                      ? "bg-white text-black border-black"
-                      : "bg-black text-white border-black"
-                  }`}
+                    className={`mb-3 rounded-lg px-3 py-2 text-sm ${
+                      reviewMessage.type === "success"
+                        ? "glass-strong text-black"
+                        : "glass-dark text-white"
+                    }`}
                 >
                   {reviewMessage.text}
                 </div>
               )}
               <button
-                type="submit"
-                disabled={isSubmittingReview}
-                className="w-full bg-black text-white font-semibold py-3 px-4 rounded-lg hover:bg-gray-800 transition-all mb-3 flex items-center justify-center gap-2 disabled:opacity-60"
-              >
+                  type="submit"
+                  disabled={isSubmittingReview}
+                  className="w-full glass-button-dark font-semibold py-3 px-4 rounded-lg transition-all mb-3 flex items-center justify-center gap-2 disabled:opacity-60 text-white"
+                >
                 <span>✍️</span>
                 {isSubmittingReview ? "Submitting..." : "Submit Review"}
               </button>
               <button
                 type="button"
-                onClick={handleShowAnotherLocation}
-                disabled={isSubmittingReview}
-                className="w-full bg-white border-2 border-black text-black font-medium py-3 px-4 rounded-lg hover:bg-gray-100 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
-              >
+                  onClick={handleShowAnotherLocation}
+                  disabled={isSubmittingReview}
+                  className="w-full glass-button text-white font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                >
                 <span>🔄</span>
                 Show another
               </button>
             </form>
           </div>
 
-          {/* Upload Trail Photos Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-black p-8">
+            {/* Upload Trail Photos Card */}
+            <div className="glass-card rounded-xl shadow-sm p-8">
             <div className="flex flex-col items-center text-center mb-6">
               <div className="w-20 h-20 mb-4 flex items-center justify-center">
                 <span className="text-6xl">📸</span>
               </div>
-              <h3 className="text-xl font-bold text-black mb-2">
-                Share your{" "}
-                <span className="underline decoration-2 decoration-black">
-                  Trail Photos
-                </span>
-              </h3>
-              <p className="text-sm text-gray-600">
-                Upload photos from your hikes, treks, and adventures
-              </p>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  Share your{" "}
+                  <span className="underline decoration-2 decoration-white">
+                    Trail Photos
+                  </span>
+                </h3>
+                <p className="text-sm text-gray-200">
+                  Upload photos from your hikes, treks, and adventures
+                </p>
             </div>
             
             {/* Upload Area */}
             <div className="mb-4">
               <label
                 htmlFor="photo-upload"
-                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-black rounded-lg cursor-pointer hover:border-gray-700 hover:bg-gray-50 transition-all"
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/30 rounded-lg cursor-pointer hover:border-white/50 hover:bg-white/5 transition-all glass"
               >
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   <svg
-                    className="w-10 h-10 mb-2 text-gray-400"
+                    className="w-10 h-10 mb-2 text-gray-300"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -655,10 +770,10 @@ const Homepage: React.FC = () => {
                       d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                     />
                   </svg>
-                  <p className="text-sm text-gray-600 font-medium">
+                  <p className="text-sm text-gray-200 font-medium">
                     Click to upload or drag and drop
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-300 mt-1">
                     PNG, JPG up to 10MB
                   </p>
                 </div>
@@ -673,7 +788,7 @@ const Homepage: React.FC = () => {
               </label>
               {selectedPhotos.length > 0 && (
                 <>
-                  <p className="mt-2 text-xs text-gray-600 text-center">
+                  <p className="mt-2 text-xs text-gray-300 text-center">
                     Selected {selectedPhotos.length}{" "}
                     {selectedPhotos.length === 1 ? "photo" : "photos"}
                   </p>
@@ -697,18 +812,18 @@ const Homepage: React.FC = () => {
 
             <textarea
               value={photoCaption}
-              onChange={(event) => setPhotoCaption(event.target.value)}
-              placeholder="Add a caption or description..."
-              className="w-full px-4 py-3 border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-none mb-4 bg-white text-black"
-              rows={3}
-            />
+                onChange={(event) => setPhotoCaption(event.target.value)}
+                placeholder="Add a caption or description..."
+                className="w-full px-4 py-3 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white resize-none mb-4 text-white placeholder-gray-300"
+                rows={3}
+              />
 
             {photoMessage && (
               <div
-                className={`mb-3 rounded-lg px-3 py-2 text-sm border ${
+                className={`mb-3 rounded-lg px-3 py-2 text-sm ${
                   photoMessage.type === "success"
-                    ? "bg-white text-black border-black"
-                    : "bg-black text-white border-black"
+                    ? "glass-strong text-black"
+                    : "glass-dark text-white"
                 }`}
               >
                 {photoMessage.text}
@@ -719,7 +834,7 @@ const Homepage: React.FC = () => {
               type="button"
               onClick={handlePhotoSubmit}
               disabled={isUploadingPhoto}
-              className="w-full bg-black text-white font-semibold py-3 px-4 rounded-lg hover:bg-gray-800 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+              className="w-full glass-button-dark font-semibold py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60 text-white"
             >
               <span>📤</span>
               {isUploadingPhoto ? "Uploading..." : "Upload Photos"}
@@ -728,7 +843,7 @@ const Homepage: React.FC = () => {
         </div>
 
         {/* Create Hike Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-black p-6 mb-8 flex items-center justify-between">
+        <div className="glass-card rounded-xl shadow-sm p-6 mb-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 flex-shrink-0">
               <svg viewBox="0 0 100 100" className="w-full h-full">
@@ -744,50 +859,50 @@ const Homepage: React.FC = () => {
                 <circle cx="65" cy="35" r="8" fill="#fbbf24" />
               </svg>
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-black mb-1">
-                Create Hike
-              </h3>
-              <p className="text-sm text-gray-600">
-                Organize and join group hiking events
-              </p>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-1">
+                  Create Hike
+                </h3>
+                <p className="text-sm text-gray-200">
+                  Organize and join group hiking events
+                </p>
+              </div>
             </div>
-          </div>
-          <button
-            onClick={() => setIsCreateHikeModalOpen(true)}
-            className="bg-black text-white font-semibold py-2.5 px-6 rounded-full hover:bg-gray-800 transition-all shadow-md"
-          >
+            <button
+              onClick={() => setIsCreateHikeModalOpen(true)}
+              className="glass-button-dark font-semibold py-2.5 px-6 rounded-full transition-all shadow-md text-white"
+            >
             Create Hike
           </button>
         </div>
 
         {/* Photo feed */}
-        {(isLoadingPhotos || photos.length > 0 || photosError) && (
+        {(isLoadingPhotos || (Array.isArray(photos) && photos.length > 0) || photosError) && (
           <section className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-black">
-                Latest trail photos
-              </h2>
-              <p className="text-xs text-gray-500">
-                Shared by the Travel Buddy community
-              </p>
-            </div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-white">
+                  Latest trail photos
+                </h2>
+                <p className="text-xs text-gray-200">
+                  Shared by the Travel Buddy community
+                </p>
+              </div>
 
             {photosError && (
-              <div className="mb-4 rounded-md bg-red-50 border border-red-100 px-3 py-2 text-xs text-red-700">
+              <div className="mb-4 rounded-md glass-dark px-3 py-2 text-xs text-red-200">
                 {photosError}
               </div>
             )}
 
-            {isLoadingPhotos && photos.length === 0 ? (
-              <p className="text-sm text-gray-500">Loading photos…</p>
-            ) : photos.length === 0 ? (
-              <p className="text-sm text-gray-500">
+            {isLoadingPhotos && (!Array.isArray(photos) || photos.length === 0) ? (
+              <p className="text-sm text-gray-200">Loading photos…</p>
+            ) : !Array.isArray(photos) || photos.length === 0 ? (
+              <p className="text-sm text-gray-200">
                 No photos have been shared yet. Be the first to upload one!
               </p>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                {photos.map((photo) => {
+                {Array.isArray(photos) && photos.map((photo) => {
                   const imageList =
                     photo.images && photo.images.length
                       ? photo.images
@@ -814,17 +929,17 @@ const Homepage: React.FC = () => {
                   };
 
                   return (
-                    <article
-                      key={photo._id}
-                      className="bg-white rounded-xl shadow-sm border border-black overflow-hidden flex flex-col relative"
-                    >
+                      <article
+                        key={photo._id}
+                        className="glass-card rounded-xl shadow-sm overflow-hidden flex flex-col relative"
+                      >
                       {photo.userName === safeUserName && (
                         <button
                           type="button"
-                          onClick={() => handleDeletePhoto(photo._id)}
-                          disabled={deletingPhotoId === photo._id}
-                          className="absolute top-2 right-2 z-10 inline-flex items-center justify-center rounded-full bg-white/90 px-2 py-1 text-[10px] font-medium text-gray-700 shadow-sm hover:bg-red-50 hover:text-red-700 disabled:opacity-60"
-                        >
+                            onClick={() => handleDeletePhoto(photo._id)}
+                            disabled={deletingPhotoId === photo._id}
+                            className="absolute top-2 right-2 z-10 inline-flex items-center justify-center rounded-full glass-strong px-2 py-1 text-[10px] font-medium text-black shadow-sm hover:bg-red-200/50 disabled:opacity-60"
+                          >
                           {deletingPhotoId === photo._id ? "Deleting…" : "Delete"}
                         </button>
                       )}
@@ -866,8 +981,8 @@ const Homepage: React.FC = () => {
                       </div>
 
                       <div className="p-3 flex-1 flex flex-col">
-                        <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                          <span className="font-medium text-gray-800">
+                        <div className="flex items-center justify-between text-xs text-gray-200 mb-1">
+                          <span className="font-medium text-white">
                             {photo.userName}
                           </span>
                           {photo.createdAt && (
@@ -877,7 +992,7 @@ const Homepage: React.FC = () => {
                           )}
                         </div>
                         {photo.caption && (
-                          <p className="text-sm text-gray-700 mt-1 line-clamp-3">
+                          <p className="text-sm text-gray-200 mt-1 line-clamp-3">
                             {photo.caption}
                           </p>
                         )}
@@ -891,58 +1006,144 @@ const Homepage: React.FC = () => {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-black mt-12">
-        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} Travel Buddy. Built for real travelers.
-          </p>
-          <div className="flex gap-4 text-xs text-gray-500">
-            <button className="hover:text-gray-800">Privacy</button>
-            <button className="hover:text-gray-800">Terms</button>
-            <button className="hover:text-gray-800">Help</button>
-          </div>
-        </div>
-      </footer>
-
-      {/* Create Hike Modal */}
-      {isCreateHikeModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex items-center justify-between rounded-t-2xl">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-black flex items-center justify-center">
-                  <Users className="w-5 h-5 text-white" />
+        {/* Footer */}
+        <footer className="glass-nav mt-12">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+            {/* Brand + stores */}
+            <div className="space-y-3 max-w-sm">
+              <div className="flex items-center gap-2">
+                <div className="glass-button-dark p-2 rounded-lg shadow-sm">
+                  <Map className="w-4 h-4 text-white" />
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-black">Create Hike</h2>
-                  <p className="text-sm text-gray-600">
-                    Organize and join group hiking events
-                  </p>
+                <span className="text-sm font-semibold text-white">
+                  Travel Buddy
+                </span>
+              </div>
+              <p className="text-xs text-gray-200">
+                Find hiking friends, share routes, and turn solo weekend plans
+                into small group adventures across Nepal.
+              </p>
+              <div className="flex gap-3">
+                <button className="h-9 rounded-md glass-button px-3 text-[11px] font-medium text-white hover:opacity-80">
+                  App Store
+                </button>
+                <button className="h-9 rounded-md glass-button px-3 text-[11px] font-medium text-white hover:opacity-80">
+                  Google Play
+                </button>
+              </div>
+            </div>
+
+            {/* Link columns */}
+            <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-6 text-xs text-gray-200">
+              <div>
+                <p className="mb-3 font-semibold text-white">Explore</p>
+                <ul className="space-y-2">
+                  <li>
+                    <button className="hover:text-white transition-colors">Hikes</button>
+                  </li>
+                  <li>
+                    <button className="hover:text-white transition-colors">Mountains</button>
+                  </li>
+                  <li>
+                    <button className="hover:text-white transition-colors">Map</button>
+                  </li>
+                  <li>
+                    <button className="hover:text-white transition-colors">Trails</button>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <p className="mb-3 font-semibold text-white">Company</p>
+                <ul className="space-y-2">
+                  <li>
+                    <button className="hover:text-white transition-colors">About</button>
+                  </li>
+                  <li>
+                    <button className="hover:text-white transition-colors">Partners</button>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <p className="mb-3 font-semibold text-white">Legal</p>
+                <ul className="space-y-2">
+                  <li>
+                    <button className="hover:text-white transition-colors">
+                      Privacy Policy
+                    </button>
+                  </li>
+                  <li>
+                    <button className="hover:text-white transition-colors">
+                      Terms of Service
+                    </button>
+                  </li>
+                  <li>
+                    <button className="hover:text-white transition-colors">
+                      Cookie Policy
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom row */}
+          <div className="border-t border-white/20">
+            <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[11px] text-gray-200">
+                © {new Date().getFullYear()} Travel Buddy. All rights reserved.
+              </p>
+              <div className="flex items-center gap-4 text-[11px] text-gray-200">
+                <button className="hover:text-white transition-colors">Privacy</button>
+                <button className="hover:text-white transition-colors">Terms</button>
+                <div className="inline-flex items-center gap-1 rounded-full glass-button px-2 py-1">
+                  <span className="text-[11px] text-white">EN</span>
+                  <span className="text-[11px] text-gray-200">English</span>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsCreateHikeModalOpen(false);
-                  setHikeMessage(null);
-                  setIsDescriptionExpanded(true);
-                  setIsHikeDetailsExpanded(false);
-                }}
-                className="px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg font-medium transition-colors"
-              >
-                Hide
-              </button>
             </div>
+          </div>
+        </footer>
+
+        {/* Create Hike Modal */}
+        {isCreateHikeModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+            <div className="glass-card rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+              {/* Header */}
+              <div className="sticky top-0 glass-nav px-8 py-6 flex items-center justify-between rounded-t-2xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg glass-button-dark flex items-center justify-center">
+                    <Users className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Create Hike</h2>
+                    <p className="text-sm text-gray-200">
+                      Organize and join group hiking events
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCreateHikeModalOpen(false);
+                    setHikeMessage(null);
+                    setIsDescriptionExpanded(true);
+                    setIsHikeDetailsExpanded(false);
+                  }}
+                  className="px-4 py-2 text-gray-200 hover:text-white glass-button rounded-lg font-medium transition-colors"
+                >
+                  Hide
+                </button>
+              </div>
 
             <form onSubmit={handleCreateHike} className="p-8">
               {hikeMessage && (
                 <div
                   className={`mb-6 rounded-lg px-4 py-3 text-sm ${
                     hikeMessage.type === "success"
-                      ? "bg-gray-100 text-black border border-gray-300"
-                      : "bg-black text-white"
+                      ? "glass-strong text-black"
+                      : "glass-dark text-white"
                   }`}
                 >
                   {hikeMessage.text}
@@ -950,41 +1151,41 @@ const Homepage: React.FC = () => {
               )}
 
               {/* Description Section */}
-              <div className="mb-6 bg-white border border-gray-200 rounded-xl overflow-hidden">
+              <div className="mb-6 glass-card rounded-xl overflow-hidden">
                 <button
                   type="button"
                   onClick={() =>
                     setIsDescriptionExpanded(!isDescriptionExpanded)
                   }
-                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/10 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <Users className="w-5 h-5 text-black" />
-                    <span className="font-semibold text-black">Description</span>
+                    <Users className="w-5 h-5 text-white" />
+                    <span className="font-semibold text-white">Description</span>
                   </div>
-                  <span className="text-gray-400">
+                  <span className="text-gray-300">
                     {isDescriptionExpanded ? "▲" : "▼"}
                   </span>
                 </button>
 
                 {isDescriptionExpanded && (
-                  <div className="px-6 pb-6 space-y-4 border-t border-gray-200">
+                  <div className="px-6 pb-6 space-y-4 border-t border-white/20">
                     <div>
-                      <label className="block text-sm font-medium text-black mb-2">
-                        Hike Title <span className="text-black">*</span>
+                      <label className="block text-sm font-medium text-white mb-2">
+                        Hike Title <span className="text-white">*</span>
                       </label>
                       <input
                         type="text"
                         value={hikeTitle}
                         onChange={(e) => setHikeTitle(e.target.value)}
                         placeholder="Give your hike a catchy title."
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
+                        className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-white placeholder-gray-300"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-black mb-2">
+                      <label className="block text-sm font-medium text-white mb-2">
                         Description
                       </label>
                       <textarea
@@ -992,13 +1193,13 @@ const Homepage: React.FC = () => {
                         onChange={(e) => setHikeDescription(e.target.value)}
                         placeholder="Describe the hike, its route, start time and location, what to bring."
                         rows={5}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-y bg-white text-black"
+                        className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white resize-y text-white placeholder-gray-300"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-black mb-3">
-                        Difficulty <span className="text-black">*</span>
+                      <label className="block text-sm font-medium text-white mb-3">
+                        Difficulty <span className="text-white">*</span>
                       </label>
                       <div className="relative">
                         <input
@@ -1026,8 +1227,8 @@ const Homepage: React.FC = () => {
                               onClick={() => setHikeDifficulty(num)}
                               className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-medium transition-all ${
                                 hikeDifficulty === num
-                                  ? "bg-black border-black text-white scale-110"
-                                  : "bg-white border-gray-300 text-gray-600 hover:border-black"
+                                  ? "glass-button-dark border-white text-white scale-110"
+                                  : "glass border-white/30 text-white hover:border-white/50"
                               }`}
                             >
                               {num}
@@ -1035,7 +1236,7 @@ const Homepage: React.FC = () => {
                           ))}
                         </div>
                         <div className="mt-2 text-right">
-                          <span className="inline-block px-3 py-1 bg-gray-100 text-black text-sm font-medium rounded-full border border-gray-300">
+                          <span className="inline-block px-3 py-1 glass-strong text-black text-sm font-medium rounded-full">
                             {difficultyLabels[hikeDifficulty - 1]}
                           </span>
                         </div>
@@ -1046,54 +1247,54 @@ const Homepage: React.FC = () => {
               </div>
 
               {/* Hike Details Section */}
-              <div className="mb-6 bg-white border border-gray-200 rounded-xl overflow-hidden">
+              <div className="mb-6 glass-card rounded-xl overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setIsHikeDetailsExpanded(!isHikeDetailsExpanded)}
-                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/10 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <MapPin className="w-5 h-5 text-black" />
-                    <span className="font-semibold text-black">Hike Details</span>
+                    <MapPin className="w-5 h-5 text-white" />
+                    <span className="font-semibold text-white">Hike Details</span>
                   </div>
-                  <span className="text-gray-400">
+                  <span className="text-gray-300">
                     {isHikeDetailsExpanded ? "▲" : "▼"}
                   </span>
                 </button>
 
                 {isHikeDetailsExpanded && (
-                  <div className="px-6 pb-6 space-y-4 border-t border-gray-200">
+                  <div className="px-6 pb-6 space-y-4 border-t border-white/20">
                     <div>
-                      <label className="block text-sm font-medium text-black mb-2">
-                        Location <span className="text-black">*</span>
+                      <label className="block text-sm font-medium text-white mb-2">
+                        Location <span className="text-white">*</span>
                       </label>
                       <input
                         type="text"
                         value={hikeLocation}
                         onChange={(e) => setHikeLocation(e.target.value)}
                         placeholder="e.g., Nagarkot View Tower, Kathmandu Valley"
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
+                        className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-white placeholder-gray-300"
                         required
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-black mb-2">
-                          Date <span className="text-black">*</span>
+                        <label className="block text-sm font-medium text-white mb-2">
+                          Date <span className="text-white">*</span>
                         </label>
                         <input
                           type="date"
                           value={hikeDate}
                           onChange={(e) => setHikeDate(e.target.value)}
                           min={new Date().toISOString().split("T")[0]}
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
+                          className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-white"
                           required
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-black mb-2">
+                        <label className="block text-sm font-medium text-white mb-2">
                           Spots Available
                         </label>
                         <input
@@ -1103,25 +1304,27 @@ const Homepage: React.FC = () => {
                             setHikeSpotsLeft(Number(e.target.value))
                           }
                           min="0"
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
+                          className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-white"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-black mb-2">
+                      <label className="block text-sm font-medium text-white mb-2">
                         Upload Photo (optional)
                       </label>
                       <input
                         type="file"
                         accept="image/*"
                         onChange={handleHikeImageChange}
-                        className="w-full px-4 py-2.5 border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white text-black file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 file:cursor-pointer"
+                        className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:glass-button-dark file:text-white hover:file:opacity-80 file:cursor-pointer"
                       />
+
+
                       {hikeImagePreview && (
                         <div className="mt-3">
-                          <p className="text-xs text-gray-600 mb-2">Preview:</p>
-                          <div className="relative w-full h-48 rounded-lg overflow-hidden border border-black">
+                          <p className="text-xs text-gray-300 mb-2">Preview:</p>
+                          <div className="relative w-full h-48 rounded-lg overflow-hidden glass border border-white/20">
                             <img
                               src={hikeImagePreview}
                               alt="Hike preview"
@@ -1140,7 +1343,7 @@ const Homepage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isCreatingHike}
-                  className="px-8 py-3 bg-black text-white rounded-full hover:bg-gray-800 font-semibold disabled:opacity-60 transition-colors shadow-lg"
+                  className="px-8 py-3 glass-button-dark rounded-full font-semibold disabled:opacity-60 transition-colors shadow-lg text-white"
                 >
                   {isCreatingHike ? "Creating..." : "Create Hike"}
                 </button>

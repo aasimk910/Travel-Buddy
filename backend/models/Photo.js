@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 
 const PhotoSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     userName: {
       type: String,
       required: true,
@@ -12,10 +17,10 @@ const PhotoSchema = new mongoose.Schema(
       trim: true,
       maxlength: 200,
     },
-  images: {
-    type: [String],
-    required: true,
-  },
+    images: {
+      type: [String],
+      required: true,
+    },
   },
   {
     timestamps: true,

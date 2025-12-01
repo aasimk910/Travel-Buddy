@@ -27,18 +27,24 @@ app.use(
   })
 );
 
+// Rate limiting
+const { apiLimiter } = require("./middleware/rateLimiter");
+app.use("/api/", apiLimiter);
+
 // === Routes ===
 app.get("/", (req, res) => {
   res.send("Travel Buddy API is running ✅");
 });
 
 const authRoutes = require("./routes/auth");
+const userRoutes = require("./routes/users");
 const reviewRoutes = require("./routes/reviews");
 const photoRoutes = require("./routes/photos");
 const hikeRoutes = require("./routes/hikes");
 const tripRoutes = require("./routes/trips");
 
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/photos", photoRoutes);
 app.use("/api/hikes", hikeRoutes);

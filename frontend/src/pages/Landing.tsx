@@ -7,9 +7,9 @@ const Landing: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col">
       {/* Top navigation */}
-      <header className="border-b border-black bg-white">
+      <header className="glass-nav">
         <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 flex items-center justify-between h-16">
           {/* Logo */}
           <button
@@ -17,10 +17,10 @@ const Landing: React.FC = () => {
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <div className="bg-black text-white p-2 rounded-lg shadow-sm">
-              <Map className="w-5 h-5" />
+            <div className="glass-button-dark p-2 rounded-lg shadow-sm">
+              <Map className="w-5 h-5 text-white" />
             </div>
-            <span className="text-base sm:text-lg font-semibold text-black">
+            <span className="text-base sm:text-lg font-semibold text-white">
               Travel Buddy
             </span>
           </button>
@@ -29,13 +29,13 @@ const Landing: React.FC = () => {
           <nav className="hidden md:flex items-center gap-6 text-sm">
             <Link
               to="/"
-              className="text-black font-medium border-b-2 border-black pb-1"
+              className="text-white font-medium border-b-2 border-white pb-1"
             >
               Home
             </Link>
             <Link
               to="/hikes"
-              className="text-gray-600 hover:text-black transition-colors"
+              className="text-gray-200 hover:text-white transition-colors"
             >
               Hikes
             </Link>
@@ -45,13 +45,13 @@ const Landing: React.FC = () => {
           <div className="flex items-center gap-3">
             <Link
               to="/login"
-              className="hidden sm:inline-flex text-sm text-gray-700 hover:text-black"
+              className="hidden sm:inline-flex text-sm text-gray-200 hover:text-white transition-colors"
             >
               Log in
             </Link>
             <Link
               to="/signup"
-              className="inline-flex items-center justify-center rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-gray-800"
+              className="inline-flex items-center justify-center rounded-full glass-button-dark px-4 py-1.5 text-sm font-medium text-white shadow-sm"
             >
               Get started
             </Link>
@@ -62,24 +62,24 @@ const Landing: React.FC = () => {
       {/* Main content */}
       <main className="flex-1">
         {/* Hero section */}
-        <section className="bg-white border-b border-black">
-          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-12 lg:py-20 grid gap-10 lg:grid-cols-2 items-center">
+        <section className="py-12 lg:py-20">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 grid gap-10 lg:grid-cols-2 items-center">
             {/* Left: text */}
             <div className="max-w-xl">
-              <p className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 mb-4">
+              <p className="inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1 text-xs font-medium text-black mb-4">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 Find people who travel like you
               </p>
 
-              <h1 className="text-3xl sm:text-4xl xl:text-5xl font-bold tracking-tight text-black mb-4">
+              <h1 className="text-3xl sm:text-4xl xl:text-5xl font-bold tracking-tight text-white mb-4">
                 Find your next{" "}
-                <span className="inline-block bg-gradient-to-r from-black to-gray-600 bg-clip-text text-transparent">
+                <span className="inline-block bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
                   Travel Buddy
                 </span>
                 , not just your next trip.
               </h1>
 
-              <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-6">
+              <p className="text-gray-200 text-sm sm:text-base leading-relaxed mb-6">
                 Travel Buddy connects you with travelers who share your style,
                 budget, and destinations. Plan trips together, split costs, and
                 turn solo ideas into shared adventures.
@@ -88,19 +88,19 @@ const Landing: React.FC = () => {
               <div className="flex flex-wrap gap-3 mb-6">
                 <Link
                   to="/signup"
-                  className="inline-flex items-center justify-center rounded-full bg-black px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800"
+                  className="inline-flex items-center justify-center rounded-full glass-button-dark px-5 py-2 text-sm font-semibold text-white shadow-sm"
                 >
                   Start for free
                 </Link>
                 <Link
                   to="/hikes"
-                  className="inline-flex items-center justify-center rounded-full border border-black bg-white px-5 py-2 text-sm font-medium text-black hover:bg-gray-100"
+                  className="inline-flex items-center justify-center rounded-full glass-button px-5 py-2 text-sm font-medium text-white"
                 >
                   Explore hikes
                 </Link>
               </div>
 
-              <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+              <div className="flex flex-wrap items-center gap-4 text-xs text-gray-300">
                 <div className="flex items-center gap-1.5">
                   <Users className="w-4 h-4" />
                   <span>Trusted by small travel groups worldwide</span>
@@ -114,7 +114,7 @@ const Landing: React.FC = () => {
 
             {/* Right: preview card */}
             <div className="lg:justify-self-end w-full max-w-md">
-              <div className="rounded-2xl bg-black text-white p-5 sm:p-6 shadow-xl">
+              <div className="rounded-2xl glass-dark text-white p-5 sm:p-6 shadow-xl">
                 <p className="text-xs font-medium text-gray-300 mb-2">
                   Upcoming group hikes
                 </p>
@@ -137,7 +137,7 @@ const Landing: React.FC = () => {
                         Switzerland • Moderate • 6 people going
                       </p>
                     </div>
-                    <span className="text-[11px] rounded-full bg-gray-100 text-gray-900 px-2 py-0.5">
+                    <span className="text-[11px] rounded-full glass-strong text-white px-2 py-0.5">
                       New
                     </span>
                   </div>
@@ -163,75 +163,75 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Preview hikes section */}
-        <section id="hikes" className="bg-white border-b border-black">
-          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-10 sm:py-14">
+        <section id="hikes" className="py-10 sm:py-14">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
             <div className="flex items-center justify-between gap-3 mb-6">
               <div>
-                <h2 className="text-xl sm:text-2xl font-semibold text-black">
+                <h2 className="text-xl sm:text-2xl font-semibold text-white">
                   Join group hikes near you
                 </h2>
-                <p className="text-sm text-gray-600">
-                  A quick preview of what you’ll find on the Hikes page.
+                <p className="text-sm text-gray-200">
+                  A quick preview of what you'll find on the Hikes page.
                 </p>
               </div>
               <Link
                 to="/hikes"
-                className="hidden sm:inline-flex items-center justify-center rounded-full border border-black bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-gray-100"
+                className="hidden sm:inline-flex items-center justify-center rounded-full glass-button px-4 py-1.5 text-xs font-medium text-white"
               >
                 View all hikes
               </Link>
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
-              <div className="bg-white rounded-xl shadow-sm border border-black overflow-hidden">
+              <div className="glass-card rounded-xl shadow-sm overflow-hidden">
                 <div className="h-28 bg-[url('https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
                 <div className="p-4">
-                  <p className="text-xs text-gray-400 mb-1">
+                  <p className="text-xs text-gray-300 mb-1">
                     Banff National Park • Canada
                   </p>
-                  <h3 className="text-sm font-semibold text-black">
+                  <h3 className="text-sm font-semibold text-white">
                     Hot Springs Sunrise Hike
                   </h3>
-                  <p className="text-xs text-gray-600 mt-1">
+                  <p className="text-xs text-gray-200 mt-1">
                     Easy pace, perfect for first-time group hikers.
                   </p>
-                  <p className="mt-3 text-[11px] text-gray-500">
+                  <p className="mt-3 text-[11px] text-gray-300">
                     Difficulty: 1/5 • 3 spots left
                   </p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-black overflow-hidden">
+              <div className="glass-card rounded-xl shadow-sm overflow-hidden">
                 <div className="h-28 bg-[url('https://images.pexels.com/photos/552785/pexels-photo-552785.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
                 <div className="p-4">
-                  <p className="text-xs text-gray-400 mb-1">
+                  <p className="text-xs text-gray-300 mb-1">
                     Dolomites • Italy
                   </p>
-                  <h3 className="text-sm font-semibold text-black">
+                  <h3 className="text-sm font-semibold text-white">
                     Through the Heart of the Peaks
                   </h3>
-                  <p className="text-xs text-gray-600 mt-1">
+                  <p className="text-xs text-gray-200 mt-1">
                     Full-day route with big views and shared snacks.
                   </p>
-                  <p className="mt-3 text-[11px] text-gray-500">
+                  <p className="mt-3 text-[11px] text-gray-300">
                     Difficulty: 4/5 • 6 spots left
                   </p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-black overflow-hidden">
+              <div className="glass-card rounded-xl shadow-sm overflow-hidden">
                 <div className="h-28 bg-[url('https://images.pexels.com/photos/1028225/pexels-photo-1028225.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
                 <div className="p-4">
-                  <p className="text-xs text-gray-400 mb-1">
+                  <p className="text-xs text-gray-300 mb-1">
                     Lisbon • Portugal
                   </p>
-                  <h3 className="text-sm font-semibold text-black">
+                  <h3 className="text-sm font-semibold text-white">
                     City View Sunset Walk
                   </h3>
-                  <p className="text-xs text-gray-600 mt-1">
+                  <p className="text-xs text-gray-200 mt-1">
                     Short evening walk ending at a lookout with snacks.
                   </p>
-                  <p className="mt-3 text-[11px] text-gray-500">
+                  <p className="mt-3 text-[11px] text-gray-300">
                     Difficulty: 2/5 • 4 spots left
                   </p>
                 </div>
@@ -241,7 +241,7 @@ const Landing: React.FC = () => {
             <div className="mt-6 sm:hidden">
               <Link
                 to="/hikes"
-                className="inline-flex items-center justify-center rounded-full border border-black bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-gray-100"
+                className="inline-flex items-center justify-center rounded-full glass-button px-4 py-1.5 text-xs font-medium text-white"
               >
                 View all hikes
               </Link>
@@ -252,53 +252,53 @@ const Landing: React.FC = () => {
         {/* How it works */}
         <section
           id="how-it-works"
-          className="bg-white border-b border-black"
+          className="py-10 sm:py-14"
         >
-          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-10 sm:py-14">
-            <h2 className="text-xl sm:text-2xl font-semibold text-black text-center mb-2">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
+            <h2 className="text-xl sm:text-2xl font-semibold text-white text-center mb-2">
               How Travel Buddy works
             </h2>
-            <p className="text-sm text-gray-600 text-center max-w-xl mx-auto mb-8">
+            <p className="text-sm text-gray-200 text-center max-w-xl mx-auto mb-8">
               We keep things simple: share how you like to travel, match with
               compatible people, and build trips together that feel natural.
             </p>
 
             <div className="grid gap-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              <div className="bg-white rounded-xl shadow-sm border border-black p-5">
-                <div className="w-9 h-9 rounded-full bg-black text-white flex items-center justify-center text-xs font-semibold mb-3">
+              <div className="glass-card rounded-xl shadow-sm p-5">
+                <div className="w-9 h-9 rounded-full glass-button-dark text-white flex items-center justify-center text-xs font-semibold mb-3">
                   1
                 </div>
-                <h3 className="text-sm font-semibold text-black mb-2">
+                <h3 className="text-sm font-semibold text-white mb-2">
                   Create your travel profile
                 </h3>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-200">
                   Share where you&apos;re from, how you like to travel, your
                   budget, and what you enjoy – from night markets to mountain
                   hikes.
                 </p>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-black p-5">
-                <div className="w-9 h-9 rounded-full bg-black text-white flex items-center justify-center text-xs font-semibold mb-3">
+              <div className="glass-card rounded-xl shadow-sm p-5">
+                <div className="w-9 h-9 rounded-full glass-button-dark text-white flex items-center justify-center text-xs font-semibold mb-3">
                   2
                 </div>
-                <h3 className="text-sm font-semibold text-black mb-2">
+                <h3 className="text-sm font-semibold text-white mb-2">
                   Match with compatible buddies
                 </h3>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-200">
                   Filter by destination, dates, and travel style. Join existing
                   trips or start your own and invite others.
                 </p>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-black p-5">
-                <div className="w-9 h-9 rounded-full bg-black text-white flex items-center justify-center text-xs font-semibold mb-3">
+              <div className="glass-card rounded-xl shadow-sm p-5">
+                <div className="w-9 h-9 rounded-full glass-button-dark text-white flex items-center justify-center text-xs font-semibold mb-3">
                   3
                 </div>
-                <h3 className="text-sm font-semibold text-black mb-2">
+                <h3 className="text-sm font-semibold text-white mb-2">
                   Plan safely & share costs
                 </h3>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-200">
                   Use group chat, shared itineraries, and safety tips to plan
                   everything – from hostels and rides to activities and food.
                 </p>
@@ -308,47 +308,47 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Features */}
-        <section id="features" className="bg-white border-b border-black">
-          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-10 sm:py-14">
-            <h2 className="text-xl sm:text-2xl font-semibold text-black mb-6">
+        <section id="features" className="py-10 sm:py-14">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
+            <h2 className="text-xl sm:text-2xl font-semibold text-white mb-6">
               Built for real travelers, not just influencers
             </h2>
 
             <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              <div className="bg-white rounded-xl border border-black p-5">
-                <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center mb-3">
+              <div className="glass-card rounded-xl p-5">
+                <div className="w-8 h-8 rounded-lg glass-button-dark text-white flex items-center justify-center mb-3">
                   <Compass className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-semibold text-black mb-1">
+                <h3 className="text-sm font-semibold text-white mb-1">
                   Match by travel style
                 </h3>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-200">
                   Backpacker, slow traveler, weekend hiker – match with people
                   who move through the world like you do.
                 </p>
               </div>
 
-              <div className="bg-gray-50 rounded-xl border border-gray-100 p-5">
-                <div className="w-8 h-8 rounded-lg bg-gray-900 text-white flex items-center justify-center mb-3">
+              <div className="glass-card rounded-xl p-5">
+                <div className="w-8 h-8 rounded-lg glass-button-dark text-white flex items-center justify-center mb-3">
                   <Users className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-semibold text-black mb-1">
+                <h3 className="text-sm font-semibold text-white mb-1">
                   Small groups, big memories
                 </h3>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-200">
                   Keep trips small and flexible. Perfect for 2–6 people instead
                   of huge tour buses.
                 </p>
               </div>
 
-              <div className="bg-gray-50 rounded-xl border border-gray-100 p-5">
-                <div className="w-8 h-8 rounded-lg bg-gray-900 text-white flex items-center justify-center mb-3">
+              <div className="glass-card rounded-xl p-5">
+                <div className="w-8 h-8 rounded-lg glass-button-dark text-white flex items-center justify-center mb-3">
                   <Shield className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-semibold text-black mb-1">
+                <h3 className="text-sm font-semibold text-white mb-1">
                   Safety-first design
                 </h3>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-200">
                   Safety tips, profile transparency, and shared planning tools
                   help you feel confident before you say yes.
                 </p>
@@ -358,52 +358,52 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Community / testimonials */}
-        <section id="community" className="bg-white border-b border-black">
-          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-10 sm:py-14">
+        <section id="community" className="py-10 sm:py-14">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
             <div className="grid gap-8 md:grid-cols-[1.3fr_minmax(0,1fr)] items-center">
               <div>
-                <h2 className="text-xl sm:text-2xl font-semibold text-black mb-3">
+                <h2 className="text-xl sm:text-2xl font-semibold text-white mb-3">
                   A community of travelers who actually reply
                 </h2>
-                <p className="text-sm text-gray-600 mb-5">
+                <p className="text-sm text-gray-200 mb-5">
                   No ghosting, no endless scrolling. Travel Buddy is designed
                   around real conversations, shared planning, and mutual
                   respect.
                 </p>
-                <ul className="space-y-2 text-xs text-gray-700">
+                <ul className="space-y-2 text-xs text-gray-300">
                   <li>• Join or create focused groups around cities or hikes</li>
                   <li>• Share itineraries, maps, and packing lists</li>
                   <li>• Keep everything in one place instead of random chats</li>
                 </ul>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-black p-5">
+              <div className="glass-card rounded-xl shadow-sm p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full glass-button-dark text-white flex items-center justify-center">
                     <MessageCircle className="w-4 h-4" />
                   </div>
-                  <p className="text-xs font-medium text-gray-800">
+                  <p className="text-xs font-medium text-white">
                     Real story from a small hiking group
                   </p>
                 </div>
-                <p className="text-xs text-gray-700 mb-2">
-                  “We were three strangers who met on Travel Buddy for a weekend
-                  trip. Now we plan at least one hike together every month.”
+                <p className="text-xs text-gray-200 mb-2">
+                  "We were three strangers who met on Travel Buddy for a weekend
+                  trip. Now we plan at least one hike together every month."
                 </p>
-                <p className="text-[11px] text-gray-500">— Lina, Prague</p>
+                <p className="text-[11px] text-gray-300">— Lina, Prague</p>
               </div>
             </div>
           </div>
         </section>
 
         {/* CTA */}
-        <section className="bg-black">
-          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-10 sm:py-14 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <section className="py-10 sm:py-14">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-xl sm:text-2xl font-semibold text-white mb-2">
                 Ready to find your next travel buddy?
               </h2>
-              <p className="text-sm text-gray-300 max-w-xl">
+              <p className="text-sm text-gray-200 max-w-xl">
                 Create a free profile in under two minutes. You can decide later
                 which trips to actually say yes to.
               </p>
@@ -411,13 +411,13 @@ const Landing: React.FC = () => {
             <div className="flex flex-wrap gap-3">
               <Link
                 to="/signup"
-                className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100"
+                className="inline-flex items-center justify-center rounded-full glass-strong px-5 py-2 text-sm font-semibold text-black shadow-sm"
               >
                 Get started
               </Link>
               <Link
                 to="/login"
-                className="inline-flex items-center justify-center rounded-full border border-gray-400 bg-transparent px-5 py-2 text-sm font-medium text-gray-100 hover:bg-gray-800"
+                className="inline-flex items-center justify-center rounded-full glass-button px-5 py-2 text-sm font-medium text-white"
               >
                 Log in
               </Link>
@@ -427,14 +427,101 @@ const Landing: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-black">
-        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} Travel Buddy. Built for real travelers.
-          </p>
-          <div className="flex gap-4 text-xs text-gray-500">
-            <button className="hover:text-gray-800">Privacy</button>
-            <button className="hover:text-gray-800">Terms</button>
+      <footer className="glass-nav">
+        <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+          {/* Brand + stores */}
+          <div className="space-y-3 max-w-sm">
+            <div className="flex items-center gap-2">
+              <div className="glass-button-dark p-2 rounded-lg shadow-sm">
+                <Map className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-white">
+                Travel Buddy
+              </span>
+            </div>
+            <p className="text-xs text-gray-200">
+              Find hiking friends, share routes, and turn solo weekend plans
+              into small group adventures across Nepal.
+            </p>
+            <div className="flex gap-3">
+              <button className="h-9 rounded-md glass-button px-3 text-[11px] font-medium text-white hover:opacity-80">
+                App Store
+              </button>
+              <button className="h-9 rounded-md glass-button px-3 text-[11px] font-medium text-white hover:opacity-80">
+                Google Play
+              </button>
+            </div>
+          </div>
+
+          {/* Link columns */}
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-6 text-xs text-gray-200">
+            <div>
+              <p className="mb-3 font-semibold text-white">Explore</p>
+              <ul className="space-y-2">
+                <li>
+                  <button className="hover:text-white transition-colors">Hikes</button>
+                </li>
+                <li>
+                  <button className="hover:text-white transition-colors">Mountains</button>
+                </li>
+                <li>
+                  <button className="hover:text-white transition-colors">Map</button>
+                </li>
+                <li>
+                  <button className="hover:text-white transition-colors">Trails</button>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="mb-3 font-semibold text-white">Company</p>
+              <ul className="space-y-2">
+                <li>
+                  <button className="hover:text-white transition-colors">About</button>
+                </li>
+                <li>
+                  <button className="hover:text-white transition-colors">Partners</button>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="mb-3 font-semibold text-white">Legal</p>
+              <ul className="space-y-2">
+                <li>
+                  <button className="hover:text-white transition-colors">
+                    Privacy Policy
+                  </button>
+                </li>
+                <li>
+                  <button className="hover:text-white transition-colors">
+                    Terms of Service
+                  </button>
+                </li>
+                <li>
+                  <button className="hover:text-white transition-colors">
+                    Cookie Policy
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom row */}
+        <div className="border-t border-white/20">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[11px] text-gray-200">
+              © {new Date().getFullYear()} Travel Buddy. All rights reserved.
+            </p>
+            <div className="flex items-center gap-4 text-[11px] text-gray-200">
+              <button className="hover:text-white transition-colors">Privacy</button>
+              <button className="hover:text-white transition-colors">Terms</button>
+              <div className="inline-flex items-center gap-1 rounded-full glass-button px-2 py-1">
+                <span className="text-[11px] text-white">EN</span>
+                <span className="text-[11px] text-gray-200">English</span>
+              </div>
+            </div>
           </div>
         </div>
       </footer>

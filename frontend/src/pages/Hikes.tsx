@@ -8,7 +8,10 @@ import {
   SlidersHorizontal,
   CalendarDays,
   Users,
+  User,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import LogoutButton from "../components/LogoutButton";
 
 const API_BASE_URL =
   (import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:5000";
@@ -51,6 +54,7 @@ const difficultyLabel = (value: number) => `Difficulty: ${value}/5`;
 
 const Hikes: React.FC = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState<
     "all" | "1" | "2" | "3" | "4" | "5"
@@ -72,7 +76,8 @@ const Hikes: React.FC = () => {
         if (!res.ok) {
           throw new Error(data.message || "Unable to fetch hikes.");
         }
-        setHikes(data);
+        // Handle paginated response
+        setHikes(data.hikes || data);
       } catch (err) {
         console.error("Error fetching hikes:", err);
         setError(
@@ -126,54 +131,88 @@ const Hikes: React.FC = () => {
   }, [hikes, search, difficulty, place, sortBy]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="border-b border-black bg-white">
+      <header className="glass-nav">
         <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 flex items-center justify-between h-16">
           {/* Logo */}
           <button
             type="button"
             className="flex items-center gap-2 cursor-pointer"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(isAuthenticated ? "/homepage" : "/")}
           >
-            <div className="bg-black text-white p-2 rounded-lg shadow-sm">
-              <Map className="w-5 h-5" />
+            <div className="glass-button-dark p-2 rounded-lg shadow-sm">
+              <Map className="w-5 h-5 text-white" />
             </div>
-            <span className="text-base sm:text-lg font-semibold text-black">
+            <span className="text-base sm:text-lg font-semibold text-white">
               Travel Buddy
             </span>
           </button>
 
           {/* Nav links (desktop) */}
           <nav className="hidden md:flex items-center gap-6 text-sm">
-            <Link
-              to="/"
-              className="text-gray-600 hover:text-black transition-colors"
-            >
-              Home
-            </Link>
-            <Link
-              to="/hikes"
-              className="text-black font-medium border-b-2 border-black pb-1"
-            >
-              Hikes
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/homepage"
+                  className="text-gray-200 hover:text-white transition-colors"
+                >
+                  Home
+                </Link>
+                <Link
+                  to="/hikes"
+                  className="text-white font-medium border-b-2 border-white pb-1"
+                >
+                  Hikes
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/"
+                  className="text-gray-200 hover:text-white transition-colors"
+                >
+                  Home
+                </Link>
+                <Link
+                  to="/hikes"
+                  className="text-white font-medium border-b-2 border-white pb-1"
+                >
+                  Hikes
+                </Link>
+              </>
+            )}
           </nav>
 
           {/* Auth buttons */}
           <div className="flex items-center gap-3">
-            <Link
-              to="/login"
-              className="hidden sm:inline-flex text-sm text-gray-700 hover:text-black"
-            >
-              Log in
-            </Link>
-            <Link
-              to="/signup"
-              className="inline-flex items-center justify-center rounded-full bg-black px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-gray-800"
-            >
-              Get started
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/profile"
+                  className="hidden sm:inline-flex items-center gap-2 text-sm text-gray-200 hover:text-white"
+                >
+                  <User className="w-4 h-4" />
+                  {user?.name || "Profile"}
+                </Link>
+                <LogoutButton />
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="hidden sm:inline-flex text-sm text-gray-200 hover:text-white"
+                >
+                  Log in
+                </Link>
+                <Link
+                  to="/signup"
+                  className="inline-flex items-center justify-center rounded-full glass-button-dark px-4 py-1.5 text-sm font-medium text-white shadow-sm"
+                >
+                  Get started
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -181,18 +220,18 @@ const Hikes: React.FC = () => {
       {/* Main content */}
       <main className="flex-1">
         {/* Hero + filters */}
-        <section className="border-b border-black bg-white">
-          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8 lg:py-10">
+        <section className="py-8 lg:py-10">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
-                <p className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 mb-3">
+                <p className="inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1 text-xs font-medium text-black mb-3">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
                   <span>Hikes in Nepal • Find your next trail buddy</span>
                 </p>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-black mb-2">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-white mb-2">
                   Join group hikes in the hills and mountains of Nepal
                 </h1>
-                <p className="text-sm sm:text-base text-gray-600 max-w-2xl">
+                <p className="text-sm sm:text-base text-gray-200 max-w-2xl">
                   Explore classic day hikes around Kathmandu and Pokhara, or
                   join short treks in the Annapurna region. Filter by difficulty
                   and place to find hikes that fit you.
@@ -201,15 +240,15 @@ const Hikes: React.FC = () => {
 
               {/* Place filter */}
               <div className="mt-2 md:mt-0">
-                <label className="block text-xs font-medium text-gray-500 mb-1">
+                <label className="block text-xs font-medium text-gray-300 mb-1">
                   Place
                 </label>
-                <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 shadow-sm">
-                  <Globe2 className="w-4 h-4 text-gray-500" />
+                <div className="inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1.5 shadow-sm">
+                  <Globe2 className="w-4 h-4 text-gray-300" />
                   <select
                     value={place}
                     onChange={(e) => setPlace(e.target.value)}
-                    className="bg-transparent border-none text-sm text-gray-800 focus:outline-none focus:ring-0 pr-3"
+                    className="bg-transparent border-none text-sm text-white placeholder:text-gray-300 focus:outline-none focus:ring-0 pr-3"
                   >
                     <option value="all">All places</option>
                     {places.map((p) => (
@@ -226,13 +265,13 @@ const Hikes: React.FC = () => {
             <div className="mt-6 space-y-3">
               {/* Search */}
               <div className="relative">
-                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-gray-300 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search hikes, viewpoints, or trails in Nepal…"
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50/60 py-2.5 pl-9 pr-3 text-sm text-gray-800 placeholder:text-gray-400 focus:border-gray-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gray-900/10"
+                  className="w-full rounded-xl glass-input py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-gray-300 focus:outline-none focus:ring-1 focus:ring-white"
                 />
               </div>
 
@@ -240,7 +279,7 @@ const Hikes: React.FC = () => {
                 <div className="flex flex-wrap gap-3 items-center">
                   {/* Difficulty */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                    <label className="block text-xs font-medium text-gray-300 mb-1">
                       Difficulty
                     </label>
                     <select
@@ -248,7 +287,7 @@ const Hikes: React.FC = () => {
                       onChange={(e) =>
                         setDifficulty(e.target.value as typeof difficulty)
                       }
-                      className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900/10"
+                      className="rounded-lg glass-input px-3 py-2 text-xs sm:text-sm text-white placeholder:text-gray-300 focus:outline-none focus:ring-1 focus:ring-white"
                     >
                       <option value="all">All difficulties</option>
                       <option value="1">1/5 – Very easy</option>
@@ -261,17 +300,17 @@ const Hikes: React.FC = () => {
 
                   {/* Sort by */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                    <label className="block text-xs font-medium text-gray-300 mb-1">
                       Sort by
                     </label>
-                    <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs sm:text-sm text-gray-800 focus-within:border-gray-900 focus-within:ring-1 focus-within:ring-gray-900/10">
-                      <SlidersHorizontal className="w-3.5 h-3.5 text-gray-400" />
+                    <div className="flex items-center gap-2 rounded-lg glass-input px-3 py-2 text-xs sm:text-sm text-white focus-within:ring-1 focus-within:ring-white">
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-gray-300" />
                       <select
                         value={sortBy}
                         onChange={(e) =>
                           setSortBy(e.target.value as typeof sortBy)
                         }
-                        className="bg-transparent border-none text-xs sm:text-sm text-gray-800 focus:outline-none focus:ring-0"
+                        className="bg-transparent border-none text-xs sm:text-sm text-white focus:outline-none focus:ring-0"
                       >
                         <option value="dateDesc">Newest first</option>
                         <option value="dateAsc">Oldest first</option>
@@ -280,7 +319,7 @@ const Hikes: React.FC = () => {
                   </div>
                 </div>
 
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-300">
                   Showing{" "}
                   <span className="font-medium">{filteredHikes.length}</span> of{" "}
                   {hikes.length} hikes
@@ -295,21 +334,21 @@ const Hikes: React.FC = () => {
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
             {isLoading ? (
               <div className="text-center py-12">
-                <p className="text-gray-600">Loading hikes...</p>
+                <p className="text-gray-200">Loading hikes...</p>
               </div>
             ) : error ? (
               <div className="text-center py-12">
-                <p className="text-red-600 mb-4">{error}</p>
+                <p className="text-red-300 mb-4">{error}</p>
                 <button
                   onClick={() => window.location.reload()}
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                  className="px-4 py-2 glass-button-dark rounded-lg"
                 >
                   Retry
                 </button>
               </div>
             ) : filteredHikes.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-600">
+                <p className="text-gray-200">
                   {hikes.length === 0
                     ? "No hikes available yet. Be the first to create one!"
                     : "No hikes match your filters."}
@@ -320,7 +359,7 @@ const Hikes: React.FC = () => {
                 {filteredHikes.map((hike) => (
                   <article
                     key={hike._id}
-                    className="bg-white rounded-xl shadow-sm border border-black overflow-hidden flex flex-col hover:shadow-md transition-shadow"
+                    className="glass-card rounded-xl shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow"
                   >
                     <div className="relative h-48 bg-gray-200">
                       {hike.imageUrl ? (
@@ -331,30 +370,30 @@ const Hikes: React.FC = () => {
                         />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center bg-gray-100">
-                          <Map className="w-12 h-12 text-gray-400" />
+                          <Map className="w-12 h-12 text-gray-300" />
                         </div>
                       )}
-                      <span className="absolute top-3 right-3 inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium text-black shadow-sm">
+                      <span className="absolute top-3 right-3 inline-flex items-center rounded-full glass-strong px-3 py-1 text-[11px] font-medium text-black shadow-sm">
                         {difficultyLabel(hike.difficulty)}
                       </span>
                     </div>
 
                     <div className="flex-1 flex flex-col p-4">
                       <div className="mb-2">
-                        <p className="text-xs uppercase tracking-wide text-gray-400">
+                        <p className="text-xs uppercase tracking-wide text-gray-300">
                           {hike.location} • {extractPlace(hike.location)}
                         </p>
-                        <h2 className="mt-1 text-base font-semibold text-black">
+                        <h2 className="mt-1 text-base font-semibold text-white">
                           {hike.title}
                         </h2>
                         {hike.description && (
-                          <p className="mt-2 text-xs text-gray-600 line-clamp-2">
+                          <p className="mt-2 text-xs text-gray-200 line-clamp-2">
                             {hike.description}
                           </p>
                         )}
                       </div>
 
-                      <div className="mt-auto pt-2 flex items-center justify-between text-xs text-gray-500">
+                      <div className="mt-auto pt-2 flex items-center justify-between text-xs text-gray-300">
                         <div className="inline-flex items-center gap-1">
                           <CalendarDays className="w-3.5 h-3.5" />
                           <span>{formatDate(hike.date)}</span>
@@ -375,79 +414,79 @@ const Hikes: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-black">
+      <footer className="glass-nav">
         <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           {/* Brand + stores */}
           <div className="space-y-3 max-w-sm">
             <div className="flex items-center gap-2">
-              <div className="bg-gray-900 text-white p-2 rounded-lg shadow-sm">
-                <Map className="w-4 h-4" />
+              <div className="glass-button-dark p-2 rounded-lg shadow-sm">
+                <Map className="w-4 h-4 text-white" />
               </div>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm font-semibold text-white">
                 Travel Buddy
               </span>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-200">
               Find hiking friends, share routes, and turn solo weekend plans
               into small group adventures across Nepal.
             </p>
             <div className="flex gap-3">
-              <button className="h-9 rounded-md border border-gray-200 px-3 text-[11px] font-medium text-gray-700 hover:bg-gray-50">
+              <button className="h-9 rounded-md glass-button px-3 text-[11px] font-medium text-white hover:opacity-80">
                 App Store
               </button>
-              <button className="h-9 rounded-md border border-gray-200 px-3 text-[11px] font-medium text-gray-700 hover:bg-gray-50">
+              <button className="h-9 rounded-md glass-button px-3 text-[11px] font-medium text-white hover:opacity-80">
                 Google Play
               </button>
             </div>
           </div>
 
           {/* Link columns */}
-          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-6 text-xs text-gray-500">
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-6 text-xs text-gray-200">
             <div>
-              <p className="mb-3 font-semibold text-gray-700">Explore</p>
+              <p className="mb-3 font-semibold text-white">Explore</p>
               <ul className="space-y-2">
                 <li>
-                  <button className="hover:text-gray-800">Hikes</button>
+                  <button className="hover:text-white transition-colors">Hikes</button>
                 </li>
                 <li>
-                  <button className="hover:text-gray-800">Mountains</button>
+                  <button className="hover:text-white transition-colors">Mountains</button>
                 </li>
                 <li>
-                  <button className="hover:text-gray-800">Map</button>
+                  <button className="hover:text-white transition-colors">Map</button>
                 </li>
                 <li>
-                  <button className="hover:text-gray-800">Trails</button>
+                  <button className="hover:text-white transition-colors">Trails</button>
                 </li>
               </ul>
             </div>
 
             <div>
-              <p className="mb-3 font-semibold text-gray-700">Company</p>
+              <p className="mb-3 font-semibold text-white">Company</p>
               <ul className="space-y-2">
                 <li>
-                  <button className="hover:text-gray-800">About</button>
+                  <button className="hover:text-white transition-colors">About</button>
                 </li>
                 <li>
-                  <button className="hover:text-gray-800">Partners</button>
+                  <button className="hover:text-white transition-colors">Partners</button>
                 </li>
               </ul>
             </div>
 
             <div>
-              <p className="mb-3 font-semibold text-gray-700">Legal</p>
+              <p className="mb-3 font-semibold text-white">Legal</p>
               <ul className="space-y-2">
                 <li>
-                  <button className="hover:text-gray-800">
+                  <button className="hover:text-white transition-colors">
                     Privacy Policy
                   </button>
                 </li>
                 <li>
-                  <button className="hover:text-gray-800">
+                  <button className="hover:text-white transition-colors">
                     Terms of Service
                   </button>
                 </li>
                 <li>
-                  <button className="hover:text-gray-800">
+                  <button className="hover:text-white transition-colors">
                     Cookie Policy
                   </button>
                 </li>
@@ -457,17 +496,17 @@ const Hikes: React.FC = () => {
         </div>
 
         {/* Bottom row */}
-        <div className="border-t border-gray-100">
+        <div className="border-t border-white/20">
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-[11px] text-gray-500">
+            <p className="text-[11px] text-gray-200">
               © {new Date().getFullYear()} Travel Buddy. All rights reserved.
             </p>
-            <div className="flex items-center gap-4 text-[11px] text-gray-500">
-              <button className="hover:text-gray-800">Privacy</button>
-              <button className="hover:text-gray-800">Terms</button>
-              <div className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-2 py-1">
-                <span className="text-[11px] text-gray-600">EN</span>
-                <span className="text-[11px] text-gray-400">English</span>
+            <div className="flex items-center gap-4 text-[11px] text-gray-200">
+              <button className="hover:text-white transition-colors">Privacy</button>
+              <button className="hover:text-white transition-colors">Terms</button>
+              <div className="inline-flex items-center gap-1 rounded-full glass-button px-2 py-1">
+                <span className="text-[11px] text-white">EN</span>
+                <span className="text-[11px] text-gray-200">English</span>
               </div>
             </div>
           </div>
