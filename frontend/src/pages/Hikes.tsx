@@ -13,6 +13,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import LogoutButton from "../components/LogoutButton";
 import { getHikes } from "../services/hikes";
+import ConnectModal from "../components/hikes/ConnectModal";
 
 type Hike = {
   _id: string;
@@ -62,6 +63,7 @@ const Hikes: React.FC = () => {
   const [hikes, setHikes] = useState<Hike[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [connectHike, setConnectHike] = useState<Hike | null>(null);
 
   // Fetch hikes from API
   useEffect(() => {
@@ -373,9 +375,15 @@ const Hikes: React.FC = () => {
 
                     <div className="flex-1 flex flex-col p-4">
                       <div className="mb-2">
-                        <p className="text-xs uppercase tracking-wide text-gray-300">
-                          {hike.location} • {extractPlace(hike.location)}
-                        </p>
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="text-xs uppercase tracking-wide text-gray-300">
+                            {hike.location} • {extractPlace(hike.location)}
+                          </p>
+                          <div className="inline-flex items-center gap-1 text-white">
+                            <Users className="w-3.5 h-3.5 text-white" />
+                            <span>{hike.spotsLeft} spots left</span>
+                          </div>
+                        </div>
                         <h2 className="mt-1 text-base font-semibold text-white">
                           {hike.title}
                         </h2>
@@ -391,10 +399,16 @@ const Hikes: React.FC = () => {
                           <CalendarDays className="w-3.5 h-3.5" />
                           <span>{formatDate(hike.date)}</span>
                         </div>
-                        <div className="inline-flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5" />
-                          <span>{hike.spotsLeft} spots left</span>
-                        </div>
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center rounded-full glass-button px-3 py-1 text-[11px] font-medium text-white shadow-sm hover:opacity-80 active:scale-95 focus:outline-none focus:ring-2 focus:ring-white"
+                          aria-label={`Open connect dialog for ${hike.title}`}
+                          aria-haspopup="dialog"
+                          aria-controls={`connect-dialog-${hike._id}`}
+                          onClick={() => setConnectHike(hike)}
+                        >
+                          Connect
+                        </button>
                       </div>
                     </div>
                   </article>
@@ -404,6 +418,13 @@ const Hikes: React.FC = () => {
 
           </div>
         </section>
+        {connectHike && (
+          <ConnectModal
+            open={!!connectHike}
+            hike={connectHike}
+            onClose={() => setConnectHike(null)}
+          />
+        )}
       </main>
 
       {/* Footer */}

@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "../config/env";
+import { getJson, postJson, deleteJson } from "../utils/http";
 
 export type PhotoItem = {
   _id: string;
@@ -10,42 +10,32 @@ export type PhotoItem = {
 };
 
 export const getUserPhotos = async (userName: string): Promise<PhotoItem[]> => {
-  const res = await fetch(
-    `${API_BASE_URL}/api/photos?userName=${encodeURIComponent(userName)}`
+  const { res, data } = await getJson(
+    `/api/photos?userName=${encodeURIComponent(userName)}`
   );
-  const data = await res.json();
-  if (!res.ok) throw new Error(data?.message || "Unable to fetch photos.");
-  return data.photos || data;
+  if (!res.ok) throw new Error((data as any)?.message || "Unable to fetch photos.");
+  return (data as any).photos || data;
 };
 
 export const getLatestPhotos = async (): Promise<PhotoItem[]> => {
-  const res = await fetch(`${API_BASE_URL}/api/photos/latest`);
-  const data = await res.json();
-  if (!res.ok) throw new Error(data?.message || "Unable to load photos.");
-  const photosArray = Array.isArray(data) ? data : Array.isArray((data as any).photos) ? (data as any).photos : [];
-  return photosArray;
+  const { res, data } = await getJson(`/api/photos/latest`);
+  if (!res.ok) throw new Error((data as any)?.message || "Unable to load photos.");
+  const photosArray = Array.isArray(data)
+    ? (data as any)
+    : Array.isArray((data as any).photos)
+    ? (data as any).photos
+    : [];
+  return photosArray as PhotoItem[];
 };
 
 export const uploadPhotos = async (images: string[], caption?: string, token?: string) => {
-  const res = await fetch(`${API_BASE_URL}/api/photos`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: token ? `Bearer ${token}` : "",
-    },
-    body: JSON.stringify({ images, caption }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data?.message || "Unable to upload photo(s).");
+  const { res, data } = await postJson(`/api/photos`, { images, caption }, token);
+  if (!res.ok) throw new Error((data as any)?.message || "Unable to upload photo(s).");
   return data;
 };
 
 export const deletePhoto = async (id: string, token?: string) => {
-  const res = await fetch(`${API_BASE_URL}/api/photos/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: token ? `Bearer ${token}` : "" },
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data?.message || "Unable to delete photo.");
+  const { res, data } = await deleteJson(`/api/photos/${id}`, token);
+  if (!res.ok) throw new Error((data as any)?.message || "Unable to delete photo.");
   return data;
 };
