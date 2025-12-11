@@ -12,9 +12,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import LogoutButton from "../components/LogoutButton";
-
-const API_BASE_URL =
-  (import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:5000";
+import { getHikes } from "../services/hikes";
 
 type Hike = {
   _id: string;
@@ -71,13 +69,8 @@ const Hikes: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/hikes`);
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.message || "Unable to fetch hikes.");
-        }
-        // Handle paginated response
-        setHikes(data.hikes || data);
+        const fetched = await getHikes();
+        setHikes(fetched);
       } catch (err) {
         console.error("Error fetching hikes:", err);
         setError(

@@ -1,0 +1,67 @@
+import React, { useEffect, useRef } from "react";
+import { GOOGLE_CLIENT_ID } from "../config/env";
+
+type RenderOptions = {
+  theme?: "outline" | "filled_blue" | "filled_black";
+  size?: "large" | "medium" | "small";
+  text?: "signin_with" | "signup_with" | "continue_with" | "signin" | "signup" | "continue";
+  type?: "standard" | "icon";
+  width?: string | number;
+};
+
+type GoogleAuthButtonProps = {
+  onCredential: (credential: string) => void;
+  clientId?: string;
+  renderOptions?: RenderOptions;
+  className?: string;
+};
+
+const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
+  onCredential,
+  clientId = GOOGLE_CLIENT_ID,
+  renderOptions,
+  className,
+}) => {
+  const buttonRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!clientId) return;
+
+    const init = () => {
+      const w = window as any;
+      if (!w.google || !buttonRef.current) return;
+
+      w.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: (response: any) => {
+          const cred = response?.credential;
+          if (cred) onCredential(cred);
+        },
+      });
+
+      w.google.accounts.id.renderButton(buttonRef.current, {
+        theme: "outline",
+        size: "large",
+        type: "standard",
+        text: "continue_with",
+        ...(renderOptions || {}),
+      });
+    };
+
+    const w = window as any;
+    if (!w.google) {
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = init;
+      document.body.appendChild(script);
+    } else {
+      init();
+    }
+  }, [clientId, onCredential, renderOptions]);
+
+  return <div ref={buttonRef} className={className} />;
+};
+
+export default GoogleAuthButton;

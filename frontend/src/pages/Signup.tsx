@@ -1,10 +1,14 @@
 // src/pages/Signup.tsx
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Map } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { GOOGLE_CLIENT_ID } from "../config/env";
+import GoogleAuthButton from "../components/GoogleAuthButton";
+import AuthHeader from "../components/AuthHeader";
+import StatusAlert from "../components/StatusAlert";
+import { signup as signupRequest, googleAuth, storeToken } from "../services/auth";
 
 type SignupFormValues = {
   name: string;
@@ -17,21 +21,6 @@ type SignupFormValues = {
   interests: string;
 };
 
-const API_BASE_URL =
-  (import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:5000";
-
-const GOOGLE_CLIENT_ID =
-  (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || "";
-
-if (!(import.meta as any).env?.VITE_API_BASE_URL) {
-  console.warn(
-    "VITE_API_BASE_URL is not set. Falling back to http://localhost:5000"
-  );
-}
-
-if (!GOOGLE_CLIENT_ID) {
-  console.warn("VITE_GOOGLE_CLIENT_ID is not set. Google signup is disabled.");
-}
 
 type LocationState = {
   from?: string;
@@ -42,7 +31,6 @@ const Signup: React.FC = () => {
   const location = useLocation();
   const redirectPath = location.state?.from || "/homepage";
   const { loginWithProfile, isAuthenticated } = useAuth();
-  const googleSignupButtonRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -91,33 +79,18 @@ const Signup: React.FC = () => {
     onSubmit: async (formValues, { setSubmitting, setStatus }) => {
       setStatus(undefined);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: formValues.name,
-            email: formValues.email,
-            password: formValues.password,
-            country: formValues.country || undefined,
-            travelStyle: formValues.travelStyle || undefined,
-            budgetRange: formValues.budgetRange || undefined,
-            interests: formValues.interests || undefined,
-          }),
+        const data = await signupRequest({
+          name: formValues.name,
+          email: formValues.email,
+          password: formValues.password,
+          country: formValues.country || undefined,
+          travelStyle: formValues.travelStyle || undefined,
+          budgetRange: formValues.budgetRange || undefined,
+          interests: formValues.interests || undefined,
         });
 
-        const data = await res.json();
+        storeToken(data.token);
 
-        if (!res.ok) {
-          setStatus(data.message || "Signup failed. Please try again.");
-          return;
-        }
-
-        // ✅ store JWT token if provided
-        if (data.token) {
-          localStorage.setItem("travelBuddyToken", data.token);
-        }
-
-        // ✅ save user in AuthContext so they are logged in immediately
         if (data.user) {
           loginWithProfile({
             name: data.user.name,
@@ -133,9 +106,9 @@ const Signup: React.FC = () => {
 
         setStatus("Account created! Redirecting...");
         navigate(redirectPath, { replace: true });
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
-        setStatus("Something went wrong. Please try again.");
+        setStatus(err?.message || "Signup failed. Please try again.");
       } finally {
         setSubmitting(false);
       }
@@ -145,25 +118,12 @@ const Signup: React.FC = () => {
   // ---------- Google signup (calls backend & saves to DB) ----------
   const handleGoogleResponse = async (response: any) => {
     try {
-      const credential = response.credential;
+      const credential = response.credential || response; // support component callback
       if (!credential) return;
 
-      const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credential }),
-      });
+      const data = await googleAuth(credential);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setStatus(data.message || "Google signup failed. Please try again.");
-        return;
-      }
-
-      if (data.token) {
-        localStorage.setItem("travelBuddyToken", data.token);
-      }
+      storeToken(data.token);
 
       if (data.user) {
         loginWithProfile({
@@ -179,77 +139,27 @@ const Signup: React.FC = () => {
       }
 
       navigate(redirectPath, { replace: true });
-    } catch (err) {
+    } catch (err: any) {
       console.error("Google signup error:", err);
-      setStatus("Google signup failed. Please try again.");
+      setStatus(err?.message || "Google signup failed. Please try again.");
     }
   };
 
-  useEffect(() => {
-    if (!GOOGLE_CLIENT_ID) return;
-
-    const initGoogle = () => {
-      const w = window as any;
-      if (!w.google || !googleSignupButtonRef.current) return;
-
-      w.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleResponse,
-      });
-
-      w.google.accounts.id.renderButton(googleSignupButtonRef.current, {
-        theme: "outline",
-        size: "large",
-        width: "100%",
-        type: "standard",
-        text: "continue_with",
-      });
-    };
-
-    const w = window as any;
-    if (!w.google) {
-      const script = document.createElement("script");
-      script.src = "https://accounts.google.com/gsi/client";
-      script.async = true;
-      script.defer = true;
-      script.onload = initGoogle;
-      document.body.appendChild(script);
-    } else {
-      initGoogle();
-    }
-  }, []);
+  useEffect(() => {}, []);
 
   // ---------- UI ----------
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      {/* Logo & Heading */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex items-center justify-center gap-2">
-          <div className="glass-button-dark p-2 rounded-lg shadow-sm">
-            <Map className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-2xl font-semibold tracking-tight text-white">
-            Travel Buddy
-          </span>
-        </div>
-        <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-white">
-          Create your account
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-200">
-          Start planning smarter trips with people who match your vibe.
-        </p>
-      </div>
+      <AuthHeader
+        title="Create your account"
+        subtitle="Start planning smarter trips with people who match your vibe."
+      />
 
       {/* Card */}
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
         <div className="glass-card py-8 px-6 shadow-sm rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-            {/* Status alert */}
-            {status && (
-              <div className="rounded-md glass-dark px-4 py-2 text-sm text-white">
-                {status}
-              </div>
-            )}
+            <StatusAlert message={status} />
 
             {/* Name & Email */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -486,8 +396,10 @@ const Signup: React.FC = () => {
             </div>
 
             <div className="flex justify-center mt-2">
-              <div
-                ref={googleSignupButtonRef}
+              <GoogleAuthButton
+                onCredential={(cred) => handleGoogleResponse(cred)}
+                clientId={GOOGLE_CLIENT_ID}
+                renderOptions={{ theme: "outline", size: "large", type: "standard", text: "continue_with", width: "100%" }}
                 className="w-full max-w-xs"
               />
             </div>

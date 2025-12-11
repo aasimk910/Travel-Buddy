@@ -6,9 +6,8 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import DOMPurify from "dompurify";
 import { compressImage } from "../utils/imageCompression";
-
-const API_BASE_URL =
-  (import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:5000";
+import { API_BASE_URL } from "../config/env";
+import { getUserPhotos } from "../services/photos";
 
 const MAX_PHOTO_SIZE_BYTES = 6 * 1024 * 1024; // 6MB
 
@@ -71,13 +70,7 @@ const Profile: React.FC = () => {
 
     setIsLoadingPhotos(true);
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/photos?userName=${encodeURIComponent(user.name)}`
-      );
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || "Unable to fetch photos.");
-      }
+      const data = await getUserPhotos(user.name);
       setUserPhotos(data);
     } catch (err) {
       console.error("Error fetching user photos:", err);
@@ -526,4 +519,3 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
-
