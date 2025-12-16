@@ -13,6 +13,7 @@ export type LoginPayload = {
 };
 
 export type SignupPayload = {
+  recaptchaToken: string;
   name: string;
   email: string;
   password: string;

@@ -1,13 +1,11 @@
 // src/pages/Homepage.tsx
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import TopNav from "../components/homepage/TopNav";
 import ProfileSummaryCard from "../components/homepage/ProfileSummaryCard";
 import ReviewCard from "../components/homepage/ReviewCard";
 import PhotoUploadCard from "../components/homepage/PhotoUploadCard";
 import PhotoFeed from "../components/homepage/PhotoFeed";
 import CreateHikeModal from "../components/homepage/CreateHikeModal";
-import SiteFooter from "../components/SiteFooter";
 import { getLatestPhotos } from "../services/photos";
 
  
@@ -38,9 +36,8 @@ const Homepage: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen">
-      <TopNav />
-      <main className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8">
+    <>
+      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Welcome back, {user?.name || "Traveler"}! 👋</h1>
           <p className="text-gray-200">Welcome to the mountain lovers community!</p>
@@ -76,10 +73,9 @@ const Homepage: React.FC = () => {
         {(isLoadingPhotos || (Array.isArray(photos) && photos.length > 0) || photosError) && (
           <PhotoFeed photos={photos as any} isLoading={isLoadingPhotos} error={photosError} currentUserName={user?.name || "Traveler"} onDeleted={(id) => setPhotos((prev) => prev.filter((p: any) => p._id !== id))} />
         )}
-      </main>
-      <SiteFooter />
+      </div>
       <CreateHikeModal open={isCreateHikeModalOpen} onClose={() => setIsCreateHikeModalOpen(false)} />
-    </div>
+    </>
   );
 };
 

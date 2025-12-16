@@ -1,12 +1,21 @@
 import React from "react";
 import { Map, User } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import LogoutButton from "../LogoutButton";
 
 const TopNav: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const location = useLocation();
+
+  const getLinkClass = (path: string) => {
+    const baseClass = "transition-colors";
+    if (location.pathname === path) {
+      return `${baseClass} text-white font-medium border-b-2 border-white pb-1`;
+    }
+    return `${baseClass} text-gray-200 hover:text-white`;
+  };
 
   return (
     <header className="glass-nav sticky top-0 z-10">
@@ -25,17 +34,14 @@ const TopNav: React.FC = () => {
         </button>
 
         <nav className="hidden md:flex items-center gap-6 text-sm">
-          <Link
-            to="/homepage"
-            className="text-white font-medium border-b-2 border-white pb-1"
-          >
+          <Link to="/homepage" className={getLinkClass("/homepage")}>
             Home
           </Link>
-          <Link
-            to="/hikes"
-            className="text-gray-200 hover:text-white transition-colors"
-          >
+          <Link to="/hikes" className={getLinkClass("/hikes")}>
             Hikes
+          </Link>
+          <Link to="/dashboard" className={getLinkClass("/dashboard")}>
+            Dashboard
           </Link>
         </nav>
 

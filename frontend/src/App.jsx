@@ -7,24 +7,26 @@ import Profile from "./pages/Profile";
 import Landing from "./pages/Landing";
 import Homepage from "./pages/Homepage";
 import Hikes from "./pages/Hikes";
+import Dashboard from "./pages/Dashboard";
 import PrivateRoute from "./components/PrivateRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
+import MainLayout from "./components/MainLayout";
 
 const App = () => {
   return (
     <ErrorBoundary>
       <div className="min-h-screen">
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
           <Route
             path="/homepage"
             element={
               <PrivateRoute>
-                <ErrorBoundary>
+                <MainLayout>
                   <Homepage />
-                </ErrorBoundary>
+                </MainLayout>
               </PrivateRoute>
             }
           />
@@ -32,22 +34,32 @@ const App = () => {
             path="/profile"
             element={
               <PrivateRoute>
-                <ErrorBoundary>
+                <MainLayout>
                   <Profile />
-                </ErrorBoundary>
+                </MainLayout>
               </PrivateRoute>
             }
           />
           <Route
             path="/hikes"
             element={
-              <ErrorBoundary>
+              <MainLayout>
                 <Hikes />
-              </ErrorBoundary>
+              </MainLayout>
             }
           />
-      </Routes>
-    </div>
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <MainLayout>
+                  <Dashboard />
+                </MainLayout>
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </div>
     </ErrorBoundary>
   );
 };

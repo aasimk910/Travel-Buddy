@@ -1,10 +1,11 @@
 // src/pages/Signup.tsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { GOOGLE_CLIENT_ID } from "../config/env";
+import { GOOGLE_CLIENT_ID, VITE_RECAPTCHA_SITE_KEY } from "../config/env";
+import ReCAPTCHA from "react-google-recaptcha";
 import GoogleAuthButton from "../components/GoogleAuthButton";
 import AuthHeader from "../components/AuthHeader";
 import StatusAlert from "../components/StatusAlert";
@@ -31,6 +32,8 @@ const Signup: React.FC = () => {
   const location = useLocation();
   const redirectPath = location.state?.from || "/homepage";
   const { loginWithProfile, isAuthenticated } = useAuth();
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -76,10 +79,15 @@ const Signup: React.FC = () => {
       budgetRange: Yup.string(),
       interests: Yup.string(),
     }),
-    onSubmit: async (formValues, { setSubmitting, setStatus }) => {
+        onSubmit: async (formValues, { setSubmitting, setStatus }) => {
+      if (!recaptchaToken) {
+        setStatus("Please complete the reCAPTCHA.");
+        return;
+      }
       setStatus(undefined);
       try {
-        const data = await signupRequest({
+                const data = await signupRequest({
+          recaptchaToken,
           name: formValues.name,
           email: formValues.email,
           password: formValues.password,
@@ -370,11 +378,22 @@ const Signup: React.FC = () => {
               </div>
             </div>
 
+
+            {/* Recaptcha */}
+            <div className="flex justify-center">
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={VITE_RECAPTCHA_SITE_KEY}
+                onChange={(token) => setRecaptchaToken(token)}
+                onExpired={() => setRecaptchaToken(null)}
+              />
+            </div>
+
             {/* Submit */}
             <div>
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !recaptchaToken}
                 className="w-full flex justify-center py-2.5 px-4 rounded-md shadow-sm text-sm font-medium text-white glass-button-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-70"
               >
                 {isSubmitting ? "Creating account..." : "Create account"}

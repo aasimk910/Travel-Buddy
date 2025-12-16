@@ -2,6 +2,7 @@ const viteEnv = (import.meta as any).env || {};
 
 export const API_BASE_URL: string = viteEnv.VITE_API_BASE_URL || "http://localhost:5000";
 export const GOOGLE_CLIENT_ID: string = viteEnv.VITE_GOOGLE_CLIENT_ID || "";
+export const VITE_RECAPTCHA_SITE_KEY: string = viteEnv.VITE_RECAPTCHA_SITE_KEY || "";
 
 if (!viteEnv.VITE_API_BASE_URL) {
   console.warn("VITE_API_BASE_URL is not set. Falling back to http://localhost:5000");

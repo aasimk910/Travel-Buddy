@@ -3,6 +3,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
+const axios = require("axios");
 const User = require("../models/User");
 const { sendWelcomeEmail } = require("../utils/email");
 const { authLimiter } = require("../middleware/rateLimiter");
@@ -15,6 +16,7 @@ if (!JWT_SECRET) {
 }
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 
 if (!GOOGLE_CLIENT_ID) {
   console.warn(
@@ -43,6 +45,7 @@ const buildUserResponse = (user) => ({
 router.post("/signup", authLimiter, async (req, res) => {
   try {
     const {
+      recaptchaToken,
       name,
       email,
       password,
@@ -51,6 +54,27 @@ router.post("/signup", authLimiter, async (req, res) => {
       budgetRange,
       interests,
     } = req.body;
+
+        if (!recaptchaToken) {
+      return res.status(400).json({ message: "reCAPTCHA is required." });
+    }
+
+    try {
+      const recaptchaResponse = await axios.post(
+        `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`
+      );
+
+      if (!recaptchaResponse.data.success) {
+        return res
+          .status(400)
+          .json({ message: "reCAPTCHA verification failed." });
+      }
+    } catch (error) {
+      console.error("reCAPTCHA verification error:", error);
+      return res
+        .status(500)
+        .json({ message: "Error verifying reCAPTCHA." });
+    }
 
     if (!name || !email || !password) {
       return res
