@@ -49,7 +49,7 @@ const App = () => {
             }
           />
           <Route
-            path="/dashboard"
+            path="/dashboard/:hikeId"
             element={
               <PrivateRoute>
                 <MainLayout>

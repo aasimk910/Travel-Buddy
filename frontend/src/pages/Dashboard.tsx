@@ -1,13 +1,24 @@
 import React from 'react';
+import { useParams } from 'react-router-dom';
+import TripGroups from '../components/TripGroups';
+import ChatHeader from '../components/ChatHeader';
+import Chat from '../components/Chat';
+
 const Dashboard: React.FC = () => {
+  const { hikeId } = useParams<{ hikeId: string }>();
+
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8">
-      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-white mb-2">
-        Dashboard
-      </h1>
-      <p className="text-sm sm:text-base text-gray-200">
-        Welcome to your dashboard.
-      </p>
+    <div className="flex h-screen">
+      {/* Trip Groups Sidebar */}
+      <div className="w-1/4 border-r">
+        <TripGroups selectedHikeId={hikeId} />
+      </div>
+
+      {/* Main Content */}
+      <div className="w-3/4 flex flex-col">
+        <ChatHeader hikeId={hikeId} />
+        <Chat hikeId={hikeId} />
+      </div>
     </div>
   );
 };

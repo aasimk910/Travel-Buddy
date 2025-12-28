@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { CalendarDays, Users } from "lucide-react";
 import { useToast } from "../../context/ToastContext";
 
@@ -29,6 +30,7 @@ const extractPlace = (location: string): string => {
 };
 
 const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
+  const navigate = useNavigate();
   const { showSuccess } = useToast();
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const lastFocusedElementRef = useRef<HTMLElement | null>(null);
@@ -78,6 +80,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
       await new Promise((resolve) => setTimeout(resolve, 300));
       showSuccess("Joined hike");
       handleClose();
+      navigate(`/dashboard/${hike._id}`);
     } finally {
       setIsJoining(false);
     }

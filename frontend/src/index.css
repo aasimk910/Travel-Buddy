@@ -129,6 +129,11 @@ body::before {
   outline: none;
 }
 
+.glass-input option {
+  background: rgba(30, 41, 59, 1); /* A solid, dark color from your theme */
+  color: white;
+}
+
 /* Text colors for glassmorphism */
 .text-glass {
   color: rgba(255, 255, 255, 0.95);

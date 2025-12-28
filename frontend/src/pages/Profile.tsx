@@ -424,7 +424,7 @@ const Profile: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 px-6 py-3 glass-button-dark rounded-lg font-semibold disabled:opacity-60 transition-colors"
+                  className="flex-1 px-6 py-3 glass-button-dark rounded-lg font-semibold disabled:opacity-60 transition-colors text-white"
                 >
                   {isSubmitting ? "Saving..." : "Save Changes"}
                 </button>

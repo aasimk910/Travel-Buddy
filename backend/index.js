@@ -3,10 +3,19 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const http = require('http');
+const { Server } = require("socket.io");
 
 dotenv.config(); // loads .env from backend folder
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Adjust for production
+    methods: ["GET", "POST"]
+  }
+});
 
 // === Config ===
 const PORT = process.env.PORT || 5000;
@@ -61,6 +70,31 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong on the server" });
 });
 
+// === Socket.IO ===
+io.on('connection', (socket) => {
+  console.log('✅ a user connected');
+
+  socket.on('join room', (hikeId) => {
+    socket.join(hikeId);
+    console.log(`User joined room: ${hikeId}`);
+  });
+
+  socket.on('leave room', (hikeId) => {
+    socket.leave(hikeId);
+    console.log(`User left room: ${hikeId}`);
+  });
+
+  socket.on('chat message', (msg) => {
+    if (msg.hikeId) {
+      io.to(msg.hikeId).emit('chat message', msg);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('❌ user disconnected');
+  });
+});
+
 // === Start server & connect DB ===
 async function startServer() {
   try {
@@ -69,7 +103,7 @@ async function startServer() {
     });
     console.log("✅ Connected to MongoDB");
 
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`✨ Server running on http://localhost:${PORT}`);
     });
   } catch (err) {
