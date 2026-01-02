@@ -60,15 +60,15 @@ const Chat: React.FC<ChatProps> = ({ hikeId }) => {
       <div className="flex-1 overflow-y-auto p-4">
         {messages.map((message) => (
           <div key={message.id} className={`flex mb-4 ${message.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`rounded-lg p-3 max-w-lg ${message.sender === 'me' ? 'glass-dark text-glass' : 'glass-card text-gray-800'}`}>
-              {message.sender !== 'me' && <div className="font-bold mb-1 text-gray-700">{message.sender}</div>}
-              <p>{message.text}</p>
+            <div className={`rounded-lg p-3 max-w-lg ${message.sender === 'me' ? 'glass-dark text-glass' : 'glass-strong'}`}>
+              {message.sender !== 'me' && <div className="font-bold mb-1 text-gray-800">{message.sender}</div>}
+              <p className={`${message.sender === 'me' ? 'text-glass' : 'text-gray-900'}`}>{message.text}</p>
               <div className={`text-xs mt-1 ${message.sender === 'me' ? 'text-glass-dim' : 'text-gray-500'}`}>{message.time}</div>
             </div>
           </div>
         ))}
       </div>
-      <div className="p-4 glass-nav">
+      <div className="p-4 border-t border-white/20">
         <div className="flex items-center">
           <input
             type="text"

@@ -15,8 +15,8 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
   ];
 
   return (
-    <div className="p-4 glass-card h-full text-glass">
-      <h2 className="text-xl font-bold mb-4 text-glass-light">Trip Groups</h2>
+    <div className="glass-card rounded-lg p-4 h-full">
+      <h3 className="font-semibold mb-4 text-glass">Trip Groups</h3>
       <div className="relative mb-4">
         <input
           type="text"
@@ -42,10 +42,10 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
         {tripGroups.map((group) => (
           <li 
             key={group.id} 
-            className={`p-2 mb-2 rounded-lg glass-button cursor-pointer ${selectedHikeId === group.id ? 'bg-white/30' : ''}`}
+            className={`p-2 mb-2 rounded-lg cursor-pointer glass-button ${selectedHikeId === group.id ? 'bg-white/30' : ''}`}
             onClick={() => navigate(`/dashboard/${group.id}`)}
           >
-            <div className="font-bold text-glass-light">{group.name}</div>
+            <div className="font-semibold text-glass-light">{group.name}</div>
             <div className="text-sm text-glass-dim">{group.lastMessage}</div>
           </li>
         ))}
