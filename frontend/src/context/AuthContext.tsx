@@ -5,6 +5,7 @@ import React, {
   useState,
   useEffect,
 } from "react";
+import { socket } from '../socket';
 
 export type AuthUser = {
   name: string;
@@ -46,9 +47,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   useEffect(() => {
-    if (user && typeof window !== "undefined") {
+    if (user) {
+      socket.connect();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+    } else {
+      socket.disconnect();
+      localStorage.removeItem(STORAGE_KEY);
     }
+
+    return () => {
+      socket.disconnect();
+    };
   }, [user]);
 
   const saveUser = (u: AuthUser) => {
@@ -86,10 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logout = () => {
     setUser(null);
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  };
+      };
 
   const value: AuthContextType = {
     isAuthenticated: !!user,

@@ -1,9 +1,7 @@
 import React, { createContext, useContext } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { socket } from '../socket';
+import { Socket } from 'socket.io-client';
 
-const SOCKET_URL = 'http://localhost:5000'; // Adjust if your backend is on a different URL
-
-const socket = io(SOCKET_URL);
 
 const SocketContext = createContext<Socket>(socket);
 

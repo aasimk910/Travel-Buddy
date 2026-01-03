@@ -43,3 +43,15 @@ export const createHike = async (payload: CreateHikePayload, token: string) => {
   if (!res.ok) throw new Error(data?.message || "Unable to create hike.");
   return data;
 };
+
+export const joinHike = async (hikeId: string, token: string) => {
+  const res = await fetch(`${API_BASE_URL}/api/hikes/${hikeId}/join`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.message || "Unable to join hike.");
+  return data;
+};

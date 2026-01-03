@@ -1,5 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getUserTrips } from '../services/trips';
+import { useToast } from '../context/ToastContext';
+
+interface Trip {
+  _id: string;
+  name: string;
+  // lastMessage can be added later if the API supports it
+}
 
 interface TripGroupsProps {
   selectedHikeId?: string;
@@ -7,12 +15,25 @@ interface TripGroupsProps {
 
 const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
   const navigate = useNavigate();
-  // This should be fetched from an API
-  const tripGroups = [
-    { id: 'japan-trip', name: 'Japan Trip Group', lastMessage: 'Emma: Has anyone booked their flight y' },
-    { id: 'italy-trip', name: 'Italy Trip Group', lastMessage: 'Miguel: I found a great restaurant in Rom' },
-    { id: 'thailand-trip', name: 'Thailand Trip Group', lastMessage: 'Sarah: Anyone interested in a cookin' },
-  ];
+  const { showError } = useToast();
+  const [tripGroups, setTripGroups] = useState<Trip[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrips = async () => {
+      try {
+        const trips = await getUserTrips();
+        setTripGroups(trips);
+      } catch (error) {
+        console.error("Failed to fetch user trips:", error);
+        showError("Could not load your trip groups.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTrips();
+  }, [showError]);
 
   return (
     <div className="glass-card rounded-lg p-4 h-full">
@@ -39,16 +60,23 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
         </svg>
       </div>
       <ul>
-        {tripGroups.map((group) => (
-          <li 
-            key={group.id} 
-            className={`p-2 mb-2 rounded-lg cursor-pointer glass-button ${selectedHikeId === group.id ? 'bg-white/30' : ''}`}
-            onClick={() => navigate(`/dashboard/${group.id}`)}
-          >
-            <div className="font-semibold text-glass-light">{group.name}</div>
-            <div className="text-sm text-glass-dim">{group.lastMessage}</div>
-          </li>
-        ))}
+        {isLoading ? (
+          <p className="text-glass-dim text-center">Loading trips...</p>
+        ) : tripGroups.length === 0 ? (
+          <p className="text-glass-dim text-center">No trip groups found.</p>
+        ) : (
+          tripGroups.map((group) => (
+            <li 
+              key={group._id} 
+              className={`p-2 mb-2 rounded-lg cursor-pointer glass-button ${selectedHikeId === group._id ? 'bg-white/30' : ''}`}
+              onClick={() => navigate(`/dashboard/${group._id}`)}
+            >
+              <div className="font-semibold text-glass-light">{group.name}</div>
+              {/* Placeholder for last message */}
+              <div className="text-sm text-glass-dim italic">No recent messages</div>
+            </li>
+          ))
+        )}
       </ul>
     </div>
   );

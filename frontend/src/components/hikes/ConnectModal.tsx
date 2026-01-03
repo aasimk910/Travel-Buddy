@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, Users } from "lucide-react";
 import { useToast } from "../../context/ToastContext";
+import { useAuth } from "../../context/AuthContext";
+import { joinHike } from "../../services/hikes";
 
 type Hike = {
   _id: string;
@@ -31,7 +33,8 @@ const extractPlace = (location: string): string => {
 
 const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
   const navigate = useNavigate();
-  const { showSuccess } = useToast();
+  const { showSuccess, showError } = useToast();
+  const { user } = useAuth();
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const lastFocusedElementRef = useRef<HTMLElement | null>(null);
   const [isJoining, setIsJoining] = useState(false);
@@ -75,12 +78,21 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
   };
 
   const handleJoin = async () => {
+    const token = localStorage.getItem("travelBuddyToken");
+    if (!token) {
+      showError("You must be logged in to join a hike.");
+      return;
+    }
+
     setIsJoining(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      showSuccess("Joined hike");
+      const response = await joinHike(hike._id, token);
+      showSuccess("Successfully joined the hike!");
       handleClose();
-      navigate(`/dashboard/${hike._id}`);
+      navigate(`/dashboard/${response.trip._id}`);
+    } catch (error) {
+      console.error("Failed to join hike:", error);
+      showError(error instanceof Error ? error.message : "An unknown error occurred.");
     } finally {
       setIsJoining(false);
     }
