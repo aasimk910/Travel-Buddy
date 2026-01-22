@@ -40,6 +40,10 @@ const TripSchema = new mongoose.Schema(
       min: 1,
       default: 6,
     },
+    participants: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    }],
   },
   {
     timestamps: true,

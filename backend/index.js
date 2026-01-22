@@ -51,6 +51,9 @@ const reviewRoutes = require("./routes/reviews");
 const photoRoutes = require("./routes/photos");
 const hikeRoutes = require("./routes/hikes");
 const tripRoutes = require("./routes/trips");
+const Hike = require("./models/Hike");
+const Message = require("./models/Message");
+const { authenticateToken } = require("./middleware/auth");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -58,6 +61,43 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/photos", photoRoutes);
 app.use("/api/hikes", hikeRoutes);
 app.use("/api/trips", tripRoutes);
+
+// GET /api/user-trips - Get hikes the user has joined
+app.get("/api/user-trips", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Find hikes where user is either the creator or a participant
+    const hikes = await Hike.find({
+      $or: [
+        { userId: userId },
+        { participants: userId }
+      ]
+    }).sort({ date: 1 });
+    
+    res.json(hikes);
+  } catch (err) {
+    console.error("Fetch user trips error:", err);
+    res.status(500).json({ message: "Unable to fetch user trips." });
+  }
+});
+
+// GET /api/messages/:hikeId - Get messages for a hike chat room
+app.get("/api/messages/:hikeId", async (req, res) => {
+  try {
+    const { hikeId } = req.params;
+    const limit = parseInt(req.query.limit) || 100;
+    
+    const messages = await Message.find({ hikeId })
+      .sort({ createdAt: 1 })
+      .limit(limit);
+    
+    res.json(messages);
+  } catch (err) {
+    console.error("Fetch messages error:", err);
+    res.status(500).json({ message: "Unable to fetch messages." });
+  }
+});
 
 // 404 handler
 app.use((req, res, next) => {
@@ -74,19 +114,58 @@ app.use((err, req, res, next) => {
 io.on('connection', (socket) => {
   console.log('✅ a user connected');
 
-  socket.on('join room', (hikeId) => {
-    socket.join(hikeId);
-    console.log(`User joined room: ${hikeId}`);
+  socket.on('join_room', (data) => {
+    const roomId = typeof data === 'string' ? data : data.roomId;
+    if (roomId) {
+      socket.join(roomId);
+      console.log(`User joined room: ${roomId}`);
+    }
   });
 
-  socket.on('leave room', (hikeId) => {
-    socket.leave(hikeId);
-    console.log(`User left room: ${hikeId}`);
+  socket.on('leave_room', (data) => {
+    const roomId = typeof data === 'string' ? data : data.roomId;
+    if (roomId) {
+      socket.leave(roomId);
+      console.log(`User left room: ${roomId}`);
+    }
   });
 
-  socket.on('chat message', (msg) => {
-    if (msg.hikeId) {
-      io.to(msg.hikeId).emit('chat message', msg);
+  socket.on('send_message', async (msg) => {
+    if (msg.roomId) {
+      try {
+        // Save message to database (including attachment if present)
+        const messageData = {
+          hikeId: msg.roomId,
+          senderId: msg.senderId,
+          senderName: msg.senderId,
+          message: msg.message,
+        };
+
+        // Add attachment if present
+        if (msg.attachment) {
+          messageData.attachment = {
+            name: msg.attachment.name,
+            type: msg.attachment.type,
+            data: msg.attachment.data,
+          };
+        }
+
+        const savedMessage = await Message.create(messageData);
+        
+        // Broadcast to all users in the room with the saved message data
+        io.to(msg.roomId).emit('receive_message', {
+          _id: savedMessage._id,
+          roomId: msg.roomId,
+          senderId: msg.senderId,
+          message: msg.message,
+          attachment: savedMessage.attachment,
+          createdAt: savedMessage.createdAt,
+        });
+      } catch (err) {
+        console.error("Error saving message:", err);
+        // Still broadcast even if save fails
+        io.to(msg.roomId).emit('receive_message', msg);
+      }
     }
   });
 

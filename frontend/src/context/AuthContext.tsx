@@ -48,16 +48,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     if (user) {
-      socket.connect();
+      if (!socket.connected) {
+        socket.connect();
+      }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
     } else {
-      socket.disconnect();
+      if (socket.connected) {
+        socket.disconnect();
+      }
       localStorage.removeItem(STORAGE_KEY);
     }
 
-    return () => {
-      socket.disconnect();
-    };
+    // Don't disconnect in cleanup - let the socket persist across re-renders
+    // Only disconnect when user logs out (handled above when user becomes null)
   }, [user]);
 
   const saveUser = (u: AuthUser) => {

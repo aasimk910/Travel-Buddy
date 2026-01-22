@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { getUserTrips } from '../services/trips';
 import { useToast } from '../context/ToastContext';
 
-interface Trip {
+interface Hike {
   _id: string;
-  name: string;
-  // lastMessage can be added later if the API supports it
+  title: string;
+  location: string;
+  date: string;
 }
 
 interface TripGroupsProps {
@@ -16,7 +17,7 @@ interface TripGroupsProps {
 const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
   const navigate = useNavigate();
   const { showError } = useToast();
-  const [tripGroups, setTripGroups] = useState<Trip[]>([]);
+  const [tripGroups, setTripGroups] = useState<Hike[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -71,9 +72,8 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
               className={`p-2 mb-2 rounded-lg cursor-pointer glass-button ${selectedHikeId === group._id ? 'bg-white/30' : ''}`}
               onClick={() => navigate(`/dashboard/${group._id}`)}
             >
-              <div className="font-semibold text-glass-light">{group.name}</div>
-              {/* Placeholder for last message */}
-              <div className="text-sm text-glass-dim italic">No recent messages</div>
+              <div className="font-semibold text-glass-light">{group.title}</div>
+              <div className="text-sm text-glass-dim">{group.location}</div>
             </li>
           ))
         )}

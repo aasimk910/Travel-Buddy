@@ -1,26 +1,56 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/env';
 
 interface ChatHeaderProps {
   hikeId?: string;
 }
 
-// Mock function to get hike details, replace with actual API call
-const getHikeDetails = async (hikeId: string) => {
-  const hikes = {
-    'japan-trip': { name: 'Japan Trip Group', members: 3, online: 2, date: 'May 15 - 28, 2023' },
-    'italy-trip': { name: 'Italy Trip Group', members: 5, online: 3, date: 'June 1 - 10, 2023' },
-    'thailand-trip': { name: 'Thailand Trip Group', members: 8, online: 5, date: 'July 20 - 30, 2023' },
-  };
-  // @ts-ignore
-  return hikes[hikeId] || { name: 'Select a Trip', members: 0, online: 0, date: '' };
+interface HikeDetails {
+  title: string;
+  location: string;
+  date: string;
+  participants?: string[];
+}
+
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+};
+
+const getHikeDetails = async (hikeId: string): Promise<HikeDetails | null> => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/hikes/${hikeId}`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch hike details:", error);
+    return null;
+  }
 };
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({ hikeId }) => {
-  const [hikeDetails, setHikeDetails] = useState({ name: 'Select a Trip', members: 0, online: 0, date: '' });
+  const [hikeDetails, setHikeDetails] = useState<{ name: string; members: number; date: string }>({ 
+    name: 'Select a Trip', 
+    members: 0, 
+    date: '' 
+  });
 
   useEffect(() => {
     if (hikeId) {
-      getHikeDetails(hikeId).then(setHikeDetails);
+      getHikeDetails(hikeId).then((data) => {
+        if (data) {
+          setHikeDetails({
+            name: data.title,
+            members: (data.participants?.length || 0) + 1, // +1 for creator
+            date: formatDate(data.date),
+          });
+        }
+      });
+    } else {
+      setHikeDetails({ name: 'Select a Trip', members: 0, date: '' });
     }
   }, [hikeId]);
 
@@ -29,7 +59,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ hikeId }) => {
       <div className="p-4 flex justify-between items-center">
       <div>
         <h2 className="text-xl font-bold text-glass-light">{hikeDetails.name}</h2>
-        {hikeId && <p className="text-sm text-glass-dim">{hikeDetails.members} members • {hikeDetails.online} online • {hikeDetails.date}</p>}
+        {hikeId && <p className="text-sm text-glass-dim">{hikeDetails.members} {hikeDetails.members === 1 ? 'member' : 'members'} • {hikeDetails.date}</p>}
       </div>
       <div className="flex items-center space-x-4">
         <button className="text-glass-dim hover:text-glass-light">

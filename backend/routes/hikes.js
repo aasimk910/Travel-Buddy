@@ -34,6 +34,20 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET /api/hikes/:id - Get a single hike by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const hike = await Hike.findById(req.params.id);
+    if (!hike) {
+      return res.status(404).json({ message: "Hike not found." });
+    }
+    res.json(hike);
+  } catch (err) {
+    console.error("Fetch hike error:", err);
+    res.status(500).json({ message: "Unable to fetch hike." });
+  }
+});
+
 // POST /api/hikes - Create hike (requires authentication)
 router.post("/", authenticateToken, createContentLimiter, async (req, res) => {
   try {
@@ -97,6 +111,40 @@ router.post("/", authenticateToken, createContentLimiter, async (req, res) => {
       });
     }
     res.status(500).json({ message: "Unable to create hike." });
+  }
+});
+
+// POST /api/hikes/:id/join - Join a hike
+router.post("/:id/join", authenticateToken, async (req, res) => {
+  try {
+    const hikeId = req.params.id;
+    const userId = req.user._id;
+
+    const hike = await Hike.findById(hikeId);
+    if (!hike) {
+      return res.status(404).json({ message: "Hike not found." });
+    }
+
+    // Check if user already joined
+    if (hike.participants && hike.participants.some(p => p.equals(userId))) {
+      return res.status(400).json({ message: "You have already joined this hike." });
+    }
+
+    // Check spots availability
+    if (hike.spotsLeft <= 0) {
+      return res.status(400).json({ message: "No spots left for this hike." });
+    }
+
+    // Add user to participants and decrement spots
+    hike.participants = hike.participants || [];
+    hike.participants.push(userId);
+    hike.spotsLeft -= 1;
+    await hike.save();
+
+    res.json({ message: "Successfully joined the hike!", hike });
+  } catch (err) {
+    console.error("Join hike error:", err);
+    res.status(500).json({ message: "Unable to join hike." });
   }
 });
 
