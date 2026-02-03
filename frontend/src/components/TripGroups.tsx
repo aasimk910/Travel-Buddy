@@ -37,7 +37,7 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
   }, [showError]);
 
   return (
-    <div className="glass-card rounded-lg p-4 h-full">
+    <div className="glass-card rounded-lg p-4 h-full flex flex-col">
       <h3 className="font-semibold mb-4 text-glass">Trip Groups</h3>
       <div className="relative mb-4">
         <input
@@ -60,7 +60,7 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
           ></path>
         </svg>
       </div>
-      <ul>
+      <ul className="flex-1 overflow-y-auto">
         {isLoading ? (
           <p className="text-glass-dim text-center">Loading trips...</p>
         ) : tripGroups.length === 0 ? (

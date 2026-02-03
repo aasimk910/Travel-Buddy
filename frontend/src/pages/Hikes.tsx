@@ -239,7 +239,7 @@ const Hikes: React.FC = () => {
         </section>
 
         {/* Hikes grid */}
-        <section className="py-8 lg:py-10">
+        <section className="pt-8 lg:pt-10 pb-4 lg:pb-6">
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
             {isLoading ? (
               <div className="text-center py-12">

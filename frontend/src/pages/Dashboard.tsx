@@ -14,23 +14,23 @@ const Dashboard: React.FC = () => {
   const [activeView, setActiveView] = useState('chat');
 
   return (
-    <div className="p-4 min-h-screen">
-      <div className="grid grid-cols-12 gap-4 h-full">
+    <div className="px-4 pt-4 pb-2">
+      <div className="grid grid-cols-12 gap-4">
         {/* Left Sidebar */}
-        <div className="col-span-3 flex flex-col gap-4 h-full">
+        <div className="col-span-3 flex flex-col gap-4">
           <UserProfile />
           <DashboardNav activeView={activeView} setActiveView={setActiveView} />
           <UpcomingTrips />
         </div>
 
         {/* Main Content */}
-        <div className="col-span-9 h-full">
+        <div className="col-span-9">
           {activeView === 'chat' && (
-            <div className="grid grid-cols-10 gap-4 h-full">
-              <div className="col-span-3 h-full">
+            <div className="grid grid-cols-10 gap-4">
+              <div className="col-span-3" style={{ height: 'calc(100vh - 120px)' }}>
                 <TripGroups selectedHikeId={hikeId} />
               </div>
-              <div className="col-span-7 glass-card rounded-lg flex flex-col h-full">
+              <div className="col-span-7 glass-card rounded-lg flex flex-col" style={{ height: 'calc(100vh - 120px)' }}>
                 <ChatHeader hikeId={hikeId} />
                 <div className="flex-1 flex flex-col min-h-0">
                   <Chat roomId={hikeId} />

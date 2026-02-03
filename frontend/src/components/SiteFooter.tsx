@@ -3,8 +3,8 @@ import { Map } from "lucide-react";
 
 const SiteFooter: React.FC = () => {
   return (
-    <footer className="glass-nav mt-12">
-      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+    <footer className="glass-nav">
+      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 pt-4 pb-8 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
         <div className="space-y-3 max-w-sm">
           <div className="flex items-center gap-2">
             <div className="glass-button-dark p-2 rounded-lg shadow-sm">
