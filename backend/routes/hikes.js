@@ -148,4 +148,32 @@ router.post("/:id/join", authenticateToken, async (req, res) => {
   }
 });
 
+// POST /api/hikes/:id/leave - Leave a hike
+router.post("/:id/leave", authenticateToken, async (req, res) => {
+  try {
+    const hikeId = req.params.id;
+    const userId = req.user._id;
+
+    const hike = await Hike.findById(hikeId);
+    if (!hike) {
+      return res.status(404).json({ message: "Hike not found." });
+    }
+
+    // Check if user is a participant
+    if (!hike.participants || !hike.participants.some(p => p.equals(userId))) {
+      return res.status(400).json({ message: "You are not a participant of this hike." });
+    }
+
+    // Remove user from participants and increment spots
+    hike.participants = hike.participants.filter(p => !p.equals(userId));
+    hike.spotsLeft += 1;
+    await hike.save();
+
+    res.json({ message: "Successfully left the hike!", hike });
+  } catch (err) {
+    console.error("Leave hike error:", err);
+    res.status(500).json({ message: "Unable to leave hike." });
+  }
+});
+
 module.exports = router;

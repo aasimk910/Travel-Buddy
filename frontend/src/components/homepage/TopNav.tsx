@@ -43,6 +43,9 @@ const TopNav: React.FC = () => {
           <Link to="/dashboard" className={getLinkClass("/dashboard")}>
             Dashboard
           </Link>
+          <Link to="/maps" className={getLinkClass("/maps")}>
+            Maps
+          </Link>
         </nav>
 
         <div className="flex items-center gap-3">

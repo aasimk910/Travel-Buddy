@@ -89,7 +89,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
       const response = await joinHike(hike._id, token);
       showSuccess("Successfully joined the hike!");
       handleClose();
-      navigate(`/dashboard/${response.trip._id}`);
+      navigate(`/dashboard/${response.hike._id}`);
     } catch (error) {
       console.error("Failed to join hike:", error);
       showError(error instanceof Error ? error.message : "An unknown error occurred.");

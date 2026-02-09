@@ -17,6 +17,14 @@ const HikeSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    coordinates: {
+      lat: {
+        type: Number,
+      },
+      lng: {
+        type: Number,
+      },
+    },
     difficulty: {
       type: Number,
       required: true,

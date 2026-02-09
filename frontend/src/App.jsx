@@ -8,6 +8,7 @@ import Landing from "./pages/Landing";
 import Homepage from "./pages/Homepage";
 import Hikes from "./pages/Hikes";
 import Dashboard from "./pages/Dashboard";
+import Maps from "./pages/Maps";
 import PrivateRoute from "./components/PrivateRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import MainLayout from "./components/MainLayout";
@@ -45,6 +46,14 @@ const App = () => {
             element={
               <MainLayout>
                 <Hikes />
+              </MainLayout>
+            }
+          />
+          <Route
+            path="/maps"
+            element={
+              <MainLayout>
+                <Maps />
               </MainLayout>
             }
           />

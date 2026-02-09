@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserTrips } from '../services/trips';
+import { getUserTrips, leaveHike } from '../services/trips';
 import { useToast } from '../context/ToastContext';
+import { LogOut } from 'lucide-react';
 
 interface Hike {
   _id: string;
@@ -16,25 +17,47 @@ interface TripGroupsProps {
 
 const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
   const navigate = useNavigate();
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
   const [tripGroups, setTripGroups] = useState<Hike[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [leavingHikeId, setLeavingHikeId] = useState<string | null>(null);
+
+  const fetchTrips = async () => {
+    setIsLoading(true);
+    try {
+      const trips = await getUserTrips();
+      setTripGroups(trips);
+    } catch (error) {
+      console.error("Failed to fetch user trips:", error);
+      showError("Could not load your trip groups.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchTrips = async () => {
-      try {
-        const trips = await getUserTrips();
-        setTripGroups(trips);
-      } catch (error) {
-        console.error("Failed to fetch user trips:", error);
-        showError("Could not load your trip groups.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchTrips();
-  }, [showError]);
+  }, []);
+
+  const handleLeaveHike = async (e: React.MouseEvent, hikeId: string) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to leave this hike?')) return;
+    
+    setLeavingHikeId(hikeId);
+    try {
+      await leaveHike(hikeId);
+      showSuccess('Successfully left the hike!');
+      await fetchTrips();
+      if (selectedHikeId === hikeId) {
+        navigate('/dashboard');
+      }
+    } catch (error: any) {
+      console.error('Failed to leave hike:', error);
+      showError(error.message || 'Unable to leave hike.');
+    } finally {
+      setLeavingHikeId(null);
+    }
+  };
 
   return (
     <div className="glass-card rounded-lg p-4 h-full flex flex-col">
@@ -69,11 +92,23 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
           tripGroups.map((group) => (
             <li 
               key={group._id} 
-              className={`p-2 mb-2 rounded-lg cursor-pointer glass-button ${selectedHikeId === group._id ? 'bg-white/30' : ''}`}
-              onClick={() => navigate(`/dashboard/${group._id}`)}
+              className={`relative p-2 mb-2 rounded-lg glass-button ${selectedHikeId === group._id ? 'bg-white/30' : ''} group`}
             >
-              <div className="font-semibold text-glass-light">{group.title}</div>
-              <div className="text-sm text-glass-dim">{group.location}</div>
+              <button
+                onClick={(e) => handleLeaveHike(e, group._id)}
+                disabled={leavingHikeId === group._id}
+                className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center text-red-600 hover:text-red-700 hover:bg-red-50/20 rounded-full transition-all disabled:opacity-50"
+                title="Leave this hike"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+              <div 
+                className="cursor-pointer pr-10"
+                onClick={() => navigate(`/dashboard/${group._id}`)}
+              >
+                <div className="font-semibold text-glass-light">{group.title}</div>
+                <div className="text-sm text-glass-dim">{group.location}</div>
+              </div>
             </li>
           ))
         )}

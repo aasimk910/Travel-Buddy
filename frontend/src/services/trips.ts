@@ -40,3 +40,24 @@ export const joinTrip = async (tripId: string) => {
 
   return response.json();
 };
+
+export const leaveHike = async (hikeId: string) => {
+  const token = localStorage.getItem("travelBuddyToken");
+  if (!token) {
+    throw new Error("No authentication token found.");
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/hikes/${hikeId}/leave`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Unable to leave hike.");
+  }
+
+  return response.json();
+};

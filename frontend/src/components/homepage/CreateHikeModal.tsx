@@ -2,6 +2,16 @@ import React, { useState } from "react";
 import { Users, MapPin } from "lucide-react";
 import DOMPurify from "dompurify";
 import { createHike } from "../../services/hikes";
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+
+// Fix for default marker icons in React-Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 type CreateHikeModalProps = {
   open: boolean;
@@ -10,9 +20,20 @@ type CreateHikeModalProps = {
 
 const difficultyLabels = ["Very Easy", "Easy", "Moderate", "Hard", "Expert"];
 
+// Component to handle map clicks
+const LocationPicker: React.FC<{ onLocationSelect: (lat: number, lng: number) => void }> = ({ onLocationSelect }) => {
+  useMapEvents({
+    click: (e) => {
+      onLocationSelect(e.latlng.lat, e.latlng.lng);
+    },
+  });
+  return null;
+};
+
 const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [date, setDate] = useState("");
   const [difficulty, setDifficulty] = useState<number>(1);
   const [spotsLeft, setSpotsLeft] = useState<number>(10);
@@ -67,6 +88,7 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
       const payload = {
         title: DOMPurify.sanitize(title),
         location: DOMPurify.sanitize(location),
+        coordinates: coordinates,
         date,
         difficulty,
         spotsLeft,
@@ -77,6 +99,7 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
       setMessage({ type: "success", text: "Hike created successfully!" });
       setTitle("");
       setLocation("");
+      setCoordinates(null);
       setDate("");
       setDifficulty(1);
       setSpotsLeft(10);
@@ -169,6 +192,28 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">Location <span className="text-white">*</span></label>
                   <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g., Nagarkot View Tower, Kathmandu Valley" className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-white placeholder-gray-300" required />
+                  {coordinates && (
+                    <p className="text-xs text-gray-300 mt-2">📍 Selected: {coordinates.lat.toFixed(6)}, {coordinates.lng.toFixed(6)}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-white mb-2">Mark Location on Map</label>
+                  <div className="glass rounded-lg overflow-hidden border border-white/20" style={{ height: '300px' }}>
+                    <MapContainer
+                      center={coordinates ? [coordinates.lat, coordinates.lng] : [27.7172, 85.324]}
+                      zoom={coordinates ? 13 : 8}
+                      style={{ height: '100%', width: '100%' }}
+                      key={coordinates ? `${coordinates.lat}-${coordinates.lng}` : 'default'}
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      <LocationPicker onLocationSelect={(lat, lng) => setCoordinates({ lat, lng })} />
+                      {coordinates && <Marker position={[coordinates.lat, coordinates.lng]} />}
+                    </MapContainer>
+                  </div>
+                  <p className="text-xs text-gray-300 mt-2">💡 Click on the map to mark the hike location</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

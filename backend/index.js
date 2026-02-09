@@ -69,12 +69,9 @@ app.get("/api/user-trips", authenticateToken, async (req, res) => {
   try {
     const userId = req.user._id;
     
-    // Find hikes where user is either the creator or a participant
+    // Find hikes where user is a participant
     const hikes = await Hike.find({
-      $or: [
-        { userId: userId },
-        { participants: userId }
-      ]
+      participants: userId
     }).sort({ date: 1 });
     
     res.json(hikes);
