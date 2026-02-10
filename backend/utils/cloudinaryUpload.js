@@ -10,7 +10,7 @@ const uploadBase64Image = async (base64Image, folder = 'travel-buddy') => {
   try {
     const result = await cloudinary.uploader.upload(base64Image, {
       folder: folder,
-      resource_type: 'image',
+      resource_type: 'auto', // Support images and other file types
       transformation: [
         { width: 1920, height: 1920, crop: 'limit' },
         { quality: 'auto' },

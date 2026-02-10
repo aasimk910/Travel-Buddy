@@ -3,6 +3,8 @@ import { API_BASE_URL } from '../config/env';
 
 interface ChatHeaderProps {
   hikeId?: string;
+  activeTab: string;
+  onTabChange: (tab: string) => void;
 }
 
 interface HikeDetails {
@@ -31,7 +33,7 @@ const getHikeDetails = async (hikeId: string): Promise<HikeDetails | null> => {
   }
 };
 
-const ChatHeader: React.FC<ChatHeaderProps> = ({ hikeId }) => {
+const ChatHeader: React.FC<ChatHeaderProps> = ({ hikeId, activeTab, onTabChange }) => {
   const [hikeDetails, setHikeDetails] = useState<{ name: string; members: number; date: string }>({ 
     name: 'Select a Trip', 
     members: 0, 
@@ -68,10 +70,30 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ hikeId }) => {
       </div>
       </div>
       <div className="p-4 flex space-x-4">
-        <a href="#" className="px-3 py-1 rounded-md bg-white/10 text-glass font-semibold">Chat</a>
-        <a href="#" className="px-3 py-1 rounded-md text-glass-dim hover:bg-white/10 hover:text-glass">Expenses</a>
-        <a href="#" className="px-3 py-1 rounded-md text-glass-dim hover:bg-white/10 hover:text-glass">Itinerary</a>
-        <a href="#" className="px-3 py-1 rounded-md text-glass-dim hover:bg-white/10 hover:text-glass">Files</a>
+        <button 
+          onClick={() => onTabChange('chat')}
+          className={`px-3 py-1 rounded-md font-semibold ${activeTab === 'chat' ? 'bg-white/10 text-glass' : 'text-glass-dim hover:bg-white/10 hover:text-glass'}`}
+        >
+          Chat
+        </button>
+        <button 
+          onClick={() => onTabChange('expenses')}
+          className={`px-3 py-1 rounded-md font-semibold ${activeTab === 'expenses' ? 'bg-white/10 text-glass' : 'text-glass-dim hover:bg-white/10 hover:text-glass'}`}
+        >
+          Expenses
+        </button>
+        <button 
+          onClick={() => onTabChange('itinerary')}
+          className={`px-3 py-1 rounded-md font-semibold ${activeTab === 'itinerary' ? 'bg-white/10 text-glass' : 'text-glass-dim hover:bg-white/10 hover:text-glass'}`}
+        >
+          Itinerary
+        </button>
+        <button 
+          onClick={() => onTabChange('files')}
+          className={`px-3 py-1 rounded-md font-semibold ${activeTab === 'files' ? 'bg-white/10 text-glass' : 'text-glass-dim hover:bg-white/10 hover:text-glass'}`}
+        >
+          Files
+        </button>
       </div>
     </div>
   );

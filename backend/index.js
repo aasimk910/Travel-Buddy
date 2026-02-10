@@ -55,6 +55,7 @@ const itineraryRoutes = require("./routes/itinerary");
 const Hike = require("./models/Hike");
 const Message = require("./models/Message");
 const { authenticateToken } = require("./middleware/auth");
+const { uploadBase64Image } = require("./utils/cloudinaryUpload");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -132,6 +133,8 @@ io.on('connection', (socket) => {
   socket.on('send_message', async (msg) => {
     if (msg.roomId) {
       try {
+        console.log("Received message, has attachment:", !!msg.attachment);
+        
         // Save message to database (including attachment if present)
         const messageData = {
           hikeId: msg.roomId,
@@ -140,26 +143,54 @@ io.on('connection', (socket) => {
           message: msg.message,
         };
 
-        // Add attachment if present
-        if (msg.attachment) {
-          messageData.attachment = {
-            name: msg.attachment.name,
-            type: msg.attachment.type,
-            data: msg.attachment.data,
-          };
+        // Upload attachment to Cloudinary if present
+        if (msg.attachment && msg.attachment.data) {
+          try {
+            console.log("Uploading image to Cloudinary...");
+            // Upload to Cloudinary
+            const uploadResult = await uploadBase64Image(
+              msg.attachment.data, 
+              'travel-buddy/chat-attachments'
+            );
+            
+            console.log("Image uploaded successfully:", uploadResult.url);
+            
+            messageData.attachment = {
+              name: msg.attachment.name,
+              type: msg.attachment.type,
+              url: uploadResult.url,
+              publicId: uploadResult.publicId,
+            };
+          } catch (uploadError) {
+            console.error("Error uploading attachment to Cloudinary:", uploadError);
+            // If upload fails, store base64 as fallback (or skip attachment)
+            messageData.attachment = {
+              name: msg.attachment.name,
+              type: msg.attachment.type,
+              url: msg.attachment.data, // Fallback to base64
+            };
+          }
         }
 
         const savedMessage = await Message.create(messageData);
+        console.log("Message saved with attachment:", !!savedMessage.attachment);
         
-        // Broadcast to all users in the room with the saved message data
-        io.to(msg.roomId).emit('receive_message', {
+        const messageToSend = {
           _id: savedMessage._id,
           roomId: msg.roomId,
           senderId: msg.senderId,
           message: msg.message,
           attachment: savedMessage.attachment,
           createdAt: savedMessage.createdAt,
-        });
+        };
+        
+        console.log("Emitting message with attachment:", !!messageToSend.attachment);
+        if (messageToSend.attachment) {
+          console.log("Attachment URL:", messageToSend.attachment.url);
+        }
+        
+        // Broadcast to all users in the room with the saved message data
+        io.to(msg.roomId).emit('receive_message', messageToSend);
       } catch (err) {
         console.error("Error saving message:", err);
         // Still broadcast even if save fails

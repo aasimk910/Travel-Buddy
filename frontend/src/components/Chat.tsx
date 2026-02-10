@@ -10,7 +10,9 @@ interface ChatProps {
 interface Attachment {
   name: string;
   type: string;
-  data: string; // base64
+  data?: string; // base64 (for sending)
+  url?: string; // Cloudinary URL (for receiving)
+  publicId?: string;
 }
 
 interface Message {
@@ -53,15 +55,19 @@ const Chat: React.FC<ChatProps> = ({ roomId }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Scroll to bottom when messages change
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    // Use setTimeout to ensure DOM is updated before scrolling
+    setTimeout(scrollToBottom, 100);
   }, [messages]);
 
   useEffect(() => {
@@ -82,10 +88,27 @@ const Chat: React.FC<ChatProps> = ({ roomId }) => {
 
     // Listen for incoming messages
     const handleReceiveMessage = (payload: Message) => {
+      console.log("Received message:", payload);
+      console.log("Has attachment:", !!payload.attachment);
+      if (payload.attachment) {
+        console.log("Attachment URL:", payload.attachment.url);
+      }
       setMessages((prev) => {
-        // Avoid duplicates by checking _id
-        if (payload._id && prev.some(m => m._id === payload._id)) {
-          return prev;
+        // Replace temp message with server message, or add new message
+        if (payload._id) {
+          // Remove any temp message from this sender around the same time
+          const filtered = prev.filter(m => 
+            !(m._id?.startsWith('temp-') && 
+              m.senderId === payload.senderId && 
+              Math.abs(new Date(m.createdAt).getTime() - new Date(payload.createdAt).getTime()) < 5000)
+          );
+          
+          // Check if this server message already exists
+          if (filtered.some(m => m._id === payload._id)) {
+            return prev; // Already have this message
+          }
+          
+          return [...filtered, payload];
         }
         return [...prev, payload];
       });
@@ -100,9 +123,14 @@ const Chat: React.FC<ChatProps> = ({ roomId }) => {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Check if it's an image
+      if (!file.type.startsWith('image/')) {
+        alert("Please select an image file");
+        return;
+      }
       // Limit file size to 5MB
       if (file.size > 5 * 1024 * 1024) {
-        alert("File size must be less than 5MB");
+        alert("Image size must be less than 5MB");
         return;
       }
       setSelectedFile(file);
@@ -135,12 +163,31 @@ const Chat: React.FC<ChatProps> = ({ roomId }) => {
 
       const payload = {
         roomId,
-        message: message.trim() || (selectedFile ? `📎 ${selectedFile.name}` : ""),
+        message: message.trim() || (selectedFile ? `Sent an image` : ""),
         senderId: userId,
         createdAt: new Date().toISOString(),
         attachment,
       };
 
+      console.log("Sending message with attachment:", attachment ? "yes" : "no");
+      
+      // Optimistically add message to UI immediately (for sender)
+      const optimisticMessage: Message = {
+        _id: `temp-${Date.now()}`, // Temporary ID
+        roomId,
+        message: payload.message,
+        senderId: userId,
+        createdAt: payload.createdAt,
+        attachment: attachment ? {
+          name: attachment.name,
+          type: attachment.type,
+          data: attachment.data, // Show base64 initially
+        } : undefined,
+      };
+      
+      setMessages((prev) => [...prev, optimisticMessage]);
+      
+      // Send to server
       socket.emit("send_message", payload);
       setMessage("");
       clearSelectedFile();
@@ -154,29 +201,37 @@ const Chat: React.FC<ChatProps> = ({ roomId }) => {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex-1 overflow-y-auto px-4 py-2 min-h-0" ref={messagesEndRef}>
+      <div className="flex-1 overflow-y-auto px-4 py-2 min-h-0 scrollbar-hide" ref={messagesContainerRef} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {isLoading ? (
           <p className="text-center text-glass-dim">Loading messages...</p>
         ) : messages.length === 0 ? (
           <p className="text-center text-glass-dim">No messages yet. Start the conversation!</p>
         ) : (
-          messages.map((m, idx) => (
-            <div key={m._id || idx} className={`flex mb-4 ${m.senderId === userId ? 'justify-end' : 'justify-start'}`}>
+          <>
+            {messages.map((m, idx) => (
+              <div key={m._id || idx} className={`flex mb-4 ${m.senderId === userId ? 'justify-end' : 'justify-start'}`}>
               <div className={`rounded-lg p-3 max-w-lg ${m.senderId === userId ? 'glass-dark text-glass' : 'glass-strong'}`}>
                 <div className="font-bold mb-1 text-gray-800">{m.senderId === userId ? 'Me' : m.senderId}</div>
                 {m.attachment && (
                   <div className="mb-2">
                     {m.attachment.type.startsWith('image/') ? (
                       <img 
-                        src={m.attachment.data} 
+                        src={m.attachment.url || m.attachment.data} 
                         alt={m.attachment.name} 
-                        className="max-w-full rounded-lg max-h-64 object-contain cursor-pointer"
-                        onClick={() => window.open(m.attachment?.data, '_blank')}
+                        className="max-w-full rounded-lg max-h-64 object-contain cursor-pointer bg-white/10"
+                        onClick={() => window.open(m.attachment?.url || m.attachment?.data, '_blank')}
+                        onLoad={scrollToBottom}
+                        onError={(e) => {
+                          console.error("Image failed to load:", m.attachment?.url);
+                          e.currentTarget.style.display = 'none';
+                        }}
                       />
                     ) : (
                       <a 
-                        href={m.attachment.data} 
+                        href={m.attachment.url || m.attachment.data} 
                         download={m.attachment.name}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex items-center gap-2 p-2 rounded bg-white/20 hover:bg-white/30 transition"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,7 +242,7 @@ const Chat: React.FC<ChatProps> = ({ roomId }) => {
                     )}
                   </div>
                 )}
-                {m.message && !m.message.startsWith('📎') && (
+                {m.message && m.message !== 'Sent an image' && (
                   <p className={`${m.senderId === userId ? 'text-glass' : 'text-gray-900'}`}>{m.message}</p>
                 )}
                 <p className="text-xs text-gray-500 mt-1">
@@ -195,7 +250,9 @@ const Chat: React.FC<ChatProps> = ({ roomId }) => {
                 </p>
               </div>
             </div>
-          ))
+          ))}
+          <div ref={messagesEndRef} />
+          </>
         )}
       </div>
       <div className="p-4 border-t border-white/20">
@@ -242,7 +299,7 @@ const Chat: React.FC<ChatProps> = ({ roomId }) => {
             type="file"
             onChange={handleFileSelect}
             className="hidden"
-            accept="image/*,.pdf,.doc,.docx,.txt,.zip"
+            accept="image/*"
           />
           <button 
             onClick={() => fileInputRef.current?.click()}

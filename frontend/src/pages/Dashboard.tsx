@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import TripGroups from '../components/TripGroups';
 import ChatHeader from '../components/ChatHeader';
 import Chat from '../components/Chat';
+import Files from '../components/Files';
 import UserProfile from '../components/dashboard/UserProfile';
 import DashboardNav from '../components/dashboard/DashboardNav';
 import UpcomingTrips from '../components/dashboard/UpcomingTrips';
@@ -12,6 +13,7 @@ import ItineraryGenerator from '../components/dashboard/ItineraryGenerator';
 const Dashboard: React.FC = () => {
   const { hikeId } = useParams<{ hikeId: string }>();
   const [activeView, setActiveView] = useState('chat');
+  const [activeChatTab, setActiveChatTab] = useState('chat');
 
   return (
     <div className="px-4 pt-4 pb-2">
@@ -31,9 +33,20 @@ const Dashboard: React.FC = () => {
                 <TripGroups selectedHikeId={hikeId} />
               </div>
               <div className="col-span-7 glass-card rounded-lg flex flex-col" style={{ height: 'calc(100vh - 120px)' }}>
-                <ChatHeader hikeId={hikeId} />
+                <ChatHeader hikeId={hikeId} activeTab={activeChatTab} onTabChange={setActiveChatTab} />
                 <div className="flex-1 flex flex-col min-h-0">
-                  <Chat roomId={hikeId} />
+                  {activeChatTab === 'chat' && <Chat roomId={hikeId} />}
+                  {activeChatTab === 'files' && <Files roomId={hikeId} />}
+                  {activeChatTab === 'expenses' && (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-glass-dim">Expenses feature coming soon...</p>
+                    </div>
+                  )}
+                  {activeChatTab === 'itinerary' && (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-glass-dim">Trip itinerary coming soon...</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

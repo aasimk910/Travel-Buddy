@@ -77,7 +77,7 @@ const PhotoFeed: React.FC<PhotoFeedProps> = ({ photos, isLoading, error, current
                 </button>
               )}
 
-              <div className="relative aspect-[4/5] bg-gray-200">
+              <div className="relative w-full h-[422px] bg-gray-200">
                 {totalImages > 1 && (
                   <div className="absolute top-2 left-2 z-10 rounded-full bg-black/60 px-2 py-1 text-[10px] font-medium text-white">
                     {currentIndex + 1}/{totalImages}

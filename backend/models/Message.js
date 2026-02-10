@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const AttachmentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   type: { type: String, required: true },
-  data: { type: String, required: true }, // base64 data
+  url: { type: String, required: true }, // Cloudinary URL
+  publicId: { type: String, required: false }, // Cloudinary public ID for deletion
 }, { _id: false });
 
 const MessageSchema = new mongoose.Schema(
