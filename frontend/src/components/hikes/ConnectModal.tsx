@@ -4,6 +4,7 @@ import { CalendarDays, Users } from "lucide-react";
 import { useToast } from "../../context/ToastContext";
 import { useAuth } from "../../context/AuthContext";
 import { joinHike } from "../../services/hikes";
+import { getUserTrips } from "../../services/trips";
 
 type Hike = {
   _id: string;
@@ -38,6 +39,31 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const lastFocusedElementRef = useRef<HTMLElement | null>(null);
   const [isJoining, setIsJoining] = useState(false);
+  const [isAlreadyConnected, setIsAlreadyConnected] = useState(false);
+  const [isCheckingConnection, setIsCheckingConnection] = useState(true);
+
+  // Check if user is already connected to this hike
+  useEffect(() => {
+    const checkConnection = async () => {
+      if (!open || !user) {
+        setIsCheckingConnection(false);
+        return;
+      }
+
+      try {
+        const userTrips = await getUserTrips();
+        const isConnected = userTrips.some((trip: Hike) => trip._id === hike._id);
+        setIsAlreadyConnected(isConnected);
+      } catch (error) {
+        console.error("Failed to check connection status:", error);
+        setIsAlreadyConnected(false);
+      } finally {
+        setIsCheckingConnection(false);
+      }
+    };
+
+    checkConnection();
+  }, [open, hike._id, user]);
 
   useEffect(() => {
     if (!open) return;
@@ -98,6 +124,11 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
     }
   };
 
+  const handleGoToDashboard = () => {
+    handleClose();
+    navigate(`/dashboard/${hike._id}`);
+  };
+
   if (!open) return null;
 
   const place = extractPlace(hike.location);
@@ -150,9 +181,19 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
                 </div>
                 <span className="text-sm text-white">Spots left: {hike.spotsLeft}</span>
               </div>
-              <button type="button" onClick={handleJoin} disabled={isJoining || hike.spotsLeft <= 0} className="px-5 py-2 glass-button-dark rounded-full font-semibold disabled:opacity-60 transition-colors shadow-lg text-white">
-                {isJoining ? "Joining…" : "Join Hike"}
-              </button>
+              {isCheckingConnection ? (
+                <button type="button" disabled className="px-5 py-2 glass-button-dark rounded-full font-semibold opacity-60 transition-colors shadow-lg text-white">
+                  Loading...
+                </button>
+              ) : isAlreadyConnected ? (
+                <button type="button" onClick={handleGoToDashboard} className="px-5 py-2 glass-button-dark rounded-full font-semibold transition-colors shadow-lg text-white hover:opacity-90">
+                  Go to Dashboard
+                </button>
+              ) : (
+                <button type="button" onClick={handleJoin} disabled={isJoining || hike.spotsLeft <= 0} className="px-5 py-2 glass-button-dark rounded-full font-semibold disabled:opacity-60 transition-colors shadow-lg text-white">
+                  {isJoining ? "Joining…" : "Join Hike"}
+                </button>
+              )}
             </div>
           </div>
 

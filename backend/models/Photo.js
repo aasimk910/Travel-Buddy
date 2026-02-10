@@ -21,6 +21,10 @@ const PhotoSchema = new mongoose.Schema(
       type: [String],
       required: true,
     },
+    cloudinaryPublicIds: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,

@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Photo = require("../models/Photo");
 const { authenticateToken } = require("../middleware/auth");
 const { createContentLimiter } = require("../middleware/rateLimiter");
+const { uploadMultipleBase64Images, deleteMultipleImages } = require("../utils/cloudinaryUpload");
 
 const router = express.Router();
 
@@ -77,12 +78,20 @@ router.post("/", authenticateToken, createContentLimiter, async (req, res) => {
       }
     }
 
+    // Upload images to Cloudinary
+    const uploadResults = await uploadMultipleBase64Images(imageArray, 'travel-buddy/photos');
+
+    // Extract URLs and public IDs
+    const imageUrls = uploadResults.map(result => result.url);
+    const publicIds = uploadResults.map(result => result.publicId);
+
     // Use authenticated user's information
     const photo = await Photo.create({
       userId: req.user._id,
       userName: req.user.name,
       caption: caption?.trim() || undefined,
-      images: imageArray,
+      images: imageUrls,
+      cloudinaryPublicIds: publicIds,
     });
 
     res.status(201).json(photo);
@@ -119,6 +128,16 @@ router.delete("/:id", authenticateToken, async (req, res) => {
       return res
         .status(403)
         .json({ message: "You can only delete your own photos." });
+    }
+
+    // Delete images from Cloudinary if public IDs exist
+    if (photo.cloudinaryPublicIds && photo.cloudinaryPublicIds.length > 0) {
+      try {
+        await deleteMultipleImages(photo.cloudinaryPublicIds);
+      } catch (cloudinaryError) {
+        console.error("Error deleting from Cloudinary:", cloudinaryError);
+        // Continue with database deletion even if Cloudinary deletion fails
+      }
     }
 
     await Photo.findByIdAndDelete(id);

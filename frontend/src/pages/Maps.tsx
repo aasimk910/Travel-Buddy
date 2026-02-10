@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { getHikes } from '../services/hikes';
 import { MapPin, Search, Filter, X } from 'lucide-react';
 import L from 'leaflet';
+import ConnectModal from '../components/hikes/ConnectModal';
 
 // Fix for default marker icons in React-Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -50,6 +51,7 @@ const Maps: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [mapCenter, setMapCenter] = useState<[number, number]>([27.7172, 85.324]);
   const [mapZoom, setMapZoom] = useState(10);
+  const [connectHike, setConnectHike] = useState<Hike | null>(null);
 
   useEffect(() => {
     const fetchHikes = async () => {
@@ -263,12 +265,23 @@ const Maps: React.FC = () => {
               <span className="text-gray-400">{selectedHike.spotsLeft} spots left</span>
             </div>
             
-            <button className="w-full mt-4 py-2 px-4 rounded-lg glass-button-dark text-white font-medium hover:opacity-90 transition">
+            <button
+              onClick={() => setConnectHike(selectedHike)}
+              className="w-full mt-4 py-2 px-4 rounded-lg glass-button-dark text-white font-medium hover:opacity-90 transition"
+            >
               View Details
             </button>
           </div>
         )}
       </div>
+
+      {connectHike && (
+        <ConnectModal
+          open={!!connectHike}
+          hike={connectHike}
+          onClose={() => setConnectHike(null)}
+        />
+      )}
     </div>
   );
 };
