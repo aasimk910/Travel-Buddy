@@ -51,7 +51,7 @@ router.get("/:id", async (req, res) => {
 // POST /api/hikes - Create hike (requires authentication)
 router.post("/", authenticateToken, createContentLimiter, async (req, res) => {
   try {
-    const { title, location, difficulty, date, spotsLeft, imageUrl, description } =
+    const { title, location, coordinates, difficulty, date, spotsLeft, imageUrl, description } =
       req.body;
 
     // Validation
@@ -93,6 +93,7 @@ router.post("/", authenticateToken, createContentLimiter, async (req, res) => {
       userId: req.user._id,
       title: sanitizedTitle,
       location: sanitizedLocation,
+      coordinates: coordinates || undefined,
       difficulty: difficultyNum,
       date: hikeDate,
       spotsLeft: spots || 0,

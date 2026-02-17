@@ -83,12 +83,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ hikeId, activeTab, onTabChange 
           Expenses
         </button>
         <button 
-          onClick={() => onTabChange('itinerary')}
-          className={`px-3 py-1 rounded-md font-semibold ${activeTab === 'itinerary' ? 'bg-white/10 text-glass' : 'text-glass-dim hover:bg-white/10 hover:text-glass'}`}
-        >
-          Itinerary
-        </button>
-        <button 
           onClick={() => onTabChange('files')}
           className={`px-3 py-1 rounded-md font-semibold ${activeTab === 'files' ? 'bg-white/10 text-glass' : 'text-glass-dim hover:bg-white/10 hover:text-glass'}`}
         >

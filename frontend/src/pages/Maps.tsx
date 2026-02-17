@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { getHikes } from '../services/hikes';
 import { MapPin, Search, Filter, X } from 'lucide-react';
@@ -17,6 +17,10 @@ interface Hike {
   _id: string;
   title: string;
   location: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
   difficulty: number;
   date: string;
   spotsLeft: number;
@@ -31,16 +35,15 @@ const ChangeMapView: React.FC<{ center: [number, number]; zoom: number }> = ({ c
   return null;
 };
 
-// Generate random coordinates around Nepal for demo
-const getNepalCoordinates = (index: number): [number, number] => {
-  const baseLatitude = 27.7172; // Kathmandu
-  const baseLongitude = 85.324;
-  const offset = 0.5;
+// Get coordinates from hike data or use default
+const getHikeCoordinates = (hike: Hike): [number, number] => {
+  // Use actual coordinates if available
+  if (hike.coordinates && hike.coordinates.lat && hike.coordinates.lng) {
+    return [hike.coordinates.lat, hike.coordinates.lng];
+  }
   
-  const lat = baseLatitude + (Math.random() - 0.5) * offset;
-  const lng = baseLongitude + (Math.random() - 0.5) * offset;
-  
-  return [lat, lng];
+  // Default to Kathmandu if no coordinates
+  return [27.7172, 85.324];
 };
 
 const Maps: React.FC = () => {
@@ -52,6 +55,15 @@ const Maps: React.FC = () => {
   const [mapCenter, setMapCenter] = useState<[number, number]>([27.7172, 85.324]);
   const [mapZoom, setMapZoom] = useState(10);
   const [connectHike, setConnectHike] = useState<Hike | null>(null);
+
+  // Create a mapping of hike IDs to coordinates
+  const hikeCoordinates = useMemo(() => {
+    const coordMap = new Map<string, [number, number]>();
+    hikes.forEach(hike => {
+      coordMap.set(hike._id, getHikeCoordinates(hike));
+    });
+    return coordMap;
+  }, [hikes]);
 
   useEffect(() => {
     const fetchHikes = async () => {
@@ -149,8 +161,8 @@ const Maps: React.FC = () => {
           ) : filteredHikes.length === 0 ? (
             <div className="text-center py-8 text-gray-400">No hikes found</div>
           ) : (
-            filteredHikes.map((hike, index) => {
-              const coords = getNepalCoordinates(index);
+            filteredHikes.map((hike) => {
+              const coords = hikeCoordinates.get(hike._id) || [27.7172, 85.324];
               return (
                 <div
                   key={hike._id}
@@ -193,8 +205,8 @@ const Maps: React.FC = () => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           
-          {filteredHikes.map((hike, index) => {
-            const coords = getNepalCoordinates(index);
+          {filteredHikes.map((hike) => {
+            const coords = hikeCoordinates.get(hike._id) || [27.7172, 85.324];
             return (
               <Marker
                 key={hike._id}

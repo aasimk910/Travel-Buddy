@@ -42,11 +42,6 @@ const Dashboard: React.FC = () => {
                       <p className="text-glass-dim">Expenses feature coming soon...</p>
                     </div>
                   )}
-                  {activeChatTab === 'itinerary' && (
-                    <div className="flex items-center justify-center h-full">
-                      <p className="text-glass-dim">Trip itinerary coming soon...</p>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
