@@ -1,14 +1,83 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { generateItinerary } from '../../services/itinerary';
 import { useToast } from '../../context/ToastContext';
-import { Loader2, MapPin, Calendar, DollarSign, Sparkles } from 'lucide-react';
+import { Loader2, MapPin, Calendar, IndianRupee, Sparkles, Download } from 'lucide-react';
+
+// Popular Nepal hiking and trekking destinations
+const DESTINATION_SUGGESTIONS = [
+  "Everest Base Camp, Nepal",
+  "Annapurna Base Camp, Nepal",
+  "Annapurna Circuit, Nepal",
+  "Manaslu Circuit, Nepal",
+  "Langtang Valley, Nepal",
+  "Gokyo Lakes, Nepal",
+  "Upper Mustang, Nepal",
+  "Makalu Base Camp, Nepal",
+  "Kanchenjunga Base Camp, Nepal",
+  "Dhaulagiri Circuit, Nepal",
+  "Poon Hill, Nepal",
+  "Mardi Himal, Nepal",
+  "Ghandruk, Nepal",
+  "Ghorepani, Nepal",
+  "Khopra Danda, Nepal",
+  "Mohare Danda, Nepal",
+  "Tilicho Lake, Nepal",
+  "Gosaikunda Lake, Nepal",
+  "Helambu Circuit, Nepal",
+  "Tamang Heritage Trail, Nepal",
+  "Nar Phu Valley, Nepal",
+  "Tsum Valley, Nepal",
+  "Dolpo Region, Nepal",
+  "Rara Lake, Nepal",
+  "Khaptad National Park, Nepal",
+  "Pikey Peak, Nepal",
+  "Numbur Cheese Circuit, Nepal",
+  "Everest View Trek, Nepal",
+  "Three Passes Trek, Nepal",
+  "Khumai Dada, Nepal",
+  "Nagarkot, Nepal",
+  "Chisapani, Nepal",
+  "Shivapuri National Park, Nepal",
+  "Champadevi Hill, Nepal",
+  "Phulchoki Hill, Nepal",
+  "Kakani, Nepal",
+  "Daman, Nepal",
+  "Chandragiri Hills, Nepal",
+  "Australian Base Camp, Nepal",
+  "Khayer Lake, Nepal",
+  "Panch Pokhari, Nepal",
+  "Surya Peak, Nepal",
+  "Jomsom, Nepal",
+  "Muktinath, Nepal",
+  "Kagbeni, Nepal",
+  "Lomanthang, Nepal",
+  "Syabrubesi, Nepal",
+  "Kyanjin Gompa, Nepal",
+  "Tsho Rolpa Lake, Nepal",
+  "Dudh Kunda, Nepal",
+  "Rolwaling Valley, Nepal",
+  "Solu Trek, Nepal",
+  "Pokhara, Nepal",
+  "Kathmandu, Nepal",
+  "Chitwan, Nepal",
+  "Lumbini, Nepal",
+  "Bandipur, Nepal",
+  "Bhaktapur, Nepal",
+  "Patan, Nepal",
+  "Ilam, Nepal",
+];
 
 const ItineraryGenerator: React.FC = () => {
   const { showSuccess, showError } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [generatedItinerary, setGeneratedItinerary] = useState<string>('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+  const destinationInputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
   
   const [formData, setFormData] = useState({
+    startingLocation: '',
     destination: '',
     startDate: '',
     endDate: '',
@@ -18,11 +87,226 @@ const ItineraryGenerator: React.FC = () => {
     additionalNotes: '',
   });
 
+  // Handle click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node) &&
+        destinationInputRef.current &&
+        !destinationInputRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+
+    // Filter destinations when typing in destination field
+    if (name === 'destination') {
+      if (value.trim() === '') {
+        setFilteredSuggestions([]);
+        setShowSuggestions(false);
+      } else {
+        const filtered = DESTINATION_SUGGESTIONS.filter((dest) =>
+          dest.toLowerCase().includes(value.toLowerCase())
+        );
+        setFilteredSuggestions(filtered);
+        setShowSuggestions(true);
+      }
+    }
+  };
+
+  const handleDestinationSelect = (destination: string) => {
+    setFormData({
+      ...formData,
+      destination,
+    });
+    setShowSuggestions(false);
+    setFilteredSuggestions([]);
+  };
+
+  const handleDestinationFocus = () => {
+    if (formData.destination.trim() !== '') {
+      const filtered = DESTINATION_SUGGESTIONS.filter((dest) =>
+        dest.toLowerCase().includes(formData.destination.toLowerCase())
+      );
+      setFilteredSuggestions(filtered);
+      setShowSuggestions(true);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!generatedItinerary) {
+      showError('No itinerary to download');
+      return;
+    }
+
+    try {
+      // Dynamically import jsPDF
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+      
+      // Set up document dimensions with consistent margins
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const marginLeft = 18;
+      const marginRight = 18;
+      const marginTop = 18;
+      const marginBottom = 25;
+      const contentWidth = pageWidth - marginLeft - marginRight;
+      let yPosition = marginTop;
+
+      // Helper function to add new page when needed
+      const checkAndAddPage = (requiredSpace: number = 10) => {
+        if (yPosition + requiredSpace > pageHeight - marginBottom) {
+          doc.addPage();
+          yPosition = marginTop;
+          return true;
+        }
+        return false;
+      };
+
+      // Process the itinerary text line by line
+      const lines = generatedItinerary.split('\n');
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        
+        // Skip empty lines but add minimal spacing
+        if (line.trim() === '') {
+          yPosition += 2;
+          continue;
+        }
+
+        // Check if line is a separator
+        if (line.trim() === '---') {
+          yPosition += 5;
+          checkAndAddPage(10);
+          doc.setDrawColor(180, 180, 180);
+          doc.setLineWidth(0.5);
+          doc.line(marginLeft, yPosition, pageWidth - marginRight, yPosition);
+          yPosition += 8;
+          continue;
+        }
+
+        // Detect heading types
+        const isDayHeading = /^Day \d+:/i.test(line);
+        const isMainSubheading = /^(Morning|Afternoon|Evening|Practical tips?|Transportation|Food Recommendations?):/i.test(line);
+        const isCostLine = /^(Estimated cost|Total cost)/i.test(line);
+        const isNoteHeader = /^(NOTE|Trip Overview):/i.test(line);
+        const isBullet = /^[•\-]\s/.test(line.trim());
+        const isSubBullet = /^\s{2,}[•\-]\s/.test(line);
+
+        // Calculate required space
+        let requiredSpace = 10;
+        if (isDayHeading) requiredSpace = 30;
+        else if (isMainSubheading) requiredSpace = 20;
+
+        // Check if we need a new page
+        checkAndAddPage(requiredSpace);
+
+        // Style based on content type
+        if (isDayHeading) {
+          yPosition += 8;
+          doc.setFontSize(14);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(20, 80, 200);
+        } else if (isMainSubheading) {
+          yPosition += 5;
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(30, 100, 200);
+        } else if (isCostLine || isNoteHeader) {
+          yPosition += 4;
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(60, 60, 60);
+        } else if (isSubBullet) {
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(80, 80, 80);
+        } else if (isBullet) {
+          doc.setFontSize(9.5);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(50, 50, 50);
+        } else {
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(30, 30, 30);
+        }
+
+        // Handle indentation
+        let leftMargin = marginLeft;
+        let availableWidth = contentWidth;
+        
+        if (isSubBullet) {
+          leftMargin = marginLeft + 12;
+          availableWidth = contentWidth - 12;
+        } else if (isBullet) {
+          leftMargin = marginLeft + 6;
+          availableWidth = contentWidth - 6;
+        }
+
+        // Split long lines
+        const wrappedLines = doc.splitTextToSize(line, availableWidth);
+        
+        for (let j = 0; j < wrappedLines.length; j++) {
+          if (yPosition > pageHeight - marginBottom) {
+            doc.addPage();
+            yPosition = marginTop;
+          }
+          
+          doc.text(wrappedLines[j], leftMargin, yPosition);
+          yPosition += 5.5;
+        }
+
+        // Add spacing after sections
+        if (isDayHeading) {
+          yPosition += 3;
+        } else if (isMainSubheading) {
+          yPosition += 2;
+        } else if (isCostLine) {
+          yPosition += 1;
+        }
+      }
+
+      // Add page numbers to all pages
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(120, 120, 120);
+        doc.text(
+          `Page ${i} of ${totalPages}`,
+          pageWidth / 2,
+          pageHeight - 12,
+          { align: 'center' }
+        );
+      }
+
+      // Save the PDF
+      const fileName = `itinerary_${formData.destination.replace(/[^a-z0-9]/gi, '_')}_${new Date().getTime()}.pdf`;
+      doc.save(fileName);
+      showSuccess('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      showError('Failed to generate PDF');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,6 +340,7 @@ const ItineraryGenerator: React.FC = () => {
 
   const handleReset = () => {
     setFormData({
+      startingLocation: '',
       destination: '',
       startDate: '',
       endDate: '',
@@ -89,15 +374,60 @@ const ItineraryGenerator: React.FC = () => {
                 Destination <span className="text-red-400">*</span>
               </label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white z-10" />
                 <input
+                  ref={destinationInputRef}
                   type="text"
                   name="destination"
                   value={formData.destination}
                   onChange={handleChange}
+                  onFocus={handleDestinationFocus}
                   placeholder="e.g., Pokhara, Nepal"
-                  className="w-full pl-10 pr-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-400"
+                  className="w-full pl-10 pr-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-300"
                   required
+                  autoComplete="off"
+                />
+                {/* Suggestions Dropdown */}
+                {showSuggestions && filteredSuggestions.length > 0 && (
+                  <div
+                    ref={suggestionsRef}
+                    className="absolute z-20 w-full mt-1 rounded-lg shadow-2xl max-h-60 overflow-y-auto border border-white/30 backdrop-blur-xl"
+                    style={{
+                      backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+                    }}
+                  >
+                    {filteredSuggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => handleDestinationSelect(suggestion)}
+                        className="w-full px-4 py-3 text-left text-white hover:bg-blue-500/30 transition-all flex items-center gap-2 border-b border-white/10 last:border-b-0 first:rounded-t-lg last:rounded-b-lg"
+                      >
+                        <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                        <span className="text-sm font-medium">{suggestion}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Starting Location */}
+            <div>
+              <label className="block text-sm font-medium text-white mb-1">
+                Starting Location
+              </label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white z-10" />
+                <input
+                  type="text"
+                  name="startingLocation"
+                  value={formData.startingLocation}
+                  onChange={handleChange}
+                  placeholder="e.g., Kathmandu"
+                  className="w-full pl-10 pr-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-300"
+                  autoComplete="off"
                 />
               </div>
             </div>
@@ -109,7 +439,7 @@ const ItineraryGenerator: React.FC = () => {
                   Start Date <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white" />
                   <input
                     type="date"
                     name="startDate"
@@ -125,7 +455,7 @@ const ItineraryGenerator: React.FC = () => {
                   End Date <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white" />
                   <input
                     type="date"
                     name="endDate"
@@ -141,17 +471,17 @@ const ItineraryGenerator: React.FC = () => {
             {/* Budget */}
             <div>
               <label className="block text-sm font-medium text-white mb-1">
-                Budget
+                Budget (NPR)
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white" />
                 <input
                   type="text"
                   name="budget"
                   value={formData.budget}
                   onChange={handleChange}
-                  placeholder="e.g., $500-1000"
-                  className="w-full pl-10 pr-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-400"
+                  placeholder="e.g., Rs 50,000-100,000"
+                  className="w-full pl-10 pr-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-300"
                 />
               </div>
             </div>
@@ -186,7 +516,7 @@ const ItineraryGenerator: React.FC = () => {
                 value={formData.interests}
                 onChange={handleChange}
                 placeholder="e.g., hiking, culture, food, photography"
-                className="w-full px-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-400"
+                className="w-full px-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-300"
               />
             </div>
 
@@ -201,36 +531,48 @@ const ItineraryGenerator: React.FC = () => {
                 onChange={handleChange}
                 placeholder="Any special requirements or preferences..."
                 rows={3}
-                className="w-full px-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-400 resize-none"
+                className="w-full px-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-300 resize-none"
               />
             </div>
 
             {/* Buttons */}
-            <div className="flex gap-3 pt-2 sticky bottom-0 bg-inherit">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="flex-1 py-2 px-4 rounded-lg glass-button-dark text-white font-medium hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    Generate Itinerary
-                  </>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={handleReset}
-                className="px-4 py-2 rounded-lg glass-button text-white font-medium hover:opacity-90 transition"
-              >
-                Reset
-              </button>
+            <div className="flex flex-col gap-2 pt-2 sticky bottom-0 bg-inherit">
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="flex-1 py-2 px-4 rounded-lg glass-button-dark text-white font-medium hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      Generate Itinerary
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="px-4 py-2 rounded-lg glass-button text-white font-medium hover:opacity-90 transition"
+                >
+                  Reset
+                </button>
+              </div>
+              {generatedItinerary && (
+                <button
+                  type="button"
+                  onClick={handleDownloadPDF}
+                  className="w-full py-2 px-4 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium transition flex items-center justify-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Download as PDF
+                </button>
+              )}
             </div>
           </form>
         </div>
