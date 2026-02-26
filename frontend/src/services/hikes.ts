@@ -47,8 +47,23 @@ export const createHike = async (payload: CreateHikePayload, token: string) => {
     },
     body: JSON.stringify(payload),
   });
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem("travelBuddyToken");
+      throw new Error("AUTH_EXPIRED");
+    }
+    if (res.status === 429) {
+      throw new Error("Too many requests. Please wait a moment and try again.");
+    }
+    try {
+      const data = await res.json();
+      throw new Error(data?.message || "Unable to create hike.");
+    } catch (e) {
+      if (e instanceof Error && e.message.includes('Too many requests')) throw e;
+      throw new Error("Unable to create hike.");
+    }
+  }
   const data = await res.json();
-  if (!res.ok) throw new Error(data?.message || "Unable to create hike.");
   return data;
 };
 
@@ -59,7 +74,22 @@ export const joinHike = async (hikeId: string, token: string) => {
       Authorization: `Bearer ${token}`,
     },
   });
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem("travelBuddyToken");
+      throw new Error("AUTH_EXPIRED");
+    }
+    if (res.status === 429) {
+      throw new Error("Too many requests. Please wait a moment and try again.");
+    }
+    try {
+      const data = await res.json();
+      throw new Error(data?.message || "Unable to join hike.");
+    } catch (e) {
+      if (e instanceof Error && e.message.includes('Too many requests')) throw e;
+      throw new Error("Unable to join hike.");
+    }
+  }
   const data = await res.json();
-  if (!res.ok) throw new Error(data?.message || "Unable to join hike.");
   return data;
 };

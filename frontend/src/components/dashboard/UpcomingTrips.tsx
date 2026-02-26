@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getUserTrips } from '../../services/trips';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { CalendarDays } from 'lucide-react';
 
@@ -11,6 +13,8 @@ interface Trip {
 }
 
 const UpcomingTrips: React.FC = () => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const { showError } = useToast();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +36,13 @@ const UpcomingTrips: React.FC = () => {
         setTrips(upcoming.slice(0, 3));
       } catch (error) {
         console.error('Failed to fetch upcoming trips:', error);
-        showError('Could not load upcoming trips');
+        if (error instanceof Error && error.message === 'AUTH_EXPIRED') {
+          logout();
+          navigate('/login');
+          showError('Your session has expired. Please log in again.');
+        } else {
+          showError('Could not load upcoming trips');
+        }
       } finally {
         setIsLoading(false);
       }

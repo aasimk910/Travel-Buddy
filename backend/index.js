@@ -52,6 +52,8 @@ const photoRoutes = require("./routes/photos");
 const hikeRoutes = require("./routes/hikes");
 const tripRoutes = require("./routes/trips");
 const itineraryRoutes = require("./routes/itinerary");
+const expenseRoutes = require("./routes/expenses");
+const adminRoutes = require("./routes/admin");
 const Hike = require("./models/Hike");
 const Message = require("./models/Message");
 const { authenticateToken } = require("./middleware/auth");
@@ -64,6 +66,8 @@ app.use("/api/photos", photoRoutes);
 app.use("/api/hikes", hikeRoutes);
 app.use("/api/trips", tripRoutes);
 app.use("/api/itinerary", itineraryRoutes);
+app.use("/api/expenses", expenseRoutes);
+app.use("/api/admin", adminRoutes);
 
 // GET /api/user-trips - Get hikes the user has joined
 app.get("/api/user-trips", authenticateToken, async (req, res) => {

@@ -10,8 +10,10 @@ import Hikes from "./pages/Hikes";
 import Dashboard from "./pages/Dashboard";
 import Maps from "./pages/Maps";
 import PrivateRoute from "./components/PrivateRoute";
+import AdminRoute from "./components/AdminRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import MainLayout from "./components/MainLayout";
+import Admin from "./pages/Admin";
 
 const App = () => {
   return (
@@ -65,6 +67,14 @@ const App = () => {
                   <Dashboard />
                 </MainLayout>
               </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <Admin />
+              </AdminRoute>
             }
           />
         </Routes>

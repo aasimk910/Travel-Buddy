@@ -39,6 +39,7 @@ const buildUserResponse = (user) => ({
   interests: user.interests,
   avatarUrl: user.avatarUrl,
   provider: user.provider,
+  role: user.role || "user",
 });
 
 // POST /api/auth/signup (email/password)

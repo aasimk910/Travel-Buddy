@@ -46,7 +46,7 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-const Chat: React.FC<ChatProps> = ({ roomId }) => {
+const Chat = ({ roomId }: ChatProps) => {
   const { user } = useAuth();
   const userId = user?.name;
   const [message, setMessage] = useState("");

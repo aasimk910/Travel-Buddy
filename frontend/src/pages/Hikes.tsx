@@ -157,11 +157,11 @@ const Hikes: React.FC = () => {
                   <select
                     value={place}
                     onChange={(e) => setPlace(e.target.value)}
-                    className="bg-transparent border-none text-sm text-white placeholder:text-gray-300 focus:outline-none focus:ring-0 pr-3"
+                    className="bg-transparent border-none text-sm text-white placeholder:text-gray-300 focus:outline-none focus:ring-0 pr-3 [color-scheme:dark]"
                   >
-                    <option value="all">All places</option>
+                    <option value="all" className="bg-gray-900 text-white">All places</option>
                     {places.map((p) => (
-                      <option key={p} value={p}>
+                      <option key={p} value={p} className="bg-gray-900 text-white">
                         {p}
                       </option>
                     ))}
@@ -196,14 +196,14 @@ const Hikes: React.FC = () => {
                       onChange={(e) =>
                         setDifficulty(e.target.value as typeof difficulty)
                       }
-                      className="rounded-lg glass-input px-3 py-2 text-xs sm:text-sm text-white placeholder:text-gray-300 focus:outline-none focus:ring-1 focus:ring-white"
+                      className="rounded-lg glass-input px-3 py-2 text-xs sm:text-sm text-white placeholder:text-gray-300 focus:outline-none focus:ring-1 focus:ring-white [color-scheme:dark]"
                     >
-                      <option value="all">All difficulties</option>
-                      <option value="1">1/5 – Very easy</option>
-                      <option value="2">2/5 – Easy</option>
-                      <option value="3">3/5 – Moderate</option>
-                      <option value="4">4/5 – Hard</option>
-                      <option value="5">5/5 – Expert</option>
+                      <option value="all" className="bg-gray-900 text-white">All difficulties</option>
+                      <option value="1" className="bg-gray-900 text-white">1/5 – Very easy</option>
+                      <option value="2" className="bg-gray-900 text-white">2/5 – Easy</option>
+                      <option value="3" className="bg-gray-900 text-white">3/5 – Moderate</option>
+                      <option value="4" className="bg-gray-900 text-white">4/5 – Hard</option>
+                      <option value="5" className="bg-gray-900 text-white">5/5 – Expert</option>
                     </select>
                   </div>
 
@@ -219,10 +219,10 @@ const Hikes: React.FC = () => {
                         onChange={(e) =>
                           setSortBy(e.target.value as typeof sortBy)
                         }
-                        className="bg-transparent border-none text-xs sm:text-sm text-white focus:outline-none focus:ring-0"
+                        className="bg-transparent border-none text-xs sm:text-sm text-white focus:outline-none focus:ring-0 [color-scheme:dark]"
                       >
-                        <option value="dateDesc">Newest first</option>
-                        <option value="dateAsc">Oldest first</option>
+                        <option value="dateDesc" className="bg-gray-900 text-white">Newest first</option>
+                        <option value="dateAsc" className="bg-gray-900 text-white">Oldest first</option>
                       </select>
                     </div>
                   </div>
@@ -319,7 +319,13 @@ const Hikes: React.FC = () => {
                           aria-label={`Open connect dialog for ${hike.title}`}
                           aria-haspopup="dialog"
                           aria-controls={`connect-dialog-${hike._id}`}
-                          onClick={() => setConnectHike(hike)}
+                          onClick={() => {
+                            if (!isAuthenticated) {
+                              navigate("/login", { state: { from: "/hikes" } });
+                              return;
+                            }
+                            setConnectHike(hike);
+                          }}
                         >
                           Connect
                         </button>

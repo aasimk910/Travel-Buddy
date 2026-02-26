@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Users, MapPin } from "lucide-react";
 import DOMPurify from "dompurify";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 import { createHike } from "../../services/hikes";
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
@@ -31,6 +34,9 @@ const LocationPicker: React.FC<{ onLocationSelect: (lat: number, lng: number) =>
 };
 
 const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const { showSuccess, showError } = useToast();
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
@@ -111,8 +117,14 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
         setMessage(null);
       }, 1500);
     } catch (err: any) {
-      const errorMessage = err?.message || "Unable to create hike. Please try again.";
-      setMessage({ type: "error", text: errorMessage });
+      if (err?.message === 'AUTH_EXPIRED') {
+        logout();
+        navigate('/login');
+        showError('Your session has expired. Please log in again.');
+      } else {
+        const errorMessage = err?.message || "Unable to create hike. Please try again.";
+        setMessage({ type: "error", text: errorMessage });
+      }
     } finally {
       setIsCreating(false);
     }

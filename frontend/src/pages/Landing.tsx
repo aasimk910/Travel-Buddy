@@ -39,6 +39,18 @@ const Landing: React.FC = () => {
             >
               Hikes
             </Link>
+            <Link
+              to="/dashboard"
+              className="text-gray-200 hover:text-white transition-colors"
+            >
+              Dashboard
+            </Link>
+            <Link
+              to="/maps"
+              className="text-gray-200 hover:text-white transition-colors"
+            >
+              Maps
+            </Link>
           </nav>
 
           {/* Auth buttons */}

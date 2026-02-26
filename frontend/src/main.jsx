@@ -10,7 +10,8 @@ import { ToastProvider } from "./context/ToastContext";
 import { SocketProvider } from "./context/SocketContext";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+  // StrictMode disabled to prevent double API calls during development
+  // <StrictMode>
     <BrowserRouter>
       <AuthProvider>
         <ToastProvider>
@@ -20,5 +21,5 @@ createRoot(document.getElementById("root")).render(
         </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
-  </StrictMode>
+  // </StrictMode>
 );

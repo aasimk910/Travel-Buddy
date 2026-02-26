@@ -35,7 +35,7 @@ const extractPlace = (location: string): string => {
 const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
   const navigate = useNavigate();
   const { showSuccess, showError } = useToast();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const lastFocusedElementRef = useRef<HTMLElement | null>(null);
   const [isJoining, setIsJoining] = useState(false);
@@ -118,7 +118,13 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
       navigate(`/dashboard/${response.hike._id}`);
     } catch (error) {
       console.error("Failed to join hike:", error);
-      showError(error instanceof Error ? error.message : "An unknown error occurred.");
+      if (error instanceof Error && error.message === 'AUTH_EXPIRED') {
+        logout();
+        navigate('/login');
+        showError('Your session has expired. Please log in again.');
+      } else {
+        showError(error instanceof Error ? error.message : "An unknown error occurred.");
+      }
     } finally {
       setIsJoining(false);
     }

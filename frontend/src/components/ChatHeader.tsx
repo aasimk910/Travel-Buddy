@@ -25,7 +25,12 @@ const formatDate = (dateString: string) => {
 const getHikeDetails = async (hikeId: string): Promise<HikeDetails | null> => {
   try {
     const res = await fetch(`${API_BASE_URL}/api/hikes/${hikeId}`);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      if (res.status === 429) {
+        console.warn("Rate limited. Skipping hike details fetch.");
+      }
+      return null;
+    }
     return await res.json();
   } catch (error) {
     console.error("Failed to fetch hike details:", error);

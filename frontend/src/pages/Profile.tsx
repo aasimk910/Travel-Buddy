@@ -207,6 +207,7 @@ const Profile: React.FC = () => {
           interests: data.user.interests,
           avatarUrl: data.user.avatarUrl,
           provider: data.user.provider || user?.provider || "password",
+          role: data.user.role || user?.role || "user",
         });
       }
 
@@ -359,15 +360,15 @@ const Profile: React.FC = () => {
                   name="travelStyle"
                   value={formData.travelStyle}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-white placeholder-gray-300"
+                  className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-white placeholder-gray-300 [color-scheme:dark]"
                 >
-                  <option value="">Select a style</option>
-                  <option value="budget">Budget backpacker</option>
-                  <option value="mid-range">Mid-range traveler</option>
-                  <option value="luxury">Luxury traveler</option>
-                  <option value="slow">Slow traveler</option>
-                  <option value="adventure">Adventure seeker</option>
-                  <option value="cultural">Cultural explorer</option>
+                  <option value="" className="bg-gray-900 text-white">Select a style</option>
+                  <option value="budget" className="bg-gray-900 text-white">Budget backpacker</option>
+                  <option value="mid-range" className="bg-gray-900 text-white">Mid-range traveler</option>
+                  <option value="luxury" className="bg-gray-900 text-white">Luxury traveler</option>
+                  <option value="slow" className="bg-gray-900 text-white">Slow traveler</option>
+                  <option value="adventure" className="bg-gray-900 text-white">Adventure seeker</option>
+                  <option value="cultural" className="bg-gray-900 text-white">Cultural explorer</option>
                 </select>
               </div>
 
@@ -384,13 +385,13 @@ const Profile: React.FC = () => {
                   name="budgetRange"
                   value={formData.budgetRange}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-white placeholder-gray-300"
+                  className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-white placeholder-gray-300 [color-scheme:dark]"
                 >
-                  <option value="">Select budget range</option>
-                  <option value="budget">Budget ($20-50/day)</option>
-                  <option value="mid-range">Mid-range ($50-100/day)</option>
-                  <option value="comfortable">Comfortable ($100-200/day)</option>
-                  <option value="luxury">Luxury ($200+/day)</option>
+                  <option value="" className="bg-gray-900 text-white">Select budget range</option>
+                  <option value="budget" className="bg-gray-900 text-white">Budget (NPR 2,000–5,000/day)</option>
+                  <option value="mid-range" className="bg-gray-900 text-white">Mid-range (NPR 5,000–10,000/day)</option>
+                  <option value="comfortable" className="bg-gray-900 text-white">Comfortable (NPR 10,000–20,000/day)</option>
+                  <option value="luxury" className="bg-gray-900 text-white">Luxury (NPR 20,000+/day)</option>
                 </select>
               </div>
 

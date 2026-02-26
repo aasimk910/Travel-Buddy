@@ -21,7 +21,7 @@ interface Message {
   attachment?: Attachment;
 }
 
-const Files: React.FC<FilesProps> = ({ roomId }) => {
+const Files = ({ roomId }: FilesProps) => {
   const [images, setImages] = useState<Array<{ url: string; name: string; date: string; sender: string }>>([]);
   const [isLoading, setIsLoading] = useState(true);
 

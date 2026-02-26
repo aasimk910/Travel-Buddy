@@ -138,14 +138,14 @@ const Maps: React.FC = () => {
             <select
               value={difficultyFilter}
               onChange={(e) => setDifficultyFilter(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-lg glass-input text-white"
+              className="flex-1 px-3 py-2 rounded-lg glass-input text-white [color-scheme:dark]"
             >
-              <option value="all">All Difficulties</option>
-              <option value="1">Easy</option>
-              <option value="2">Moderate</option>
-              <option value="3">Challenging</option>
-              <option value="4">Hard</option>
-              <option value="5">Expert</option>
+              <option value="all" className="bg-gray-900 text-white">All Difficulties</option>
+              <option value="1" className="bg-gray-900 text-white">Easy</option>
+              <option value="2" className="bg-gray-900 text-white">Moderate</option>
+              <option value="3" className="bg-gray-900 text-white">Challenging</option>
+              <option value="4" className="bg-gray-900 text-white">Hard</option>
+              <option value="5" className="bg-gray-900 text-white">Expert</option>
             </select>
           </div>
 

@@ -18,10 +18,12 @@ export type AuthUser = {
   bio?: string;
   avatarUrl?: string;
   provider?: "password" | "google";
+  role?: "user" | "admin";
 };
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  isAdmin: boolean;
   user: AuthUser | null;
   login: (email: string, password: string) => void;
   loginWithGoogle: (user: AuthUser) => void;
@@ -98,10 +100,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logout = () => {
     setUser(null);
-      };
+    localStorage.removeItem("travelBuddyToken");
+  };
 
   const value: AuthContextType = {
     isAuthenticated: !!user,
+    isAdmin: user?.role === "admin",
     user,
     login,
     loginWithGoogle,

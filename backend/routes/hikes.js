@@ -37,7 +37,9 @@ router.get("/", async (req, res) => {
 // GET /api/hikes/:id - Get a single hike by ID
 router.get("/:id", async (req, res) => {
   try {
-    const hike = await Hike.findById(req.params.id);
+    const hike = await Hike.findById(req.params.id)
+      .populate("userId", "name email")
+      .populate("participants", "name email");
     if (!hike) {
       return res.status(404).json({ message: "Hike not found." });
     }

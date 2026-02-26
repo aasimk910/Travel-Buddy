@@ -4,6 +4,7 @@ import TripGroups from '../components/TripGroups';
 import ChatHeader from '../components/ChatHeader';
 import Chat from '../components/Chat';
 import Files from '../components/Files';
+import Expenses from '../components/Expenses';
 import UserProfile from '../components/dashboard/UserProfile';
 import DashboardNav from '../components/dashboard/DashboardNav';
 import UpcomingTrips from '../components/dashboard/UpcomingTrips';
@@ -37,11 +38,7 @@ const Dashboard: React.FC = () => {
                 <div className="flex-1 flex flex-col min-h-0">
                   {activeChatTab === 'chat' && <Chat roomId={hikeId} />}
                   {activeChatTab === 'files' && <Files roomId={hikeId} />}
-                  {activeChatTab === 'expenses' && (
-                    <div className="flex items-center justify-center h-full">
-                      <p className="text-glass-dim">Expenses feature coming soon...</p>
-                    </div>
-                  )}
+                  {activeChatTab === 'expenses' && <Expenses roomId={hikeId} />}
                 </div>
               </div>
             </div>

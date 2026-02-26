@@ -14,7 +14,22 @@ export const submitReview = async (
     },
     body: JSON.stringify({ locationName, rating, comment }),
   });
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem("travelBuddyToken");
+      throw new Error("AUTH_EXPIRED");
+    }
+    if (res.status === 429) {
+      throw new Error("Too many requests. Please wait a moment and try again.");
+    }
+    try {
+      const data = await res.json();
+      throw new Error(data?.message || "Unable to submit review.");
+    } catch (e) {
+      if (e instanceof Error && e.message.includes('Too many requests')) throw e;
+      throw new Error("Unable to submit review.");
+    }
+  }
   const data = await res.json();
-  if (!res.ok) throw new Error(data?.message || "Unable to submit review.");
   return data;
 };

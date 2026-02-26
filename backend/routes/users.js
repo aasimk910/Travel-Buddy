@@ -16,6 +16,7 @@ const buildUserResponse = (user) => ({
   interests: user.interests,
   avatarUrl: user.avatarUrl,
   provider: user.provider,
+  role: user.role || "user",
 });
 
 // PUT /api/users/profile - Update user profile

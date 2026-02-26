@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { generateItinerary } from '../../services/itinerary';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { Loader2, MapPin, Calendar, IndianRupee, Sparkles, Download } from 'lucide-react';
 
@@ -68,6 +70,8 @@ const DESTINATION_SUGGESTIONS = [
 ];
 
 const ItineraryGenerator: React.FC = () => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const { showSuccess, showError } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [generatedItinerary, setGeneratedItinerary] = useState<string>('');
@@ -332,7 +336,13 @@ const ItineraryGenerator: React.FC = () => {
       showSuccess('Itinerary generated successfully!');
     } catch (error) {
       console.error('Error generating itinerary:', error);
-      showError(error instanceof Error ? error.message : 'Failed to generate itinerary');
+      if (error instanceof Error && error.message === 'AUTH_EXPIRED') {
+        logout();
+        navigate('/login');
+        showError('Your session has expired. Please log in again.');
+      } else {
+        showError(error instanceof Error ? error.message : 'Failed to generate itinerary');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -495,13 +505,13 @@ const ItineraryGenerator: React.FC = () => {
                 name="travelStyle"
                 value={formData.travelStyle}
                 onChange={handleChange}
-                className="w-full px-3 py-2 rounded-lg glass-input text-white"
+                className="w-full px-3 py-2 rounded-lg glass-input text-white [color-scheme:dark]"
               >
-                <option value="budget">Budget-Friendly</option>
-                <option value="balanced">Balanced</option>
-                <option value="luxury">Luxury</option>
-                <option value="adventure">Adventure</option>
-                <option value="relaxed">Relaxed</option>
+                <option value="budget" className="bg-gray-900 text-white">Budget-Friendly</option>
+                <option value="balanced" className="bg-gray-900 text-white">Balanced</option>
+                <option value="luxury" className="bg-gray-900 text-white">Luxury</option>
+                <option value="adventure" className="bg-gray-900 text-white">Adventure</option>
+                <option value="relaxed" className="bg-gray-900 text-white">Relaxed</option>
               </select>
             </div>
 

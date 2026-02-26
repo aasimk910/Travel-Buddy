@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import DOMPurify from "dompurify";
 import { submitReview } from "../../services/reviews";
 
@@ -20,6 +21,7 @@ const getRandomLocation = (current?: string) => {
 };
 
 const ReviewCard: React.FC = () => {
+  const { logout } = useAuth();
   const { showSuccess, showError } = useToast();
   const navigate = useNavigate();
 
@@ -62,9 +64,15 @@ const ReviewCard: React.FC = () => {
       setReviewRating(0);
       setTimeout(() => setReviewMessage(null), 3000);
     } catch (err: any) {
-      const errorMessage = err?.message || "Unable to submit review. Please try again.";
-      setReviewMessage({ type: "error", text: errorMessage });
-      showError(errorMessage);
+      if (err?.message === 'AUTH_EXPIRED') {
+        logout();
+        navigate('/login');
+        showError('Your session has expired. Please log in again.');
+      } else {
+        const errorMessage = err?.message || "Unable to submit review. Please try again.";
+        setReviewMessage({ type: "error", text: errorMessage });
+        showError(errorMessage);
+      }
     } finally {
       setIsSubmittingReview(false);
     }

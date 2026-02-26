@@ -97,23 +97,8 @@ const Signup: React.FC = () => {
           interests: formValues.interests || undefined,
         });
 
-        storeToken(data.token);
-
-        if (data.user) {
-          loginWithProfile({
-            name: data.user.name,
-            email: data.user.email,
-            country: data.user.country,
-            travelStyle: data.user.travelStyle,
-            budgetRange: data.user.budgetRange,
-            interests: data.user.interests,
-            avatarUrl: data.user.avatarUrl,
-            provider: data.user.provider || "password",
-          });
-        }
-
-        setStatus("Account created! Redirecting...");
-        navigate(redirectPath, { replace: true });
+        setStatus("Account created successfully! Please log in to continue.");
+        setTimeout(() => navigate("/login", { replace: true }), 1500);
       } catch (err: any) {
         console.error(err);
         setStatus(err?.message || "Signup failed. Please try again.");
@@ -321,14 +306,14 @@ const Signup: React.FC = () => {
                   value={values.travelStyle}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="mt-1 block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white"
+                  className="mt-1 block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white [color-scheme:dark]"
                 >
-                  <option value="">Select a style</option>
-                  <option value="budget">Budget backpacker</option>
-                  <option value="comfort">Comfort / mid-range</option>
-                  <option value="luxury">Luxury</option>
-                  <option value="adventure">Adventure / outdoors</option>
-                  <option value="slow">Slow travel</option>
+                  <option value="" className="bg-gray-900 text-white">Select a style</option>
+                  <option value="budget" className="bg-gray-900 text-white">Budget backpacker</option>
+                  <option value="comfort" className="bg-gray-900 text-white">Comfort / mid-range</option>
+                  <option value="luxury" className="bg-gray-900 text-white">Luxury</option>
+                  <option value="adventure" className="bg-gray-900 text-white">Adventure / outdoors</option>
+                  <option value="slow" className="bg-gray-900 text-white">Slow travel</option>
                 </select>
               </div>
             </div>
@@ -339,7 +324,7 @@ const Signup: React.FC = () => {
                   htmlFor="budgetRange"
                   className="block text-sm font-medium text-white"
                 >
-                  Budget per day (optional)
+                  Budget per day in NPR (optional)
                 </label>
                 <select
                   id="budgetRange"
@@ -347,14 +332,14 @@ const Signup: React.FC = () => {
                   value={values.budgetRange}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="mt-1 block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white"
+                  className="mt-1 block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white [color-scheme:dark]"
                 >
-                  <option value="">Choose a range</option>
-                  <option value="<30">&lt; $30</option>
-                  <option value="30-60">$30–60</option>
-                  <option value="60-100">$60–100</option>
-                  <option value="100-150">$100–150</option>
-                  <option value=">150">&gt; $150</option>
+                  <option value="" className="bg-gray-900 text-white">Choose a range</option>
+                  <option value="<3000" className="bg-gray-900 text-white">&lt; NPR 3,000</option>
+                  <option value="3000-6000" className="bg-gray-900 text-white">NPR 3,000–6,000</option>
+                  <option value="6000-10000" className="bg-gray-900 text-white">NPR 6,000–10,000</option>
+                  <option value="10000-15000" className="bg-gray-900 text-white">NPR 10,000–15,000</option>
+                  <option value=">15000" className="bg-gray-900 text-white">&gt; NPR 15,000</option>
                 </select>
               </div>
 

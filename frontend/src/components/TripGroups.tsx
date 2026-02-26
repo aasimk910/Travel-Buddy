@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserTrips, leaveHike } from '../services/trips';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { LogOut } from 'lucide-react';
 
@@ -17,6 +18,7 @@ interface TripGroupsProps {
 
 const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const { showError, showSuccess } = useToast();
   const [tripGroups, setTripGroups] = useState<Hike[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,7 +31,13 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
       setTripGroups(trips);
     } catch (error) {
       console.error("Failed to fetch user trips:", error);
-      showError("Could not load your trip groups.");
+      if (error instanceof Error && error.message === 'AUTH_EXPIRED') {
+        logout();
+        navigate('/login');
+        showError('Your session has expired. Please log in again.');
+      } else {
+        showError("Could not load your trip groups.");
+      }
     } finally {
       setIsLoading(false);
     }

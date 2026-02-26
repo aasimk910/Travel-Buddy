@@ -6,7 +6,7 @@ import LogoutButton from "../LogoutButton";
 
 const TopNav: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const location = useLocation();
 
   const getLinkClass = (path: string) => {
@@ -23,7 +23,7 @@ const TopNav: React.FC = () => {
         <button
           type="button"
           className="flex items-center gap-2 cursor-pointer"
-          onClick={() => navigate("/homepage")}
+          onClick={() => navigate(isAuthenticated ? "/homepage" : "/")}
         >
           <div className="glass-button-dark p-2 rounded-lg shadow-sm">
             <Map className="w-5 h-5 text-white" />
@@ -34,7 +34,7 @@ const TopNav: React.FC = () => {
         </button>
 
         <nav className="hidden md:flex items-center gap-6 text-sm">
-          <Link to="/homepage" className={getLinkClass("/homepage")}>
+          <Link to={isAuthenticated ? "/homepage" : "/"} className={getLinkClass(isAuthenticated ? "/homepage" : "/")}>
             Home
           </Link>
           <Link to="/hikes" className={getLinkClass("/hikes")}>
@@ -49,11 +49,30 @@ const TopNav: React.FC = () => {
         </nav>
 
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 text-sm text-white">
-            <User className="w-4 h-4" />
-            <span>{user?.name || "User"}</span>
-          </div>
-          <LogoutButton />
+          {isAuthenticated ? (
+            <>
+              <div className="hidden sm:flex items-center gap-2 text-sm text-white">
+                <User className="w-4 h-4" />
+                <span>{user?.name}</span>
+              </div>
+              <LogoutButton />
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="px-4 py-2 text-sm text-white hover:text-gray-200 transition-colors"
+              >
+                Login
+              </Link>
+              <Link
+                to="/signup"
+                className="px-4 py-2 text-sm bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors backdrop-blur-sm"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

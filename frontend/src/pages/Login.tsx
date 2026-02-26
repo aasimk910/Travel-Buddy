@@ -22,16 +22,16 @@ type LocationState = {
 };
 
 const Login: React.FC = () => {
-  const { loginWithProfile, isAuthenticated } = useAuth();
+  const { loginWithProfile, isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const redirectPath = location.state?.from || "/homepage";
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(redirectPath, { replace: true });
+      navigate(isAdmin ? "/admin" : redirectPath, { replace: true });
     }
-  }, [isAuthenticated, navigate, redirectPath]);
+  }, [isAuthenticated, isAdmin, navigate, redirectPath]);
 
   // ---------- Email/password Login (backend) ----------
   const formik = useFormik<LoginFormValues>({
@@ -70,6 +70,7 @@ const Login: React.FC = () => {
             interests: data.user.interests,
             avatarUrl: data.user.avatarUrl,
             provider: data.user.provider || "password",
+            role: data.user.role || "user",
           });
         }
 
@@ -79,7 +80,8 @@ const Login: React.FC = () => {
           localStorage.removeItem("travelBuddyRememberEmail");
         }
 
-        navigate(redirectPath, { replace: true });
+        const destination = data.user?.role === "admin" ? "/admin" : redirectPath;
+        navigate(destination, { replace: true });
       } catch (err: any) {
         console.error(err);
         setStatus(err?.message || "Login failed. Please try again.");
@@ -120,10 +122,12 @@ const Login: React.FC = () => {
           interests: data.user.interests,
           avatarUrl: data.user.avatarUrl,
           provider: data.user.provider || "google",
+          role: data.user.role || "user",
         });
       }
 
-      navigate(redirectPath, { replace: true });
+      const destination = data.user?.role === "admin" ? "/admin" : redirectPath;
+      navigate(destination, { replace: true });
     } catch (err: any) {
       console.error(err);
       formik.setStatus(err?.message || "Google login failed. Please try again.");
