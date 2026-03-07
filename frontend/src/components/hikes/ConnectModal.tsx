@@ -1,10 +1,31 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarDays, Users } from "lucide-react";
+import { CalendarDays, Users, Ruler } from "lucide-react";
 import { useToast } from "../../context/ToastContext";
 import { useAuth } from "../../context/AuthContext";
 import { joinHike } from "../../services/hikes";
 import { getUserTrips } from "../../services/trips";
+import { MapContainer, TileLayer, Marker, Polyline, Tooltip } from 'react-leaflet';
+import L from 'leaflet';
+
+// Fix leaflet default icons
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const startIcon = L.divIcon({
+  className: '',
+  html: `<div style="background:#22c55e;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:8px;font-weight:700">S</span></div>`,
+  iconSize: [16, 16], iconAnchor: [8, 8],
+});
+const endIcon = L.divIcon({
+  className: '',
+  html: `<div style="background:#ef4444;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:8px;font-weight:700">E</span></div>`,
+  iconSize: [16, 16], iconAnchor: [8, 8],
+});
 
 type Hike = {
   _id: string;
@@ -15,6 +36,8 @@ type Hike = {
   spotsLeft: number;
   imageUrl?: string;
   description?: string;
+  startPoint?: { lat: number; lng: number };
+  endPoint?: { lat: number; lng: number };
 };
 
 type ConnectModalProps = {
@@ -41,6 +64,40 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
   const [isJoining, setIsJoining] = useState(false);
   const [isAlreadyConnected, setIsAlreadyConnected] = useState(false);
   const [isCheckingConnection, setIsCheckingConnection] = useState(true);
+  const [routeGeometry, setRouteGeometry] = useState<[number, number][] | null>(null);
+  const [routeDistance, setRouteDistance] = useState<number | null>(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+
+  const formatDistance = (m: number) =>
+    m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`;
+
+  // Fetch OSRM trail route between start and end points
+  useEffect(() => {
+    if (!hike.startPoint || !hike.endPoint) return;
+    const { startPoint, endPoint } = hike;
+    const controller = new AbortController();
+    setRouteLoading(true);
+    setRouteGeometry(null);
+    setRouteDistance(null);
+    const url =
+      `https://router.project-osrm.org/route/v1/foot/` +
+      `${startPoint.lng},${startPoint.lat};${endPoint.lng},${endPoint.lat}` +
+      `?overview=full&geometries=geojson`;
+    fetch(url, { signal: controller.signal })
+      .then(r => r.json())
+      .then(data => {
+        if (data.code === 'Ok' && data.routes?.length) {
+          const route = data.routes[0];
+          setRouteGeometry(
+            route.geometry.coordinates.map(([lon, lat]: [number, number]) => [lat, lon])
+          );
+          setRouteDistance(route.distance);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setRouteLoading(false));
+    return () => controller.abort();
+  }, [hike._id]);
 
   // Check if user is already connected to this hike
   useEffect(() => {
@@ -221,6 +278,65 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
               <div className="px-6 py-4">
                 <p className="text-xs text-gray-300 mb-2">About Hike</p>
                 <p className="text-sm text-gray-200">{hike.description}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Trail Route Map */}
+          {(hike.startPoint || hike.endPoint) && (
+            <div className="mt-6 glass-card rounded-xl overflow-hidden">
+              <div className="px-6 py-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Ruler className="w-4 h-4 text-indigo-300" />
+                  <p className="text-sm font-semibold text-white">Trail Route</p>
+                  {routeLoading && (
+                    <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                  )}
+                  {routeDistance !== null && !routeLoading && (
+                    <span className="ml-auto px-3 py-1 bg-indigo-600/40 border border-indigo-400/40 rounded-full text-xs font-bold text-indigo-200">
+                      {formatDistance(routeDistance)}
+                    </span>
+                  )}
+                </div>
+
+                <div className="rounded-lg overflow-hidden border border-white/20" style={{ height: '220px' }}>
+                  {(() => {
+                    const sp = hike.startPoint;
+                    const ep = hike.endPoint;
+                    const center: [number, number] = sp
+                      ? [sp.lat, sp.lng]
+                      : ep
+                      ? [ep.lat, ep.lng]
+                      : [27.7172, 85.324];
+                    return (
+                      <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+                        <TileLayer
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        {sp && <Marker position={[sp.lat, sp.lng]} icon={startIcon} />}
+                        {ep && <Marker position={[ep.lat, ep.lng]} icon={endIcon} />}
+                        {routeGeometry && routeGeometry.length > 0 && (
+                          <Polyline positions={routeGeometry} pathOptions={{ color: '#6366f1', weight: 4 }}>
+                            <Tooltip sticky>
+                              <span className="font-semibold">
+                                Trail: {routeDistance !== null ? formatDistance(routeDistance) : '…'}
+                              </span>
+                            </Tooltip>
+                          </Polyline>
+                        )}
+                      </MapContainer>
+                    );
+                  })()}
+                </div>
+
+                <div className="flex gap-4 mt-2 text-xs text-gray-400">
+                  <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-full bg-green-500" /> Start</span>
+                  <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-full bg-red-500" /> End</span>
+                  {routeDistance !== null && !routeLoading && (
+                    <span className="ml-auto font-semibold text-indigo-300">Trail distance: {formatDistance(routeDistance)}</span>
+                  )}
+                </div>
               </div>
             </div>
           )}

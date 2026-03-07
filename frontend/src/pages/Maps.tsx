@@ -17,10 +17,9 @@ interface Hike {
   _id: string;
   title: string;
   location: string;
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
+  coordinates?: { lat: number; lng: number };
+  startPoint?: { lat: number; lng: number };
+  endPoint?: { lat: number; lng: number };
   difficulty: number;
   date: string;
   spotsLeft: number;
@@ -55,8 +54,11 @@ const DistanceMeasure: React.FC<{
   active: boolean;
   pointA: [number, number] | null;
   pointB: [number, number] | null;
+  routeGeometry: [number, number][] | null;
+  routeDistance: number | null;
+  routeLoading: boolean;
   onPointSet: (pt: [number, number]) => void;
-}> = ({ active, pointA, pointB, onPointSet }) => {
+}> = ({ active, pointA, pointB, routeGeometry, routeDistance, routeLoading, onPointSet }) => {
   useMapEvents({
     click(e) {
       if (!active) return;
@@ -68,11 +70,6 @@ const DistanceMeasure: React.FC<{
     if (meters >= 1000) return `${(meters / 1000).toFixed(2)} km`;
     return `${Math.round(meters)} m`;
   };
-
-  const distance =
-    pointA && pointB
-      ? L.latLng(pointA).distanceTo(L.latLng(pointB))
-      : null;
 
   return (
     <>
@@ -90,13 +87,23 @@ const DistanceMeasure: React.FC<{
           </Tooltip>
         </Marker>
       )}
-      {pointA && pointB && (
+      {/* Show a faint straight preview while route is loading */}
+      {pointA && pointB && routeLoading && (
         <Polyline
           positions={[pointA, pointB]}
-          pathOptions={{ color: '#6366f1', weight: 3, dashArray: '8 6' }}
+          pathOptions={{ color: '#a5b4fc', weight: 2, dashArray: '6 6' }}
+        />
+      )}
+      {/* Actual trail route polyline */}
+      {routeGeometry && routeGeometry.length > 0 && (
+        <Polyline
+          positions={routeGeometry}
+          pathOptions={{ color: '#6366f1', weight: 4 }}
         >
           <Tooltip sticky>
-            <span className="font-semibold">Distance: {formatDistance(distance!)}</span>
+            <span className="font-semibold">
+              Trail distance: {routeDistance !== null ? formatDistance(routeDistance) : '…'}
+            </span>
           </Tooltip>
         </Polyline>
       )}
@@ -106,12 +113,10 @@ const DistanceMeasure: React.FC<{
 
 // Get coordinates from hike data or use default
 const getHikeCoordinates = (hike: Hike): [number, number] => {
-  // Use actual coordinates if available
-  if (hike.coordinates && hike.coordinates.lat && hike.coordinates.lng) {
+  if (hike.coordinates?.lat && hike.coordinates?.lng)
     return [hike.coordinates.lat, hike.coordinates.lng];
-  }
-  
-  // Default to Kathmandu if no coordinates
+  if (hike.startPoint?.lat && hike.startPoint?.lng)
+    return [hike.startPoint.lat, hike.startPoint.lng];
   return [27.7172, 85.324];
 };
 
@@ -129,12 +134,19 @@ const Maps: React.FC = () => {
   const [measureActive, setMeasureActive] = useState(false);
   const [pointA, setPointA] = useState<[number, number] | null>(null);
   const [pointB, setPointB] = useState<[number, number] | null>(null);
+  const [routeGeometry, setRouteGeometry] = useState<[number, number][] | null>(null);
+  const [routeDistance, setRouteDistance] = useState<number | null>(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState<string | null>(null);
 
   const handleMeasurePoint = (pt: [number, number]) => {
     if (!pointA || (pointA && pointB)) {
-      // Start fresh or restart
+      // Start fresh — clear previous route
       setPointA(pt);
       setPointB(null);
+      setRouteGeometry(null);
+      setRouteDistance(null);
+      setRouteError(null);
     } else {
       setPointB(pt);
     }
@@ -143,15 +155,55 @@ const Maps: React.FC = () => {
   const clearMeasurement = () => {
     setPointA(null);
     setPointB(null);
+    setRouteGeometry(null);
+    setRouteDistance(null);
+    setRouteError(null);
   };
-
-  const distance =
-    pointA && pointB ? L.latLng(pointA).distanceTo(L.latLng(pointB)) : null;
 
   const formatDistance = (meters: number) => {
     if (meters >= 1000) return `${(meters / 1000).toFixed(2)} km`;
     return `${Math.round(meters)} m`;
   };
+
+  // Fetch trail route from OSRM when both points are set
+  useEffect(() => {
+    if (!pointA || !pointB) return;
+    const controller = new AbortController();
+    setRouteLoading(true);
+    setRouteError(null);
+
+    // OSRM expects lon,lat order; use 'foot' profile for walking/hiking trails
+    const url =
+      `https://router.project-osrm.org/route/v1/foot/` +
+      `${pointA[1]},${pointA[0]};${pointB[1]},${pointB[0]}` +
+      `?overview=full&geometries=geojson`;
+
+    fetch(url, { signal: controller.signal })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.code !== 'Ok' || !data.routes?.length) {
+          setRouteError('No route found between these points.');
+          setRouteGeometry(null);
+          setRouteDistance(null);
+          return;
+        }
+        const route = data.routes[0];
+        // OSRM GeoJSON coords are [lon, lat] — flip to [lat, lon] for Leaflet
+        const coords: [number, number][] = route.geometry.coordinates.map(
+          ([lon, lat]: [number, number]) => [lat, lon]
+        );
+        setRouteGeometry(coords);
+        setRouteDistance(route.distance); // metres
+      })
+      .catch((err) => {
+        if (err.name !== 'AbortError') {
+          setRouteError('Could not fetch route. Check your connection.');
+        }
+      })
+      .finally(() => setRouteLoading(false));
+
+    return () => controller.abort();
+  }, [pointA, pointB]);
 
   // Create a mapping of hike IDs to coordinates
   const hikeCoordinates = useMemo(() => {
@@ -335,10 +387,23 @@ const Maps: React.FC = () => {
                 </div>
               </div>
 
-              {distance !== null && (
+              {routeLoading && (
                 <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 text-center">
-                  <p className="text-xs text-indigo-500 font-medium uppercase tracking-wide">Distance</p>
-                  <p className="text-xl font-bold text-indigo-700">{formatDistance(distance)}</p>
+                  <p className="text-xs text-indigo-500 font-medium uppercase tracking-wide">Calculating trail…</p>
+                  <div className="mt-1 h-5 flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                </div>
+              )}
+              {routeError && !routeLoading && (
+                <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-center">
+                  <p className="text-xs text-red-600">{routeError}</p>
+                </div>
+              )}
+              {routeDistance !== null && !routeLoading && !routeError && (
+                <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 text-center">
+                  <p className="text-xs text-indigo-500 font-medium uppercase tracking-wide">Trail Distance</p>
+                  <p className="text-xl font-bold text-indigo-700">{formatDistance(routeDistance)}</p>
                 </div>
               )}
 
@@ -370,6 +435,9 @@ const Maps: React.FC = () => {
             active={measureActive}
             pointA={pointA}
             pointB={pointB}
+            routeGeometry={routeGeometry}
+            routeDistance={routeDistance}
+            routeLoading={routeLoading}
             onPointSet={handleMeasurePoint}
           />
           

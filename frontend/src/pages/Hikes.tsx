@@ -14,6 +14,7 @@ import { useAuth } from "../context/AuthContext";
 import LogoutButton from "../components/LogoutButton";
 import { getHikes } from "../services/hikes";
 import ConnectModal from "../components/hikes/ConnectModal";
+import CreateHikeModal from "../components/homepage/CreateHikeModal";
 
 type Hike = {
   _id: string;
@@ -24,6 +25,8 @@ type Hike = {
   spotsLeft: number;
   imageUrl?: string;
   description?: string;
+  startPoint?: { lat: number; lng: number };
+  endPoint?: { lat: number; lng: number };
   createdAt?: string;
   updatedAt?: string;
 };
@@ -64,6 +67,7 @@ const Hikes: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [connectHike, setConnectHike] = useState<Hike | null>(null);
+  const [isCreateHikeModalOpen, setIsCreateHikeModalOpen] = useState(false);
 
   // Fetch hikes from API
   useEffect(() => {
@@ -238,6 +242,43 @@ const Hikes: React.FC = () => {
           </div>
         </section>
 
+        {/* Create Hike banner */}
+        <section className="pt-6 pb-2">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
+            <div className="glass-card rounded-xl shadow-sm p-6 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 flex-shrink-0">
+                  <svg viewBox="0 0 100 100" className="w-full h-full">
+                    <defs>
+                      <linearGradient id="hikeGradHikes" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: "#10b981", stopOpacity: 1 }} />
+                        <stop offset="100%" style={{ stopColor: "#059669", stopOpacity: 1 }} />
+                      </linearGradient>
+                    </defs>
+                    <polygon points="30,50 50,20 70,50" fill="url(#hikeGradHikes)" />
+                    <polygon points="20,70 40,40 60,70" fill="#047857" />
+                    <rect x="0" y="70" width="100" height="30" fill="#86efac" />
+                    <circle cx="65" cy="35" r="8" fill="#fbbf24" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1">Create Hike</h3>
+                  <p className="text-sm text-gray-200">Organize and join group hiking events</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  if (!isAuthenticated) { navigate("/login", { state: { from: "/hikes" } }); return; }
+                  setIsCreateHikeModalOpen(true);
+                }}
+                className="glass-button-dark font-semibold py-2.5 px-6 rounded-full transition-all shadow-md text-white"
+              >
+                Create Hike
+              </button>
+            </div>
+          </div>
+        </section>
+
         {/* Hikes grid */}
         <section className="pt-8 lg:pt-10 pb-4 lg:pb-6">
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
@@ -345,6 +386,10 @@ const Hikes: React.FC = () => {
             onClose={() => setConnectHike(null)}
           />
         )}
+        <CreateHikeModal
+          open={isCreateHikeModalOpen}
+          onClose={() => setIsCreateHikeModalOpen(false)}
+        />
     </>
   );
 };

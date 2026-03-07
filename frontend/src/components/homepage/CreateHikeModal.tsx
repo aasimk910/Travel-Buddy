@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, MapPin } from "lucide-react";
+import { Users, MapPin, Navigation } from "lucide-react";
 import DOMPurify from "dompurify";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
@@ -16,6 +16,20 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+const startIcon = L.divIcon({
+  className: '',
+  html: `<div style="background:#22c55e;width:18px;height:18px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:9px;font-weight:700">S</span></div>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+});
+
+const endIcon = L.divIcon({
+  className: '',
+  html: `<div style="background:#ef4444;width:18px;height:18px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:9px;font-weight:700">E</span></div>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+});
+
 type CreateHikeModalProps = {
   open: boolean;
   onClose: () => void;
@@ -26,12 +40,12 @@ const difficultyLabels = ["Very Easy", "Easy", "Moderate", "Hard", "Expert"];
 // Component to handle map clicks
 const LocationPicker: React.FC<{ onLocationSelect: (lat: number, lng: number) => void }> = ({ onLocationSelect }) => {
   useMapEvents({
-    click: (e) => {
-      onLocationSelect(e.latlng.lat, e.latlng.lng);
-    },
+    click: (e) => { onLocationSelect(e.latlng.lat, e.latlng.lng); },
   });
   return null;
 };
+
+type LatLng = { lat: number; lng: number };
 
 const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
   const navigate = useNavigate();
@@ -39,7 +53,9 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
   const { showSuccess, showError } = useToast();
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
-  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+  const [startPoint, setStartPoint] = useState<LatLng | null>(null);
+  const [endPoint, setEndPoint] = useState<LatLng | null>(null);
+  const [activePoint, setActivePoint] = useState<'start' | 'end'>('start');
   const [date, setDate] = useState("");
   const [difficulty, setDifficulty] = useState<number>(1);
   const [spotsLeft, setSpotsLeft] = useState<number>(10);
@@ -94,7 +110,9 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
       const payload = {
         title: DOMPurify.sanitize(title),
         location: DOMPurify.sanitize(location),
-        coordinates: coordinates,
+        coordinates: startPoint ?? undefined,
+        startPoint: startPoint ?? undefined,
+        endPoint: endPoint ?? undefined,
         date,
         difficulty,
         spotsLeft,
@@ -105,7 +123,9 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
       setMessage({ type: "success", text: "Hike created successfully!" });
       setTitle("");
       setLocation("");
-      setCoordinates(null);
+      setStartPoint(null);
+      setEndPoint(null);
+      setActivePoint('start');
       setDate("");
       setDifficulty(1);
       setSpotsLeft(10);
@@ -204,28 +224,61 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">Location <span className="text-white">*</span></label>
                   <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g., Nagarkot View Tower, Kathmandu Valley" className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white text-white placeholder-gray-300" required />
-                  {coordinates && (
-                    <p className="text-xs text-gray-300 mt-2">📍 Selected: {coordinates.lat.toFixed(6)}, {coordinates.lng.toFixed(6)}</p>
-                  )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">Mark Location on Map</label>
+                  <label className="block text-sm font-medium text-white mb-2">Trail Start &amp; End Points</label>
+                  {/* Toggle buttons */}
+                  <div className="flex gap-2 mb-3">
+                    <button
+                      type="button"
+                      onClick={() => setActivePoint('start')}
+                      className={`flex-1 py-2 rounded-lg text-sm font-semibold transition border-2 ${
+                        activePoint === 'start'
+                          ? 'bg-green-500/30 border-green-400 text-green-300'
+                          : 'glass border-white/20 text-gray-300 hover:border-white/40'
+                      }`}
+                    >
+                      {startPoint ? `✅ Start (${startPoint.lat.toFixed(4)}, ${startPoint.lng.toFixed(4)})` : '📍 Set Start Point'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActivePoint('end')}
+                      className={`flex-1 py-2 rounded-lg text-sm font-semibold transition border-2 ${
+                        activePoint === 'end'
+                          ? 'bg-red-500/30 border-red-400 text-red-300'
+                          : 'glass border-white/20 text-gray-300 hover:border-white/40'
+                      }`}
+                    >
+                      {endPoint ? `✅ End (${endPoint.lat.toFixed(4)}, ${endPoint.lng.toFixed(4)})` : '🏁 Set End Point'}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-300 mb-2">
+                    {activePoint === 'start' ? '👇 Click on the map to set the trail start point' : '👇 Click on the map to set the trail end point'}
+                  </p>
                   <div className="glass rounded-lg overflow-hidden border border-white/20" style={{ height: '300px' }}>
                     <MapContainer
-                      center={coordinates ? [coordinates.lat, coordinates.lng] : [27.7172, 85.324]}
-                      zoom={coordinates ? 13 : 8}
+                      center={startPoint ? [startPoint.lat, startPoint.lng] : [27.7172, 85.324]}
+                      zoom={startPoint || endPoint ? 13 : 8}
                       style={{ height: '100%', width: '100%' }}
-                      key={coordinates ? `${coordinates.lat}-${coordinates.lng}` : 'default'}
                     >
                       <TileLayer
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                       />
-                      <LocationPicker onLocationSelect={(lat, lng) => setCoordinates({ lat, lng })} />
-                      {coordinates && <Marker position={[coordinates.lat, coordinates.lng]} />}
+                      <LocationPicker
+                        onLocationSelect={(lat, lng) => {
+                          if (activePoint === 'start') setStartPoint({ lat, lng });
+                          else setEndPoint({ lat, lng });
+                        }}
+                      />
+                      {startPoint && <Marker position={[startPoint.lat, startPoint.lng]} icon={startIcon} />}
+                      {endPoint && <Marker position={[endPoint.lat, endPoint.lng]} icon={endIcon} />}
                     </MapContainer>
                   </div>
-                  <p className="text-xs text-gray-300 mt-2">💡 Click on the map to mark the hike location</p>
+                  <div className="flex gap-4 mt-2 text-xs text-gray-300">
+                    <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-full bg-green-500" /> Start</span>
+                    <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-full bg-red-500" /> End</span>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

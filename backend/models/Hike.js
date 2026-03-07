@@ -18,12 +18,16 @@ const HikeSchema = new mongoose.Schema(
       trim: true,
     },
     coordinates: {
-      lat: {
-        type: Number,
-      },
-      lng: {
-        type: Number,
-      },
+      lat: { type: Number },
+      lng: { type: Number },
+    },
+    startPoint: {
+      lat: { type: Number },
+      lng: { type: Number },
+    },
+    endPoint: {
+      lat: { type: Number },
+      lng: { type: Number },
     },
     difficulty: {
       type: Number,

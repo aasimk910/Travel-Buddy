@@ -4,10 +4,9 @@ export type Hike = {
   _id: string;
   title: string;
   location: string;
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
+  coordinates?: { lat: number; lng: number };
+  startPoint?: { lat: number; lng: number };
+  endPoint?: { lat: number; lng: number };
   difficulty: number;
   date: string;
   spotsLeft: number;
@@ -27,10 +26,9 @@ export const getHikes = async (): Promise<Hike[]> => {
 export type CreateHikePayload = {
   title: string;
   location: string;
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
+  coordinates?: { lat: number; lng: number };
+  startPoint?: { lat: number; lng: number };
+  endPoint?: { lat: number; lng: number };
   date: string;
   difficulty: number;
   spotsLeft: number;
