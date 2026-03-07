@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, Polyline, Tooltip } from 'react-leaflet';
 import { getHikes } from '../services/hikes';
-import { MapPin, Search, Filter, X } from 'lucide-react';
+import { MapPin, Search, Filter, X, Ruler, Navigation } from 'lucide-react';
 import L from 'leaflet';
 import ConnectModal from '../components/hikes/ConnectModal';
 
@@ -35,6 +35,75 @@ const ChangeMapView: React.FC<{ center: [number, number]; zoom: number }> = ({ c
   return null;
 };
 
+// Custom icons for distance measurement points
+const pointAIcon = L.divIcon({
+  className: '',
+  html: `<div style="background:#3b82f6;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,0.5);"></div>`,
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+});
+
+const pointBIcon = L.divIcon({
+  className: '',
+  html: `<div style="background:#ef4444;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,0.5);"></div>`,
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+});
+
+// Distance measurement click handler
+const DistanceMeasure: React.FC<{
+  active: boolean;
+  pointA: [number, number] | null;
+  pointB: [number, number] | null;
+  onPointSet: (pt: [number, number]) => void;
+}> = ({ active, pointA, pointB, onPointSet }) => {
+  useMapEvents({
+    click(e) {
+      if (!active) return;
+      onPointSet([e.latlng.lat, e.latlng.lng]);
+    },
+  });
+
+  const formatDistance = (meters: number) => {
+    if (meters >= 1000) return `${(meters / 1000).toFixed(2)} km`;
+    return `${Math.round(meters)} m`;
+  };
+
+  const distance =
+    pointA && pointB
+      ? L.latLng(pointA).distanceTo(L.latLng(pointB))
+      : null;
+
+  return (
+    <>
+      {pointA && (
+        <Marker position={pointA} icon={pointAIcon}>
+          <Tooltip permanent direction="top" offset={[0, -10]}>
+            <span className="text-xs font-semibold">A</span>
+          </Tooltip>
+        </Marker>
+      )}
+      {pointB && (
+        <Marker position={pointB} icon={pointBIcon}>
+          <Tooltip permanent direction="top" offset={[0, -10]}>
+            <span className="text-xs font-semibold">B</span>
+          </Tooltip>
+        </Marker>
+      )}
+      {pointA && pointB && (
+        <Polyline
+          positions={[pointA, pointB]}
+          pathOptions={{ color: '#6366f1', weight: 3, dashArray: '8 6' }}
+        >
+          <Tooltip sticky>
+            <span className="font-semibold">Distance: {formatDistance(distance!)}</span>
+          </Tooltip>
+        </Polyline>
+      )}
+    </>
+  );
+};
+
 // Get coordinates from hike data or use default
 const getHikeCoordinates = (hike: Hike): [number, number] => {
   // Use actual coordinates if available
@@ -55,6 +124,34 @@ const Maps: React.FC = () => {
   const [mapCenter, setMapCenter] = useState<[number, number]>([27.7172, 85.324]);
   const [mapZoom, setMapZoom] = useState(10);
   const [connectHike, setConnectHike] = useState<Hike | null>(null);
+
+  // Distance measurement state
+  const [measureActive, setMeasureActive] = useState(false);
+  const [pointA, setPointA] = useState<[number, number] | null>(null);
+  const [pointB, setPointB] = useState<[number, number] | null>(null);
+
+  const handleMeasurePoint = (pt: [number, number]) => {
+    if (!pointA || (pointA && pointB)) {
+      // Start fresh or restart
+      setPointA(pt);
+      setPointB(null);
+    } else {
+      setPointB(pt);
+    }
+  };
+
+  const clearMeasurement = () => {
+    setPointA(null);
+    setPointB(null);
+  };
+
+  const distance =
+    pointA && pointB ? L.latLng(pointA).distanceTo(L.latLng(pointB)) : null;
+
+  const formatDistance = (meters: number) => {
+    if (meters >= 1000) return `${(meters / 1000).toFixed(2)} km`;
+    return `${Math.round(meters)} m`;
+  };
 
   // Create a mapping of hike IDs to coordinates
   const hikeCoordinates = useMemo(() => {
@@ -193,16 +290,87 @@ const Maps: React.FC = () => {
 
       {/* Map Area */}
       <div className="flex-1 relative">
+        {/* Measure Distance Toolbar */}
+        <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 items-end">
+          <button
+            onClick={() => {
+              const next = !measureActive;
+              setMeasureActive(next);
+              if (!next) clearMeasurement();
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm shadow-lg transition ${
+              measureActive
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white/90 text-gray-800 hover:bg-white'
+            }`}
+          >
+            <Ruler className="w-4 h-4" />
+            {measureActive ? 'Measuring…' : 'Measure Distance'}
+          </button>
+
+          {measureActive && (
+            <div className="bg-white/95 rounded-xl shadow-xl p-4 min-w-[220px]">
+              <p className="text-xs text-gray-500 mb-2">
+                {!pointA
+                  ? '1. Click the map to set Point A'
+                  : !pointB
+                  ? '2. Click the map to set Point B'
+                  : 'Points set — click again to reset'}
+              </p>
+
+              <div className="flex gap-3 text-sm mb-3">
+                <div className="flex items-center gap-1">
+                  <span className="inline-block w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow" />
+                  <span className="text-gray-600">
+                    {pointA ? `${pointA[0].toFixed(4)}, ${pointA[1].toFixed(4)}` : '—'}
+                  </span>
+                </div>
+              </div>
+              <div className="flex gap-3 text-sm mb-3">
+                <div className="flex items-center gap-1">
+                  <span className="inline-block w-3 h-3 rounded-full bg-red-500 border-2 border-white shadow" />
+                  <span className="text-gray-600">
+                    {pointB ? `${pointB[0].toFixed(4)}, ${pointB[1].toFixed(4)}` : '—'}
+                  </span>
+                </div>
+              </div>
+
+              {distance !== null && (
+                <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 text-center">
+                  <p className="text-xs text-indigo-500 font-medium uppercase tracking-wide">Distance</p>
+                  <p className="text-xl font-bold text-indigo-700">{formatDistance(distance)}</p>
+                </div>
+              )}
+
+              {(pointA || pointB) && (
+                <button
+                  onClick={clearMeasurement}
+                  className="mt-3 w-full text-xs text-gray-500 hover:text-red-500 transition"
+                >
+                  Clear points
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
         <MapContainer
           center={mapCenter}
           zoom={mapZoom}
-          style={{ height: '100%', width: '100%' }}
+          style={{ height: '100%', width: '100%', cursor: measureActive ? 'crosshair' : '' }}
           className="z-0"
         >
           <ChangeMapView center={mapCenter} zoom={mapZoom} />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+
+          <DistanceMeasure
+            active={measureActive}
+            pointA={pointA}
+            pointB={pointB}
+            onPointSet={handleMeasurePoint}
           />
           
           {filteredHikes.map((hike) => {
