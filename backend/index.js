@@ -56,6 +56,8 @@ const expenseRoutes = require("./routes/expenses");
 const adminRoutes = require("./routes/admin");
 const Hike = require("./models/Hike");
 const Message = require("./models/Message");
+const User = require("./models/User");
+const Review = require("./models/Review");
 const { authenticateToken } = require("./middleware/auth");
 const { uploadBase64Image } = require("./utils/cloudinaryUpload");
 
@@ -68,6 +70,22 @@ app.use("/api/trips", tripRoutes);
 app.use("/api/itinerary", itineraryRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/admin", adminRoutes);
+
+// GET /api/stats - Public site-wide statistics
+app.get("/api/stats", async (req, res) => {
+  try {
+    const [hikeCount, userCount, trailCount, reviewCount] = await Promise.all([
+      Hike.countDocuments(),
+      User.countDocuments(),
+      Hike.countDocuments({ "startPoint.lat": { $exists: true } }),
+      Review.countDocuments(),
+    ]);
+    res.json({ hikeCount, userCount, trailCount, reviewCount });
+  } catch (err) {
+    console.error("Stats error:", err);
+    res.status(500).json({ message: "Unable to fetch stats." });
+  }
+});
 
 // GET /api/user-trips - Get hikes the user has joined
 app.get("/api/user-trips", authenticateToken, async (req, res) => {

@@ -2,11 +2,11 @@
 const express = require("express");
 const router = express.Router();
 const { authenticateToken } = require("../middleware/auth");
-const OpenAI = require("openai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 /**
  * POST /api/itinerary/generate
- * Generate an itinerary using Mistral-7B-Instruct-v0.2 via Hugging Face
+ * Generate an itinerary using Google Gemini
  */
 router.post("/generate", authenticateToken, async (req, res) => {
   try {
@@ -19,122 +19,177 @@ router.post("/generate", authenticateToken, async (req, res) => {
       travelStyle,
       interests,
       additionalNotes,
+      customPrompt,   // free-form mode: user wrote their own request
     } = req.body;
 
-    // Validate required fields
-    if (!destination || !startDate || !endDate) {
-      return res.status(400).json({
-        error: "Destination, start date, and end date are required",
-      });
+    // In custom-prompt mode only a non-empty prompt is required
+    if (customPrompt) {
+      if (typeof customPrompt !== 'string' || !customPrompt.trim()) {
+        return res.status(400).json({ error: "Custom prompt must not be empty." });
+      }
+    } else {
+      // Guided-form mode: destination + dates are required
+      if (!destination || !startDate || !endDate) {
+        return res.status(400).json({
+          error: "Destination, start date, and end date are required",
+        });
+      }
     }
 
-    // Calculate number of days
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    // Calculate number of days (only relevant in guided mode)
+    const start = startDate ? new Date(startDate) : null;
+    const end   = endDate   ? new Date(endDate)   : null;
+    const days  = start && end
+      ? Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1
+      : null;
 
-    // Check if HF API key is available
-    const useAI = process.env.HF_TOKEN && process.env.HF_TOKEN !== '';
-    
+    // Check if Gemini API key is available
+    const useAI = process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== '';
+
     let itinerary;
-    
+
     if (useAI) {
       try {
-        // Initialize OpenAI client for Hugging Face
-        const client = new OpenAI({
-          baseURL: "https://router.huggingface.co/v1",
-          apiKey: process.env.HF_TOKEN,
-        });
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-        // Build the prompt for Mistral
-        const prompt = `You are an enthusiastic travel assistant. Create a FUN, ENGAGING, and COMPLETE ROUND-TRIP ${days}-day travel itinerary ${startingLocation ? `starting and ending at ${startingLocation}` : ''} for the EXACT destination: "${destination}".
+        let systemPrompt;
+        let userMessage;
 
-CRITICAL INSTRUCTIONS:
-1. The destination is "${destination}" - do NOT confuse this with any other similar-sounding location
-2. This must be a COMPLETE ROUND TRIP itinerary:
-   ${startingLocation ? `- START: Day 1 begins at ${startingLocation}` : '- START: Day 1 begins at the starting point'}
-   - JOURNEY: Include transportation from starting point to ${destination}
-   - EXPLORE: Activities and sightseeing at ${destination}
-   - RETURN: Include the return journey back to ${startingLocation ? startingLocation : 'starting point'}
-   ${startingLocation ? `- END: Final day ends back at ${startingLocation}` : '- END: Final day ends back at starting point'}
+        if (customPrompt) {
+          // ── Custom / Free-form mode ───────────────────────────────────────
+          // Minimal system prompt: persona + formatting only.
+          // Everything else comes from the user's own text.
+          systemPrompt = [
+            `You are an expert travel planner specialising in Nepal and South Asian destinations.`,
+            `You create detailed, enthusiastic, professionally formatted travel itineraries.`,
+            ``,
+            `FORMATTING RULES:`,
+            `- Respond in clear, well-structured plain text — no markdown, no asterisks, no hashes.`,
+            `- Use section headers like "Day 1: Title", "Morning:", "Afternoon:", "Evening:", "Estimated Cost:".`,
+            `- Use bullet points with • or dashes for lists.`,
+            `- Never use emojis.`,
+            `- All prices and costs MUST be in Nepali Rupees (NPR / Rs). Never use USD or any other currency.`,
+            `- Be enthusiastic yet professional. Include interesting facts, local tips, and cultural notes.`,
+          ].join('\n');
 
-Trip Details:
-${startingLocation ? `Starting & Ending Location: ${startingLocation}` : ""}
-Destination: ${destination}
-Dates: ${startDate} to ${endDate} (${days} days total for complete round trip)
-${budget ? `TOTAL BUDGET: ${budget} NPR (MUST stay within this budget for ALL expenses)` : ""}
-${travelStyle ? `Travel Style: ${travelStyle}` : ""}
-${interests ? `Interests: ${interests}` : ""}
-${additionalNotes ? `Additional Notes: ${additionalNotes}` : ""}
+          userMessage = customPrompt.trim();
 
-IMPORTANT REQUIREMENTS:
-1. All costs and prices MUST be in Nepali Rupees (NPR/Rs) - do NOT use USD ($) or any other currency
-2. Include detailed transportation information for BOTH outbound and return journeys
-3. Account for travel time in your day planning
-4. CRITICAL: The itinerary MUST cover ALL ${days} days from Day 1 to Day ${days} - do NOT stop in the middle
-5. COMPLETE THE ENTIRE ITINERARY - include every single day with full details
-${budget ? `6. BUDGET CONSTRAINT: The TOTAL cost of the entire trip (transportation, accommodation, food, activities, and miscellaneous) MUST NOT EXCEED ${budget} NPR
-   - Provide estimated costs in NPR for each category every day
-   - Include a daily cost breakdown showing: Transportation, Accommodation, Food, Activities, Miscellaneous
-   - At the end, provide a "TOTAL TRIP COST SUMMARY" that adds up all expenses and confirms it stays within ${budget} NPR
-   - If the budget is tight, suggest budget-friendly options (local transportation, affordable guesthouses, street food)
-   - If the budget is generous, suggest premium experiences while still respecting the limit
-   - Be realistic with pricing based on actual costs in ${destination}` : "6. Provide estimated costs for transportation, accommodation, food, and activities in NPR"}
+        } else {
+          // ── Guided / Structured mode ──────────────────────────────────────
+          // Dynamic system prompt built from all form fields.
+          systemPrompt = [
+            `You are an expert travel planner specialising in Nepal and South Asian hiking destinations.`,
+            `You create detailed, enthusiastic, professionally formatted round-trip travel itineraries.`,
+            ``,
+            `PERSONA RULES:`,
+            `- Always respond in clear, well-structured plain text — no markdown, no asterisks, no hashes.`,
+            `- Use section headers like "Day 1: Title", "Morning:", "Afternoon:", "Evening:", "Estimated Cost for Day X:".`,
+            `- Use bullet points with • or dashes for lists.`,
+            `- Never use emojis.`,
+            `- All prices and costs MUST be in Nepali Rupees (NPR / Rs). Never use USD or any other currency.`,
+            `- Be enthusiastic yet professional. Include interesting facts, local tips, and cultural notes.`,
+            ``,
+            `TRIP CONTEXT:`,
+            `- Trip type: Complete round-trip${startingLocation ? ` starting and ending at ${startingLocation}` : ''}.`,
+            `- Total duration: ${days} day${days > 1 ? 's' : ''} (${startDate} to ${endDate}).`,
+            `- Destination: ${destination}.`,
+            startingLocation ? `- Starting & ending point: ${startingLocation}.` : '',
+            travelStyle ? `- Travel style preference: ${travelStyle}.` : '',
+            interests  ? `- Traveller interests: ${interests}.` : '',
+            budget
+              ? [
+                  `- TOTAL BUDGET: ${budget} NPR for ALL expenses combined.`,
+                  `  * Provide a daily cost breakdown every day: Transportation, Accommodation, Food, Activities, Miscellaneous.`,
+                  `  * End the itinerary with a "TOTAL TRIP COST SUMMARY" confirming the total stays within ${budget} NPR.`,
+                  `  * Suggest budget-friendly options when the budget is tight; premium upgrades when it is generous.`,
+                  `  * Use realistic local pricing for ${destination}.`,
+                ].join('\n')
+              : `- No fixed budget. Provide estimated NPR costs for transportation, accommodation, food, and activities each day.`,
+            additionalNotes ? `- Additional traveller notes: ${additionalNotes}.` : '',
+            ``,
+            `STRUCTURE RULES:`,
+            `- Day 1 MUST cover departure from ${startingLocation || 'starting location'} and travel to ${destination}.`,
+            `- Middle days cover activities, sightseeing, food, and cultural experiences AT ${destination}.`,
+            `- Final day (Day ${days}) MUST cover the return journey back to ${startingLocation || 'starting location'}.`,
+            `- Every single day from Day 1 to Day ${days} MUST be fully written — never stop early.`,
+            `- Include transportation details (bus/taxi/flight) for both the outbound and return legs.`,
+          ].filter(Boolean).join('\n');
 
-FORMATTING REQUIREMENTS - CLEAN AND PROFESSIONAL:
-1. DO NOT use emojis anywhere in the itinerary
-2. DO NOT use markdown formatting symbols like **, ##, ###, --, __, ~~, or any other markdown syntax
-3. DO NOT use asterisks (*) or hashes (#) for formatting - use plain text only
-4. Use clear section headers for:
-   - Day numbers (e.g., "Day 1: Kathmandu to Nayapul")
-   - Time of day (e.g., "Morning:", "Afternoon:", "Evening:")
-   - Other sections (e.g., "Practical tips:", "Estimated cost for Day X:")
-5. Use simple bullet points (•) or dashes (-) for lists
-6. Use line breaks and spacing for better readability
-7. Use enthusiastic but professional language
-8. Include practical information and interesting facts about places
+          userMessage =
+            `Please generate my complete ${days}-day round-trip travel itinerary to ${destination}` +
+            (startingLocation ? ` starting and ending at ${startingLocation}` : '') +
+            (budget ? `, keeping the total budget within ${budget} NPR` : '') +
+            `. Cover every day in full detail including morning, afternoon, and evening sections with ` +
+            `transportation info, accommodation, food recommendations, activities, and estimated costs in NPR.`;
+        }
 
-Please provide a comprehensive, WELL-FORMATTED, and PROFESSIONAL day-by-day itinerary that includes:
-1. Day 1: Departure from ${startingLocation ? startingLocation : 'starting location'} and travel to ${destination}
-2. Middle days: Morning, afternoon, and evening activities at ${destination}
-   - Recommended places to visit
-   - Local food suggestions with descriptions
-   - Cultural experiences
-3. Final day: Return journey from ${destination} back to ${startingLocation ? startingLocation : 'starting location'}
-4. For ALL days: Transportation details, estimated costs in NPR, and practical tips
+        // Try models in order — continue on ANY error so a bad model name or
+        // a quota failure on one model doesn't kill the whole request.
+        const MODELS_TO_TRY = [
+          "gemini-2.0-flash-lite",
+          "gemini-2.0-flash",
+          "gemini-1.5-flash",
+          "gemini-1.5-flash-8b",
+        ];
 
-Make it informative, professional, and format it in a clear way with proper sections and spacing!`;
+        let lastError = null;
+        for (const modelName of MODELS_TO_TRY) {
+          try {
+            const model = genAI.getGenerativeModel({
+              model: modelName,
+              systemInstruction: systemPrompt,
+              generationConfig: { temperature: 0.4, maxOutputTokens: 8192 },
+            });
+            const result = await model.generateContent(userMessage);
+            itinerary = result.response.text();
+            console.log(`Itinerary generated with model: ${modelName}`);
+            lastError = null;
+            break; // success — stop trying
+          } catch (modelErr) {
+            console.warn(`Model ${modelName} failed: ${modelErr.message}`);
+            lastError = modelErr;
+            continue; // always try the next model
+          }
+        }
 
-
-        // Call Hugging Face API with Mistral model
-        const completion = await client.chat.completions.create({
-          model: "mistralai/Mistral-7B-Instruct-v0.2",
-          messages: [
-            {
-              role: "user",
-              content: prompt
-            }
-          ],
-          max_tokens: 16000,
-          temperature: 0.3,
-        });
-
-        itinerary = completion.choices[0].message.content;
+        if (lastError) {
+          console.error("All models failed. Last error:", lastError.message);
+          const isQuota = lastError.message && (
+            lastError.message.includes("429") ||
+            lastError.message.includes("quota") ||
+            lastError.message.includes("RESOURCE_EXHAUSTED")
+          );
+          return res.status(isQuota ? 429 : 500).json({
+            error: isQuota
+              ? "All Gemini AI models have exceeded their free-tier quota. Please create a new API key at https://aistudio.google.com/app/apikey and update GEMINI_API_KEY in backend/.env."
+              : "AI generation failed: " + lastError.message,
+          });
+        }
       } catch (aiError) {
-        console.error("Mistral AI Error:", aiError.message);
-        // Fall back to demo itinerary if AI fails
-        itinerary = generateDemoItinerary(destination, days, budget, travelStyle, interests);
+        console.error("Gemini AI Error:", aiError.message);
+        if (aiError.message && (aiError.message.includes("429") || aiError.message.includes("quota"))) {
+          return res.status(429).json({
+            error: "AI service quota exceeded. Please try again later or refresh your API key.",
+          });
+        }
+        return res.status(500).json({
+          error: "AI generation failed: " + aiError.message,
+        });
       }
     } else {
       // Generate demo itinerary when API key is not available
-      itinerary = generateDemoItinerary(destination, days, budget, travelStyle, interests);
+      if (customPrompt) {
+        itinerary = `[DEMO MODE — No GEMINI_API_KEY configured]\n\nYour prompt:\n${customPrompt}\n\nAdd a valid GEMINI_API_KEY to backend/.env to get real AI-generated itineraries.`;
+      } else {
+        itinerary = generateDemoItinerary(destination, days, budget, travelStyle, interests);
+      }
     }
 
     res.json({
       success: true,
       itinerary,
       details: {
-        destination,
+        destination: destination || '(custom)',
         startDate,
         endDate,
         days,
@@ -142,6 +197,7 @@ Make it informative, professional, and format it in a clear way with proper sect
         travelStyle,
       },
       isDemo: !useAI,
+      isCustom: !!customPrompt,
     });
   } catch (error) {
     console.error("Error generating itinerary:", error);
@@ -242,7 +298,7 @@ function generateDemoItinerary(destination, days, budget, travelStyle, interests
   itinerary += `• Don't miss the street food - it's often the best!\n`;
   itinerary += `• Ask locals for their favorite hidden gems\n\n`;
   
-  itinerary += `NOTE: To get AI-powered personalized itineraries, please add a valid HF_TOKEN (Hugging Face token) to your .env file.\n`;
+  itinerary += `NOTE: To get AI-powered personalized itineraries, please add a valid GEMINI_API_KEY to your .env file.\n`;
   
   return itinerary;
 }

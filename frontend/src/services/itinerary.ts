@@ -2,13 +2,15 @@
 import { API_BASE_URL } from "../config/env";
 
 interface ItineraryRequest {
-  destination: string;
-  startDate: string;
-  endDate: string;
+  destination?: string;
+  startDate?: string;
+  endDate?: string;
   budget?: string;
   travelStyle?: string;
   interests?: string;
   additionalNotes?: string;
+  startingLocation?: string;
+  customPrompt?: string;   // free-form mode
 }
 
 interface ItineraryResponse {
@@ -43,7 +45,13 @@ export const generateItinerary = async (
       throw new Error("AUTH_EXPIRED");
     }
     if (response.status === 429) {
-      throw new Error("Too many requests. Please wait a moment and try again.");
+      try {
+        const err = await response.json();
+        throw new Error(err.error || "Too many requests. Please wait a moment and try again.");
+      } catch (e) {
+        if (e instanceof Error && (e.message.includes('quota') || e.message.includes('API key') || e.message.includes('too many') || e.message.includes('Too many'))) throw e;
+        throw new Error("Too many requests. Please wait a moment and try again.");
+      }
     }
     try {
       const error = await response.json();

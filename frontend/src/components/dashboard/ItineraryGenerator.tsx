@@ -3,83 +3,81 @@ import { useNavigate } from 'react-router-dom';
 import { generateItinerary } from '../../services/itinerary';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { Loader2, MapPin, Calendar, IndianRupee, Sparkles, Download } from 'lucide-react';
+import {
+  Loader2, MapPin, Calendar, Sparkles, Download, RotateCcw,
+  Mountain, Utensils, Camera, Tent, Palmtree, Landmark, Wallet,
+  Clock, Navigation, FileText, PenLine, LayoutList,
+} from 'lucide-react';
+
+const EXAMPLE_PROMPTS = [
+  "Plan a 5-day budget trek to Poon Hill starting from Kathmandu. I love photography and local food. Total budget Rs 25,000.",
+  "I want a luxury 3-day trip to Pokhara with my partner. Include boat rides, paragliding, and fine dining.",
+  "Create a 7-day Annapurna Circuit itinerary for an experienced hiker. Focus on acclimatisation, teahouse stays, and cultural stops.",
+];
+
+const INTEREST_CHIPS = [
+  { label: 'Hiking',       icon: <Mountain  className="w-3 h-3" /> },
+  { label: 'Food',         icon: <Utensils  className="w-3 h-3" /> },
+  { label: 'Photography',  icon: <Camera    className="w-3 h-3" /> },
+  { label: 'Camping',      icon: <Tent      className="w-3 h-3" /> },
+  { label: 'Nature',       icon: <Palmtree  className="w-3 h-3" /> },
+  { label: 'Culture',      icon: <Landmark  className="w-3 h-3" /> },
+];
+
+const TRAVEL_STYLES = [
+  { value: 'budget',    label: 'Budget',    color: 'emerald' },
+  { value: 'balanced',  label: 'Balanced',  color: 'blue'    },
+  { value: 'luxury',    label: 'Luxury',    color: 'purple'  },
+  { value: 'adventure', label: 'Adventure', color: 'orange'  },
+  { value: 'relaxed',   label: 'Relaxed',   color: 'teal'    },
+];
+
+const STYLE_COLORS: Record<string, string> = {
+  emerald: 'bg-emerald-500/20 border-emerald-400/60 text-emerald-300',
+  blue:    'bg-blue-500/20 border-blue-400/60 text-blue-300',
+  purple:  'bg-purple-500/20 border-purple-400/60 text-purple-300',
+  orange:  'bg-orange-500/20 border-orange-400/60 text-orange-300',
+  teal:    'bg-teal-500/20 border-teal-400/60 text-teal-300',
+};
 
 // Popular Nepal hiking and trekking destinations
 const DESTINATION_SUGGESTIONS = [
-  "Everest Base Camp, Nepal",
-  "Annapurna Base Camp, Nepal",
-  "Annapurna Circuit, Nepal",
-  "Manaslu Circuit, Nepal",
-  "Langtang Valley, Nepal",
-  "Gokyo Lakes, Nepal",
-  "Upper Mustang, Nepal",
-  "Makalu Base Camp, Nepal",
-  "Kanchenjunga Base Camp, Nepal",
-  "Dhaulagiri Circuit, Nepal",
-  "Poon Hill, Nepal",
-  "Mardi Himal, Nepal",
-  "Ghandruk, Nepal",
-  "Ghorepani, Nepal",
-  "Khopra Danda, Nepal",
-  "Mohare Danda, Nepal",
-  "Tilicho Lake, Nepal",
-  "Gosaikunda Lake, Nepal",
-  "Helambu Circuit, Nepal",
-  "Tamang Heritage Trail, Nepal",
-  "Nar Phu Valley, Nepal",
-  "Tsum Valley, Nepal",
-  "Dolpo Region, Nepal",
-  "Rara Lake, Nepal",
-  "Khaptad National Park, Nepal",
-  "Pikey Peak, Nepal",
-  "Numbur Cheese Circuit, Nepal",
-  "Everest View Trek, Nepal",
-  "Three Passes Trek, Nepal",
-  "Khumai Dada, Nepal",
-  "Nagarkot, Nepal",
-  "Chisapani, Nepal",
-  "Shivapuri National Park, Nepal",
-  "Champadevi Hill, Nepal",
-  "Phulchoki Hill, Nepal",
-  "Kakani, Nepal",
-  "Daman, Nepal",
-  "Chandragiri Hills, Nepal",
-  "Australian Base Camp, Nepal",
-  "Khayer Lake, Nepal",
-  "Panch Pokhari, Nepal",
-  "Surya Peak, Nepal",
-  "Jomsom, Nepal",
-  "Muktinath, Nepal",
-  "Kagbeni, Nepal",
-  "Lomanthang, Nepal",
-  "Syabrubesi, Nepal",
-  "Kyanjin Gompa, Nepal",
-  "Tsho Rolpa Lake, Nepal",
-  "Dudh Kunda, Nepal",
-  "Rolwaling Valley, Nepal",
-  "Solu Trek, Nepal",
-  "Pokhara, Nepal",
-  "Kathmandu, Nepal",
-  "Chitwan, Nepal",
-  "Lumbini, Nepal",
-  "Bandipur, Nepal",
-  "Bhaktapur, Nepal",
-  "Patan, Nepal",
-  "Ilam, Nepal",
+  "Everest Base Camp, Nepal","Annapurna Base Camp, Nepal","Annapurna Circuit, Nepal",
+  "Manaslu Circuit, Nepal","Langtang Valley, Nepal","Gokyo Lakes, Nepal",
+  "Upper Mustang, Nepal","Makalu Base Camp, Nepal","Kanchenjunga Base Camp, Nepal",
+  "Dhaulagiri Circuit, Nepal","Poon Hill, Nepal","Mardi Himal, Nepal",
+  "Ghandruk, Nepal","Ghorepani, Nepal","Khopra Danda, Nepal","Mohare Danda, Nepal",
+  "Tilicho Lake, Nepal","Gosaikunda Lake, Nepal","Helambu Circuit, Nepal",
+  "Tamang Heritage Trail, Nepal","Nar Phu Valley, Nepal","Tsum Valley, Nepal",
+  "Dolpo Region, Nepal","Rara Lake, Nepal","Khaptad National Park, Nepal",
+  "Pikey Peak, Nepal","Numbur Cheese Circuit, Nepal","Everest View Trek, Nepal",
+  "Three Passes Trek, Nepal","Khumai Dada, Nepal","Nagarkot, Nepal",
+  "Chisapani, Nepal","Shivapuri National Park, Nepal","Champadevi Hill, Nepal",
+  "Phulchoki Hill, Nepal","Kakani, Nepal","Daman, Nepal","Chandragiri Hills, Nepal",
+  "Australian Base Camp, Nepal","Khayer Lake, Nepal","Panch Pokhari, Nepal",
+  "Surya Peak, Nepal","Jomsom, Nepal","Muktinath, Nepal","Kagbeni, Nepal",
+  "Lomanthang, Nepal","Syabrubesi, Nepal","Kyanjin Gompa, Nepal",
+  "Tsho Rolpa Lake, Nepal","Dudh Kunda, Nepal","Rolwaling Valley, Nepal",
+  "Solu Trek, Nepal","Pokhara, Nepal","Kathmandu, Nepal","Chitwan, Nepal",
+  "Lumbini, Nepal","Bandipur, Nepal","Bhaktapur, Nepal","Patan, Nepal","Ilam, Nepal",
 ];
 
 const ItineraryGenerator: React.FC = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const { showSuccess, showError } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+
+  const [isLoading, setIsLoading]               = useState(false);
   const [generatedItinerary, setGeneratedItinerary] = useState<string>('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showSuggestions, setShowSuggestions]   = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [activeTab, setActiveTab]               = useState<'guided' | 'custom'>('guided');
+  const [customPrompt, setCustomPrompt]         = useState('');
+
   const destinationInputRef = useRef<HTMLInputElement>(null);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
-  
+  const suggestionsRef      = useRef<HTMLDivElement>(null);
+
   const [formData, setFormData] = useState({
     startingLocation: '',
     destination: '',
@@ -91,257 +89,82 @@ const ItineraryGenerator: React.FC = () => {
     additionalNotes: '',
   });
 
-  // Handle click outside to close suggestions
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handler = (e: MouseEvent) => {
       if (
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target as Node) &&
-        destinationInputRef.current &&
-        !destinationInputRef.current.contains(event.target as Node)
-      ) {
-        setShowSuggestions(false);
-      }
+        suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node) &&
+        destinationInputRef.current && !destinationInputRef.current.contains(e.target as Node)
+      ) setShowSuggestions(false);
     };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-
-    // Filter destinations when typing in destination field
+    setFormData(prev => ({ ...prev, [name]: value }));
     if (name === 'destination') {
-      if (value.trim() === '') {
-        setFilteredSuggestions([]);
-        setShowSuggestions(false);
-      } else {
-        const filtered = DESTINATION_SUGGESTIONS.filter((dest) =>
-          dest.toLowerCase().includes(value.toLowerCase())
-        );
-        setFilteredSuggestions(filtered);
-        setShowSuggestions(true);
-      }
+      const filtered = value.trim()
+        ? DESTINATION_SUGGESTIONS.filter(d => d.toLowerCase().includes(value.toLowerCase()))
+        : [];
+      setFilteredSuggestions(filtered);
+      setShowSuggestions(filtered.length > 0);
     }
   };
 
-  const handleDestinationSelect = (destination: string) => {
-    setFormData({
-      ...formData,
-      destination,
-    });
+  const handleDestinationSelect = (dest: string) => {
+    setFormData(prev => ({ ...prev, destination: dest }));
     setShowSuggestions(false);
     setFilteredSuggestions([]);
   };
 
   const handleDestinationFocus = () => {
-    if (formData.destination.trim() !== '') {
-      const filtered = DESTINATION_SUGGESTIONS.filter((dest) =>
-        dest.toLowerCase().includes(formData.destination.toLowerCase())
+    if (formData.destination.trim()) {
+      const filtered = DESTINATION_SUGGESTIONS.filter(d =>
+        d.toLowerCase().includes(formData.destination.toLowerCase())
       );
       setFilteredSuggestions(filtered);
-      setShowSuggestions(true);
+      setShowSuggestions(filtered.length > 0);
     }
   };
 
-  const handleDownloadPDF = async () => {
-    if (!generatedItinerary) {
-      showError('No itinerary to download');
-      return;
-    }
-
-    try {
-      // Dynamically import jsPDF
-      const { jsPDF } = await import('jspdf');
-      const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-      
-      // Set up document dimensions with consistent margins
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const marginLeft = 18;
-      const marginRight = 18;
-      const marginTop = 18;
-      const marginBottom = 25;
-      const contentWidth = pageWidth - marginLeft - marginRight;
-      let yPosition = marginTop;
-
-      // Helper function to add new page when needed
-      const checkAndAddPage = (requiredSpace: number = 10) => {
-        if (yPosition + requiredSpace > pageHeight - marginBottom) {
-          doc.addPage();
-          yPosition = marginTop;
-          return true;
-        }
-        return false;
-      };
-
-      // Process the itinerary text line by line
-      const lines = generatedItinerary.split('\n');
-      
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        
-        // Skip empty lines but add minimal spacing
-        if (line.trim() === '') {
-          yPosition += 2;
-          continue;
-        }
-
-        // Check if line is a separator
-        if (line.trim() === '---') {
-          yPosition += 5;
-          checkAndAddPage(10);
-          doc.setDrawColor(180, 180, 180);
-          doc.setLineWidth(0.5);
-          doc.line(marginLeft, yPosition, pageWidth - marginRight, yPosition);
-          yPosition += 8;
-          continue;
-        }
-
-        // Detect heading types
-        const isDayHeading = /^Day \d+:/i.test(line);
-        const isMainSubheading = /^(Morning|Afternoon|Evening|Practical tips?|Transportation|Food Recommendations?):/i.test(line);
-        const isCostLine = /^(Estimated cost|Total cost)/i.test(line);
-        const isNoteHeader = /^(NOTE|Trip Overview):/i.test(line);
-        const isBullet = /^[•\-]\s/.test(line.trim());
-        const isSubBullet = /^\s{2,}[•\-]\s/.test(line);
-
-        // Calculate required space
-        let requiredSpace = 10;
-        if (isDayHeading) requiredSpace = 30;
-        else if (isMainSubheading) requiredSpace = 20;
-
-        // Check if we need a new page
-        checkAndAddPage(requiredSpace);
-
-        // Style based on content type
-        if (isDayHeading) {
-          yPosition += 8;
-          doc.setFontSize(14);
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(20, 80, 200);
-        } else if (isMainSubheading) {
-          yPosition += 5;
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(30, 100, 200);
-        } else if (isCostLine || isNoteHeader) {
-          yPosition += 4;
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'bold');
-          doc.setTextColor(60, 60, 60);
-        } else if (isSubBullet) {
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(80, 80, 80);
-        } else if (isBullet) {
-          doc.setFontSize(9.5);
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(50, 50, 50);
-        } else {
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(30, 30, 30);
-        }
-
-        // Handle indentation
-        let leftMargin = marginLeft;
-        let availableWidth = contentWidth;
-        
-        if (isSubBullet) {
-          leftMargin = marginLeft + 12;
-          availableWidth = contentWidth - 12;
-        } else if (isBullet) {
-          leftMargin = marginLeft + 6;
-          availableWidth = contentWidth - 6;
-        }
-
-        // Split long lines
-        const wrappedLines = doc.splitTextToSize(line, availableWidth);
-        
-        for (let j = 0; j < wrappedLines.length; j++) {
-          if (yPosition > pageHeight - marginBottom) {
-            doc.addPage();
-            yPosition = marginTop;
-          }
-          
-          doc.text(wrappedLines[j], leftMargin, yPosition);
-          yPosition += 5.5;
-        }
-
-        // Add spacing after sections
-        if (isDayHeading) {
-          yPosition += 3;
-        } else if (isMainSubheading) {
-          yPosition += 2;
-        } else if (isCostLine) {
-          yPosition += 1;
-        }
-      }
-
-      // Add page numbers to all pages
-      const totalPages = doc.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(120, 120, 120);
-        doc.text(
-          `Page ${i} of ${totalPages}`,
-          pageWidth / 2,
-          pageHeight - 12,
-          { align: 'center' }
-        );
-      }
-
-      // Save the PDF
-      const fileName = `itinerary_${formData.destination.replace(/[^a-z0-9]/gi, '_')}_${new Date().getTime()}.pdf`;
-      doc.save(fileName);
-      showSuccess('PDF downloaded successfully!');
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      showError('Failed to generate PDF');
-    }
+  const toggleInterest = (label: string) => {
+    const next = selectedInterests.includes(label)
+      ? selectedInterests.filter(i => i !== label)
+      : [...selectedInterests, label];
+    setSelectedInterests(next);
+    setFormData(prev => ({ ...prev, interests: next.join(', ') }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.destination || !formData.startDate || !formData.endDate) {
-      showError('Please fill in all required fields');
-      return;
-    }
-
     const token = localStorage.getItem('travelBuddyToken');
-    if (!token) {
-      showError('You must be logged in to generate an itinerary');
-      return;
+    if (!token) { showError('Please log in first'); return; }
+
+    if (activeTab === 'custom') {
+      if (!customPrompt.trim()) { showError('Please enter your prompt first'); return; }
+    } else {
+      if (!formData.destination || !formData.startDate || !formData.endDate) {
+        showError('Please fill in Destination, Start Date and End Date');
+        return;
+      }
     }
 
     setIsLoading(true);
     setGeneratedItinerary('');
-
     try {
-      const response = await generateItinerary(formData, token);
-      setGeneratedItinerary(response.itinerary);
-      showSuccess('Itinerary generated successfully!');
-    } catch (error) {
-      console.error('Error generating itinerary:', error);
-      if (error instanceof Error && error.message === 'AUTH_EXPIRED') {
-        logout();
-        navigate('/login');
-        showError('Your session has expired. Please log in again.');
+      const payload = activeTab === 'custom'
+        ? { customPrompt: customPrompt.trim() }
+        : formData;
+      const resp = await generateItinerary(payload, token);
+      setGeneratedItinerary(resp.itinerary);
+      showSuccess('Itinerary generated!');
+    } catch (err) {
+      if (err instanceof Error && err.message === 'AUTH_EXPIRED') {
+        logout(); navigate('/login');
+        showError('Session expired. Please log in again.');
       } else {
-        showError(error instanceof Error ? error.message : 'Failed to generate itinerary');
+        showError(err instanceof Error ? err.message : 'Failed to generate itinerary');
       }
     } finally {
       setIsLoading(false);
@@ -349,73 +172,170 @@ const ItineraryGenerator: React.FC = () => {
   };
 
   const handleReset = () => {
-    setFormData({
-      startingLocation: '',
-      destination: '',
-      startDate: '',
-      endDate: '',
-      budget: '',
-      travelStyle: 'balanced',
-      interests: '',
-      additionalNotes: '',
-    });
+    setFormData({ startingLocation:'',destination:'',startDate:'',endDate:'',budget:'',travelStyle:'balanced',interests:'',additionalNotes:'' });
     setGeneratedItinerary('');
+    setSelectedInterests([]);
+    setCustomPrompt('');
   };
 
+  const handleDownloadPDF = async () => {
+    if (!generatedItinerary) return;
+    try {
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageWidth  = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const mL = 18, mR = 18, mT = 18, mB = 25;
+      const cW = pageWidth - mL - mR;
+      let y = mT;
+      const np = (sp = 10) => { if (y + sp > pageHeight - mB) { doc.addPage(); y = mT; } };
+      for (const line of generatedItinerary.split('\n')) {
+        if (!line.trim()) { y += 2; continue; }
+        if (line.trim() === '---') {
+          y += 4; np(10);
+          doc.setDrawColor(180,180,180); doc.setLineWidth(0.4);
+          doc.line(mL, y, pageWidth - mR, y); y += 6; continue;
+        }
+        const isDay   = /^Day \d+:/i.test(line);
+        const isSub   = /^(Morning|Afternoon|Evening|Practical tips?|Transportation|Food):/i.test(line);
+        const isCost  = /^(Estimated cost|Total cost)/i.test(line);
+        const isBullet= /^[•\-]\s/.test(line.trim());
+        np(isDay ? 28 : isSub ? 18 : 10);
+        if (isDay)       { y+=6; doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(20,80,200); }
+        else if (isSub)  { y+=4; doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(30,100,200); }
+        else if (isCost) { y+=3; doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(60,60,60); }
+        else if (isBullet){ doc.setFontSize(9.5); doc.setFont('helvetica','normal'); doc.setTextColor(50,50,50); }
+        else             { doc.setFontSize(10);  doc.setFont('helvetica','normal'); doc.setTextColor(30,30,30); }
+        const lM = isBullet ? mL+6 : mL;
+        const aW = isBullet ? cW-6 : cW;
+        for (const wl of doc.splitTextToSize(line, aW)) {
+          if (y > pageHeight - mB) { doc.addPage(); y = mT; }
+          doc.text(wl, lM, y); y += 5.5;
+        }
+        if (isDay) y += 2;
+      }
+      const total = doc.getNumberOfPages();
+      for (let i = 1; i <= total; i++) {
+        doc.setPage(i); doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
+        doc.text(`Page ${i} of ${total}`, pageWidth/2, pageHeight-10, { align: 'center' });
+      }
+      doc.save(`itinerary_${formData.destination.replace(/[^a-z0-9]/gi,'_')}.pdf`);
+      showSuccess('PDF downloaded!');
+    } catch { showError('PDF generation failed'); }
+  };
+
+  const tripDays = formData.startDate && formData.endDate
+    ? Math.ceil((new Date(formData.endDate).getTime() - new Date(formData.startDate).getTime()) / 86400000) + 1
+    : null;
+
   return (
-    <div className="glass-card rounded-lg p-6" style={{ height: 'calc(100vh - 120px)' }}>
-      <div className="flex items-center gap-3 mb-4">
-        <div className="glass-button-dark p-2 rounded-lg">
-          <Sparkles className="w-5 h-5 text-white" />
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/30 to-purple-500/30 border border-indigo-400/30 flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-indigo-300" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white">AI Itinerary Generator</h2>
+            <p className="text-xs text-gray-400">Powered by Gemini AI — plan your perfect trip</p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-2xl font-bold text-white">AI Itinerary Generator</h2>
-          <p className="text-sm text-gray-300">Let AI plan your perfect trip</p>
+
+        {/* Mode tabs */}
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5 border border-white/10">
+          <button type="button"
+            onClick={() => setActiveTab('guided')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              activeTab === 'guided'
+                ? 'bg-indigo-500/30 border border-indigo-400/40 text-indigo-200'
+                : 'text-gray-500 hover:text-gray-300'
+            }`}>
+            <LayoutList className="w-3.5 h-3.5" /> Guided Form
+          </button>
+          <button type="button"
+            onClick={() => setActiveTab('custom')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              activeTab === 'custom'
+                ? 'bg-purple-500/30 border border-purple-400/40 text-purple-200'
+                : 'text-gray-500 hover:text-gray-300'
+            }`}>
+            <PenLine className="w-3.5 h-3.5" /> Custom Prompt
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ height: 'calc(100% - 80px)' }}>
-        {/* Form Section */}
-        <div className="glass-card rounded-lg p-4 h-full flex flex-col overflow-hidden">
-          <form onSubmit={handleSubmit} className="space-y-3 flex-1 overflow-y-auto pr-2">
-            {/* Destination */}
+      {/* Main grid */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-5 min-h-0">
+
+        {/* ── LEFT — Form (mode-conditional) ──────────────── */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin' }}>
+
+        {activeTab === 'custom' ? (
+          /* ─── Custom Prompt panel ─────────────────────── */
+          <>
+            <div className="glass-card rounded-xl p-4 space-y-3 flex-1 flex flex-col">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-purple-300 uppercase tracking-widest">Your Prompt</p>
+                <span className="text-[10px] text-gray-500">{customPrompt.length} chars</span>
+              </div>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Describe exactly what you want — destination, duration, budget, style, special requests. The AI will follow your instructions precisely.
+              </p>
+              <textarea
+                value={customPrompt}
+                onChange={e => setCustomPrompt(e.target.value)}
+                placeholder={"e.g. Plan a 5-day budget trek to Poon Hill starting from Kathmandu for 2 people. We love photography and local food. Total budget Rs 30,000. Include teahouse accommodation and sunrise viewpoints."}
+                className="flex-1 min-h-[200px] w-full px-3 py-3 rounded-lg glass-input text-sm text-white placeholder-gray-600 resize-none leading-relaxed"
+                autoFocus
+              />
+            </div>
+
+            {/* Example prompts */}
+            <div className="glass-card rounded-xl p-4 space-y-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Examples — click to use</p>
+              {EXAMPLE_PROMPTS.map((ex, i) => (
+                <button key={i} type="button"
+                  onClick={() => setCustomPrompt(ex)}
+                  className="w-full text-left px-3 py-2.5 rounded-lg border border-white/5 text-xs text-gray-400 hover:border-purple-400/30 hover:text-gray-200 hover:bg-purple-500/10 transition-all leading-relaxed">
+                  {ex}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          /* ─── Guided Form panels ──────────────────────── */
+          <>
+
+          {/* Where to */}
+          <div className="glass-card rounded-xl p-4 space-y-3">
+            <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">Where to?</p>
+
+            {/* Destination input */}
             <div>
-              <label className="block text-sm font-medium text-white mb-1">
-                Destination <span className="text-red-400">*</span>
-              </label>
+              <label className="block text-xs text-gray-400 mb-1">Destination <span className="text-red-400">*</span></label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white z-10" />
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400 z-10" />
                 <input
                   ref={destinationInputRef}
-                  type="text"
-                  name="destination"
+                  type="text" name="destination"
                   value={formData.destination}
                   onChange={handleChange}
                   onFocus={handleDestinationFocus}
                   placeholder="e.g., Pokhara, Nepal"
-                  className="w-full pl-10 pr-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-300"
-                  required
-                  autoComplete="off"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder-gray-500"
+                  required autoComplete="off"
                 />
-                {/* Suggestions Dropdown */}
                 {showSuggestions && filteredSuggestions.length > 0 && (
                   <div
                     ref={suggestionsRef}
-                    className="absolute z-20 w-full mt-1 rounded-lg shadow-2xl max-h-60 overflow-y-auto border border-white/30 backdrop-blur-xl"
-                    style={{
-                      backgroundColor: 'rgba(30, 41, 59, 0.95)',
-                      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)',
-                    }}
+                    className="absolute z-30 w-full mt-1 rounded-xl border border-white/10 shadow-2xl max-h-52 overflow-y-auto"
+                    style={{ background: 'rgba(15,23,42,0.97)', backdropFilter: 'blur(20px)' }}
                   >
-                    {filteredSuggestions.map((suggestion, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => handleDestinationSelect(suggestion)}
-                        className="w-full px-4 py-3 text-left text-white hover:bg-blue-500/30 transition-all flex items-center gap-2 border-b border-white/10 last:border-b-0 first:rounded-t-lg last:rounded-b-lg"
-                      >
-                        <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                        <span className="text-sm font-medium">{suggestion}</span>
+                    {filteredSuggestions.map((s, i) => (
+                      <button key={i} type="button" onClick={() => handleDestinationSelect(s)}
+                        className="w-full px-4 py-2.5 text-left text-sm text-gray-200 hover:bg-indigo-500/20 flex items-center gap-2 border-b border-white/5 last:border-0">
+                        <MapPin className="w-3.5 h-3.5 text-indigo-400 shrink-0" />{s}
                       </button>
                     ))}
                   </div>
@@ -423,188 +343,199 @@ const ItineraryGenerator: React.FC = () => {
               </div>
             </div>
 
-            {/* Starting Location */}
+            {/* Starting location */}
             <div>
-              <label className="block text-sm font-medium text-white mb-1">
-                Starting Location
-              </label>
+              <label className="block text-xs text-gray-400 mb-1">Starting Location</label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white z-10" />
-                <input
-                  type="text"
-                  name="startingLocation"
-                  value={formData.startingLocation}
-                  onChange={handleChange}
+                <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <input type="text" name="startingLocation" value={formData.startingLocation} onChange={handleChange}
                   placeholder="e.g., Kathmandu"
-                  className="w-full pl-10 pr-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-300"
-                  autoComplete="off"
-                />
+                  className="w-full pl-9 pr-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder-gray-500" autoComplete="off" />
               </div>
             </div>
+          </div>
 
-            {/* Dates */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-white mb-1">
-                  Start Date <span className="text-red-400">*</span>
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white" />
-                  <input
-                    type="date"
-                    name="startDate"
-                    value={formData.startDate}
-                    onChange={handleChange}
-                    className="w-full pl-10 pr-3 py-2 rounded-lg glass-input text-white"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-white mb-1">
-                  End Date <span className="text-red-400">*</span>
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white" />
-                  <input
-                    type="date"
-                    name="endDate"
-                    value={formData.endDate}
-                    onChange={handleChange}
-                    className="w-full pl-10 pr-3 py-2 rounded-lg glass-input text-white"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Budget */}
-            <div>
-              <label className="block text-sm font-medium text-white mb-1">
-                Budget (NPR)
-              </label>
-              <div className="relative">
-                <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white" />
-                <input
-                  type="text"
-                  name="budget"
-                  value={formData.budget}
-                  onChange={handleChange}
-                  placeholder="e.g., Rs 50,000-100,000"
-                  className="w-full pl-10 pr-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-300"
-                />
-              </div>
-            </div>
-
-            {/* Travel Style */}
-            <div>
-              <label className="block text-sm font-medium text-white mb-1">
-                Travel Style
-              </label>
-              <select
-                name="travelStyle"
-                value={formData.travelStyle}
-                onChange={handleChange}
-                className="w-full px-3 py-2 rounded-lg glass-input text-white [color-scheme:dark]"
-              >
-                <option value="budget" className="bg-gray-900 text-white">Budget-Friendly</option>
-                <option value="balanced" className="bg-gray-900 text-white">Balanced</option>
-                <option value="luxury" className="bg-gray-900 text-white">Luxury</option>
-                <option value="adventure" className="bg-gray-900 text-white">Adventure</option>
-                <option value="relaxed" className="bg-gray-900 text-white">Relaxed</option>
-              </select>
-            </div>
-
-            {/* Interests */}
-            <div>
-              <label className="block text-sm font-medium text-white mb-1">
-                Interests
-              </label>
-              <input
-                type="text"
-                name="interests"
-                value={formData.interests}
-                onChange={handleChange}
-                placeholder="e.g., hiking, culture, food, photography"
-                className="w-full px-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-300"
-              />
-            </div>
-
-            {/* Additional Notes */}
-            <div>
-              <label className="block text-sm font-medium text-white mb-1">
-                Additional Notes
-              </label>
-              <textarea
-                name="additionalNotes"
-                value={formData.additionalNotes}
-                onChange={handleChange}
-                placeholder="Any special requirements or preferences..."
-                rows={3}
-                className="w-full px-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-300 resize-none"
-              />
-            </div>
-
-            {/* Buttons */}
-            <div className="flex flex-col gap-2 pt-2 sticky bottom-0 bg-inherit">
-              <div className="flex gap-3">
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1 py-2 px-4 rounded-lg glass-button-dark text-white font-medium hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      Generate Itinerary
-                    </>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="px-4 py-2 rounded-lg glass-button text-white font-medium hover:opacity-90 transition"
-                >
-                  Reset
-                </button>
-              </div>
-              {generatedItinerary && (
-                <button
-                  type="button"
-                  onClick={handleDownloadPDF}
-                  className="w-full py-2 px-4 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium transition flex items-center justify-center gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  Download as PDF
-                </button>
+          {/* When */}
+          <div className="glass-card rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">When?</p>
+              {tripDays && tripDays > 0 && (
+                <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300">
+                  <Clock className="w-3 h-3" />{tripDays} day{tripDays > 1 ? 's' : ''}
+                </span>
               )}
             </div>
-          </form>
-        </div>
-
-        {/* Result Section */}
-        <div className="glass-card rounded-lg p-4 flex flex-col h-full overflow-hidden">
-          <h3 className="text-lg font-semibold text-white mb-3 flex-shrink-0">Your Itinerary</h3>
-          <div className="flex-1 overflow-y-scroll min-h-0 pr-2" style={{ scrollbarWidth: 'thin' }}>
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center h-full text-gray-300">
-                <Loader2 className="w-8 h-8 animate-spin mb-2" />
-                <p>Generating your perfect itinerary...</p>
-              </div>
-            ) : generatedItinerary ? (
-              <div className="prose prose-invert max-w-none">
-                <div className="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed">
-                  {generatedItinerary}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Start Date <span className="text-red-400">*</span></label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input type="date" name="startDate" value={formData.startDate} onChange={handleChange}
+                    className="w-full pl-9 pr-2 py-2.5 rounded-lg glass-input text-sm text-white [color-scheme:dark]" required />
                 </div>
               </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">End Date <span className="text-red-400">*</span></label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input type="date" name="endDate" value={formData.endDate} onChange={handleChange}
+                    min={formData.startDate}
+                    className="w-full pl-9 pr-2 py-2.5 rounded-lg glass-input text-sm text-white [color-scheme:dark]" required />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Budget & Style */}
+          <div className="glass-card rounded-xl p-4 space-y-3">
+            <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">Budget & Style</p>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Budget (NPR)</label>
+              <div className="relative">
+                <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <input type="text" name="budget" value={formData.budget} onChange={handleChange}
+                  placeholder="e.g., 50000"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder-gray-500" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-2">Travel Style</label>
+              <div className="flex flex-wrap gap-2">
+                {TRAVEL_STYLES.map(s => (
+                  <button key={s.value} type="button" onClick={() => setFormData(p => ({ ...p, travelStyle: s.value }))}
+                    className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                      formData.travelStyle === s.value
+                        ? STYLE_COLORS[s.color]
+                        : 'border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'
+                    }`}>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Interests */}
+          <div className="glass-card rounded-xl p-4 space-y-3">
+            <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">Interests</p>
+            <div className="flex flex-wrap gap-2">
+              {INTEREST_CHIPS.map(({ label, icon }) => (
+                <button key={label} type="button" onClick={() => toggleInterest(label)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                    selectedInterests.includes(label)
+                      ? 'bg-indigo-500/20 border-indigo-400/60 text-indigo-300'
+                      : 'border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'
+                  }`}>
+                  {icon}{label}
+                </button>
+              ))}
+            </div>
+            <input type="text" name="interests" value={formData.interests} onChange={handleChange}
+              placeholder="Or type custom interests..."
+              className="w-full px-3 py-2 rounded-lg glass-input text-xs text-white placeholder-gray-600" />
+          </div>
+
+          {/* Notes */}
+          <div className="glass-card rounded-xl p-4 space-y-2">
+            <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">Additional Notes</p>
+            <textarea name="additionalNotes" value={formData.additionalNotes} onChange={handleChange}
+              placeholder="Special requirements, dietary needs, mobility restrictions..."
+              rows={3}
+              className="w-full px-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder-gray-500 resize-none" />
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3 pb-2">
+            <button type="submit" disabled={isLoading}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white font-semibold text-sm hover:from-indigo-500/40 hover:to-purple-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              {isLoading
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+                : <><Sparkles className="w-4 h-4" /> Generate Itinerary</>}
+            </button>
+            <button type="button" onClick={handleReset}
+              className="px-4 py-3 rounded-xl glass-button border border-white/10 text-gray-400 hover:text-white transition-all">
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          </div>
+
+          </>
+          )} {/* end guided form else */}
+
+          {/* ─── Shared Actions ───────────────────────────────── */}
+          {activeTab === 'custom' && (
+          <div className="flex gap-3 pb-2">
+            <button type="submit" disabled={isLoading}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-purple-500/30 to-indigo-500/30 border border-purple-400/40 text-white font-semibold text-sm hover:from-purple-500/40 hover:to-indigo-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              {isLoading
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+                : <><Sparkles className="w-4 h-4" /> Generate with My Prompt</>}
+            </button>
+            <button type="button" onClick={handleReset}
+              className="px-4 py-3 rounded-xl glass-button border border-white/10 text-gray-400 hover:text-white transition-all">
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          </div>
+          )}
+        </form>
+
+        {/* ── RIGHT — Output ───────────────────────────────── */}
+        <div className="glass-card rounded-xl flex flex-col min-h-0 overflow-hidden">
+
+          {/* Output header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-indigo-400" />
+              <span className="font-semibold text-white text-sm">Your Itinerary</span>
+              {generatedItinerary && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-medium">
+                  Ready
+                </span>
+              )}
+            </div>
+            {generatedItinerary && (
+              <button onClick={handleDownloadPDF}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-medium hover:bg-emerald-500/30 transition-all">
+                <Download className="w-3.5 h-3.5" /> Download PDF
+              </button>
+            )}
+          </div>
+
+          {/* Output body */}
+          <div className="flex-1 overflow-y-auto px-5 py-4" style={{ scrollbarWidth: 'thin' }}>
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center h-full gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center">
+                  <Sparkles className="w-7 h-7 text-indigo-400 animate-pulse" />
+                </div>
+                <div className="text-center">
+                  <p className="text-white font-medium mb-1">Planning your trip...</p>
+                  <p className="text-gray-400 text-sm">Gemini AI is crafting your itinerary</p>
+                </div>
+                <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
+              </div>
+            ) : generatedItinerary ? (
+              <div className="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed">
+                {generatedItinerary}
+              </div>
             ) : (
-              <div className="flex items-center justify-center h-full text-center text-gray-400">
-                <p>Fill out the form and click "Generate Itinerary" to get started</p>
+              <div className="flex flex-col items-center justify-center h-full gap-4 text-center px-8">
+                <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                  <Mountain className="w-8 h-8 text-gray-600" />
+                </div>
+                <div>
+                  <p className="text-gray-400 font-medium mb-1">No itinerary yet</p>
+                  <p className="text-gray-600 text-xs leading-relaxed">
+                    Fill in your destination and dates on the left,<br />
+                    then click <span className="text-indigo-400 font-medium">Generate Itinerary</span>
+                  </p>
+                </div>
+                <div className="grid grid-cols-3 gap-3 w-full max-w-xs mt-2">
+                  {['Destination', 'Dates', 'Budget'].map(step => (
+                    <div key={step} className="glass-card rounded-lg p-2.5 text-center border border-white/5">
+                      <p className="text-[10px] text-gray-500">{step}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

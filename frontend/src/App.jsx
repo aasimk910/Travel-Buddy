@@ -14,6 +14,7 @@ import AdminRoute from "./components/AdminRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import MainLayout from "./components/MainLayout";
 import Admin from "./pages/Admin";
+import About from "./pages/About";
 
 const App = () => {
   return (
@@ -56,6 +57,14 @@ const App = () => {
             element={
               <MainLayout>
                 <Maps />
+              </MainLayout>
+            }
+          />
+          <Route
+            path="/about"
+            element={
+              <MainLayout>
+                <About />
               </MainLayout>
             }
           />

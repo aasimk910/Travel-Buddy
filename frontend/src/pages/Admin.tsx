@@ -1,12 +1,33 @@
 ﻿import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { MapContainer, TileLayer, Marker, Polyline, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 import {
   Users, Mountain, ShieldCheck, Trash2, ChevronLeft, ChevronRight,
-  Search, RefreshCw, Plus, Pencil, X, LogOut,
+  Search, RefreshCw, Plus, Pencil, X, LogOut, MapPin, CalendarDays,
+  Navigation, Eye,
 } from "lucide-react";
 import { API_BASE_URL } from "../config/env";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+
+// ── Leaflet helpers ─────────────────────────────────────────────────────
+const adminStartIcon = L.divIcon({
+  className: '',
+  html: `<div style="background:#22c55e;width:18px;height:18px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:9px;font-weight:700">S</span></div>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+});
+const adminEndIcon = L.divIcon({
+  className: '',
+  html: `<div style="background:#ef4444;width:18px;height:18px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:9px;font-weight:700">E</span></div>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+});
+const AdminLocationPicker: React.FC<{ onSelect: (lat: number, lng: number) => void }> = ({ onSelect }) => {
+  useMapEvents({ click: (e) => onSelect(e.latlng.lat, e.latlng.lng) });
+  return null;
+};
 
 interface AdminUser {
   _id: string;
@@ -32,6 +53,8 @@ interface AdminHike {
   description?: string;
   imageUrl?: string;
   coordinates?: { lat: number; lng: number };
+  startPoint?: { lat: number; lng: number };
+  endPoint?: { lat: number; lng: number };
   userId: { name: string; email: string } | null;
   participants: { name: string }[];
 }
@@ -77,6 +100,18 @@ const Admin: React.FC = () => {
   const [editingHike, setEditingHike] = useState<AdminHike | null>(null);
   const [hikeForm, setHikeForm] = useState(defaultHikeForm);
   const [hikeSaving, setHikeSaving] = useState(false);
+
+  // Hike detail view
+  const [viewHike, setViewHike] = useState<AdminHike | null>(null);
+
+  // Hike detail map (OSRM route)
+  const [viewHikeRoute, setViewHikeRoute] = useState<[number, number][]>([]);
+  const [viewHikeDistance, setViewHikeDistance] = useState<number | null>(null);
+
+  // Hike trail points (for create/edit modal)
+  const [hikeStartPoint, setHikeStartPoint] = useState<{ lat: number; lng: number } | null>(null);
+  const [hikeEndPoint, setHikeEndPoint] = useState<{ lat: number; lng: number } | null>(null);
+  const [hikeActivePoint, setHikeActivePoint] = useState<'start' | 'end'>('start');
 
   const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem("travelBuddyToken")}` });
 
@@ -189,7 +224,35 @@ const Admin: React.FC = () => {
 
   // â”€â”€â”€ Hike CRUD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  const openCreateHike = () => { setEditingHike(null); setHikeForm(defaultHikeForm); setHikeModal(true); };
+  // Fetch OSRM route whenever the detail modal opens with start+end points
+  useEffect(() => {
+    if (!viewHike?.startPoint || !viewHike?.endPoint) {
+      setViewHikeRoute([]);
+      setViewHikeDistance(null);
+      return;
+    }
+    const { startPoint: s, endPoint: e } = viewHike;
+    fetch(
+      `https://router.project-osrm.org/route/v1/foot/${s.lng},${s.lat};${e.lng},${e.lat}?overview=full&geometries=geojson`
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.routes?.[0]) {
+          const coords: [number, number][] = data.routes[0].geometry.coordinates.map(
+            ([lon, lat]: [number, number]) => [lat, lon]
+          );
+          setViewHikeRoute(coords);
+          setViewHikeDistance(data.routes[0].distance);
+        }
+      })
+      .catch(() => {
+        // fallback: straight line
+        setViewHikeRoute([[s.lat, s.lng], [e.lat, e.lng]]);
+        setViewHikeDistance(null);
+      });
+  }, [viewHike]);
+
+  const openCreateHike = () => { setEditingHike(null); setHikeForm(defaultHikeForm); setHikeStartPoint(null); setHikeEndPoint(null); setHikeActivePoint('start'); setHikeModal(true); };
 
   const openEditHike = (h: AdminHike) => {
     setEditingHike(h);
@@ -201,6 +264,9 @@ const Admin: React.FC = () => {
       lat: h.coordinates?.lat ? String(h.coordinates.lat) : "",
       lng: h.coordinates?.lng ? String(h.coordinates.lng) : "",
     });
+    setHikeStartPoint(h.startPoint ?? null);
+    setHikeEndPoint(h.endPoint ?? null);
+    setHikeActivePoint('start');
     setHikeModal(true);
   };
 
@@ -219,7 +285,8 @@ const Admin: React.FC = () => {
           title: hikeForm.title, location: hikeForm.location, date: hikeForm.date,
           difficulty: Number(hikeForm.difficulty), spotsLeft: Number(hikeForm.spotsLeft), description: hikeForm.description,
           ...(hikeForm.imageUrl && { imageUrl: hikeForm.imageUrl }),
-          ...(hikeForm.lat && hikeForm.lng && { coordinates: { lat: Number(hikeForm.lat), lng: Number(hikeForm.lng) } }),
+          ...(hikeStartPoint && { coordinates: hikeStartPoint, startPoint: hikeStartPoint }),
+          ...(hikeEndPoint && { endPoint: hikeEndPoint }),
         }),
       });
       if (!res.ok) throw new Error((await res.json()).message);
@@ -388,7 +455,14 @@ const Admin: React.FC = () => {
                 <tbody>
                   {hikes.map((h) => (
                     <tr key={h._id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="py-3 pr-4 font-medium text-glass-light">{h.title}</td>
+                      <td className="py-3 pr-4 font-medium">
+                        <button
+                          onClick={() => setViewHike(h)}
+                          className="text-emerald-300 hover:text-emerald-200 hover:underline text-left transition-colors"
+                        >
+                          {h.title}
+                        </button>
+                      </td>
                       <td className="py-3 pr-4 text-glass-dim">{h.location}</td>
                       <td className="py-3 pr-4 text-glass-dim">{h.userId?.name || "â€”"}</td>
                       <td className="py-3 pr-4 text-glass-dim">{h.difficulty}/5</td>
@@ -420,7 +494,190 @@ const Admin: React.FC = () => {
         </div>
       )}
 
-      {/* â”€â”€ User Modal â”€â”€ */}
+      {/* ── Hike Detail Modal ── */}
+      {viewHike && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="glass-card rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="sticky top-0 glass-nav px-6 py-4 flex items-center justify-between rounded-t-2xl">
+              <div className="flex items-center gap-2">
+                <Eye className="w-5 h-5 text-emerald-400" />
+                <h2 className="text-lg font-semibold text-glass-light">Hike Details</h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => { setViewHike(null); openEditHike(viewHike); }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-500/40 text-blue-300 text-xs font-medium hover:bg-blue-500/30 transition-all"
+                >
+                  <Pencil className="w-3.5 h-3.5" /> Edit
+                </button>
+                <button onClick={() => setViewHike(null)} className="p-1.5 glass-button rounded-lg">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Cover image */}
+            {viewHike.imageUrl && (
+              <div className="h-52 overflow-hidden">
+                <img src={viewHike.imageUrl} alt={viewHike.title} className="w-full h-full object-cover" />
+              </div>
+            )}
+
+            <div className="p-6 space-y-5">
+              {/* Title + difficulty badge */}
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="text-xl font-bold text-white leading-snug">{viewHike.title}</h3>
+                <span className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-semibold text-white ${
+                  viewHike.difficulty <= 1 ? 'bg-green-600'
+                  : viewHike.difficulty === 2 ? 'bg-blue-600'
+                  : viewHike.difficulty === 3 ? 'bg-yellow-600'
+                  : viewHike.difficulty === 4 ? 'bg-orange-600'
+                  : 'bg-red-600'
+                }`}>
+                  {(['','Easy','Moderate','Challenging','Hard','Expert'] as const)[viewHike.difficulty] ?? `${viewHike.difficulty}/5`}
+                </span>
+              </div>
+
+              {/* Location */}
+              <div className="flex items-center gap-2 text-sm text-gray-300">
+                <MapPin className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <span>{viewHike.location}</span>
+              </div>
+
+              {/* Date */}
+              <div className="flex items-center gap-2 text-sm text-gray-300">
+                <CalendarDays className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <span>{new Date(viewHike.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              </div>
+
+              {/* Stats row */}
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: 'Spots Left', value: viewHike.spotsLeft },
+                  { label: 'Participants', value: viewHike.participants?.length ?? 0 },
+                  { label: 'Difficulty', value: `${viewHike.difficulty}/5` },
+                ].map(({ label, value }) => (
+                  <div key={label} className="glass rounded-xl p-3 text-center">
+                    <p className="text-lg font-bold text-white">{value}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Creator */}
+              <div className="glass-card rounded-xl p-4">
+                <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">Created By</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full glass-button-dark text-white flex items-center justify-center font-semibold text-sm">
+                    {viewHike.userId?.name?.charAt(0).toUpperCase() ?? '?'}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">{viewHike.userId?.name ?? '—'}</p>
+                    <p className="text-xs text-gray-400">{viewHike.userId?.email ?? ''}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Participants */}
+              {viewHike.participants?.length > 0 && (
+                <div className="glass-card rounded-xl p-4">
+                  <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide">Participants ({viewHike.participants.length})</p>
+                  <div className="flex flex-wrap gap-2">
+                    {viewHike.participants.map((p, i) => (
+                      <span key={i} className="px-3 py-1 rounded-full glass text-xs text-gray-200">{p.name}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Trail map */}
+              {(viewHike.startPoint || viewHike.endPoint || viewHike.coordinates) && (
+                <div className="glass-card rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 pt-3 pb-2">
+                    <div className="flex items-center gap-2">
+                      <Navigation className="w-4 h-4 text-emerald-400" />
+                      <p className="text-xs text-gray-400 uppercase tracking-wide">Trail Map</p>
+                    </div>
+                    {viewHikeDistance != null && (
+                      <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold">
+                        {viewHikeDistance >= 1000
+                          ? `${(viewHikeDistance / 1000).toFixed(2)} km`
+                          : `${Math.round(viewHikeDistance)} m`}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ height: '240px' }}>
+                    <MapContainer
+                      center={
+                        viewHike.startPoint
+                          ? [viewHike.startPoint.lat, viewHike.startPoint.lng]
+                          : viewHike.coordinates
+                          ? [viewHike.coordinates.lat, viewHike.coordinates.lng]
+                          : [27.7172, 85.324]
+                      }
+                      zoom={viewHike.startPoint || viewHike.endPoint ? 12 : 10}
+                      scrollWheelZoom={false}
+                      style={{ height: '100%', width: '100%' }}
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      {viewHike.startPoint && (
+                        <Marker position={[viewHike.startPoint.lat, viewHike.startPoint.lng]} icon={adminStartIcon} />
+                      )}
+                      {viewHike.endPoint && (
+                        <Marker position={[viewHike.endPoint.lat, viewHike.endPoint.lng]} icon={adminEndIcon} />
+                      )}
+                      {!viewHike.startPoint && viewHike.coordinates && (
+                        <Marker position={[viewHike.coordinates.lat, viewHike.coordinates.lng]} />
+                      )}
+                      {viewHikeRoute.length > 1 && (
+                        <Polyline positions={viewHikeRoute} color="#10b981" weight={4} opacity={0.85} />
+                      )}
+                    </MapContainer>
+                  </div>
+                  {(viewHike.startPoint || viewHike.endPoint) && (
+                    <div className="flex gap-4 px-4 py-2 text-[10px] text-gray-400">
+                      {viewHike.startPoint && (
+                        <span className="flex items-center gap-1">
+                          <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500" />
+                          Start {viewHike.startPoint.lat.toFixed(4)}, {viewHike.startPoint.lng.toFixed(4)}
+                        </span>
+                      )}
+                      {viewHike.endPoint && (
+                        <span className="flex items-center gap-1">
+                          <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500" />
+                          End {viewHike.endPoint.lat.toFixed(4)}, {viewHike.endPoint.lng.toFixed(4)}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Description */}
+              {viewHike.description && (
+                <div className="glass-card rounded-xl p-4">
+                  <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">Description</p>
+                  <p className="text-sm text-gray-200 leading-relaxed">{viewHike.description}</p>
+                </div>
+              )}
+
+              {/* Delete button */}
+              <button
+                onClick={() => { setViewHike(null); handleDeleteHike(viewHike._id, viewHike.title); }}
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-red-400 hover:bg-red-500/20 border border-red-500/30 text-sm transition-colors"
+              >
+                <Trash2 className="w-4 h-4" /> Delete Hike
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── User Modal ── */}
       {userModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="glass-card rounded-2xl p-6 w-full max-w-md">
@@ -541,16 +798,58 @@ const Admin: React.FC = () => {
                 <input type="url" value={hikeForm.imageUrl} onChange={(e) => setHikeForm({ ...hikeForm, imageUrl: e.target.value })}
                   className="w-full px-3 py-2 rounded-lg glass-input text-sm" placeholder="https://..." />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-glass-dim mb-1">Latitude</label>
-                  <input type="number" step="any" value={hikeForm.lat} onChange={(e) => setHikeForm({ ...hikeForm, lat: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg glass-input text-sm" placeholder="e.g. 33.7235" />
+              <div>
+                <label className="block text-xs text-glass-dim mb-1">Trail Start &amp; End Points</label>
+                <div className="flex gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => setHikeActivePoint('start')}
+                    className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition border-2 ${
+                      hikeActivePoint === 'start'
+                        ? 'bg-green-500/20 border-green-400/60 text-green-300'
+                        : 'glass border-white/20 text-gray-400 hover:border-white/40'
+                    }`}
+                  >
+                    {hikeStartPoint ? `✅ Start (${hikeStartPoint.lat.toFixed(3)}, ${hikeStartPoint.lng.toFixed(3)})` : '📍 Set Start'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHikeActivePoint('end')}
+                    className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition border-2 ${
+                      hikeActivePoint === 'end'
+                        ? 'bg-red-500/20 border-red-400/60 text-red-300'
+                        : 'glass border-white/20 text-gray-400 hover:border-white/40'
+                    }`}
+                  >
+                    {hikeEndPoint ? `✅ End (${hikeEndPoint.lat.toFixed(3)}, ${hikeEndPoint.lng.toFixed(3)})` : '🏁 Set End'}
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-xs text-glass-dim mb-1">Longitude</label>
-                  <input type="number" step="any" value={hikeForm.lng} onChange={(e) => setHikeForm({ ...hikeForm, lng: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg glass-input text-sm" placeholder="e.g. 73.0435" />
+                <p className="text-[10px] text-gray-400 mb-1">
+                  {hikeActivePoint === 'start' ? 'Click map to place start point' : 'Click map to place end point'}
+                </p>
+                <div style={{ height: '240px' }} className="rounded-lg overflow-hidden border border-white/10">
+                  <MapContainer
+                    center={hikeStartPoint ? [hikeStartPoint.lat, hikeStartPoint.lng] : [27.7172, 85.324]}
+                    zoom={hikeStartPoint || hikeEndPoint ? 12 : 8}
+                    style={{ height: '100%', width: '100%' }}
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <AdminLocationPicker
+                      onSelect={(lat, lng) => {
+                        if (hikeActivePoint === 'start') setHikeStartPoint({ lat, lng });
+                        else setHikeEndPoint({ lat, lng });
+                      }}
+                    />
+                    {hikeStartPoint && <Marker position={[hikeStartPoint.lat, hikeStartPoint.lng]} icon={adminStartIcon} />}
+                    {hikeEndPoint && <Marker position={[hikeEndPoint.lat, hikeEndPoint.lng]} icon={adminEndIcon} />}
+                  </MapContainer>
+                </div>
+                <div className="flex gap-3 mt-1 text-[10px] text-gray-400">
+                  <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500" /> Start</span>
+                  <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500" /> End</span>
                 </div>
               </div>
             </div>

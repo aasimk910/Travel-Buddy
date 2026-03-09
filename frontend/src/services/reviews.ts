@@ -1,5 +1,22 @@
 import { API_BASE_URL } from "../config/env";
 
+export type Review = {
+  _id: string;
+  userId: string;
+  userName: string;
+  locationName: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+};
+
+export const getReviews = async (): Promise<Review[]> => {
+  const res = await fetch(`${API_BASE_URL}/api/reviews`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.message || "Unable to fetch reviews.");
+  return data;
+};
+
 export const submitReview = async (
   locationName: string,
   rating: number,
