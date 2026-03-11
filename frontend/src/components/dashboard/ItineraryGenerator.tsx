@@ -238,7 +238,7 @@ const ItineraryGenerator: React.FC = () => {
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">AI Itinerary Generator</h2>
-            <p className="text-xs text-gray-400">Powered by Gemini AI — plan your perfect trip</p>
+            <p className="text-xs text-white/50">Powered by Gemini AI — plan your perfect trip</p>
           </div>
         </div>
 
@@ -249,7 +249,7 @@ const ItineraryGenerator: React.FC = () => {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               activeTab === 'guided'
                 ? 'bg-indigo-500/30 border border-indigo-400/40 text-indigo-200'
-                : 'text-gray-500 hover:text-gray-300'
+                : 'text-white/40 hover:text-white/70'
             }`}>
             <LayoutList className="w-3.5 h-3.5" /> Guided Form
           </button>
@@ -258,7 +258,7 @@ const ItineraryGenerator: React.FC = () => {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               activeTab === 'custom'
                 ? 'bg-purple-500/30 border border-purple-400/40 text-purple-200'
-                : 'text-gray-500 hover:text-gray-300'
+                : 'text-white/40 hover:text-white/70'
             }`}>
             <PenLine className="w-3.5 h-3.5" /> Custom Prompt
           </button>
@@ -277,27 +277,27 @@ const ItineraryGenerator: React.FC = () => {
             <div className="glass-card rounded-xl p-4 space-y-3 flex-1 flex flex-col">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold text-purple-300 uppercase tracking-widest">Your Prompt</p>
-                <span className="text-[10px] text-gray-500">{customPrompt.length} chars</span>
+                <span className="text-[10px] text-white/40">{customPrompt.length} chars</span>
               </div>
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <p className="text-xs text-white/50 leading-relaxed">
                 Describe exactly what you want — destination, duration, budget, style, special requests. The AI will follow your instructions precisely.
               </p>
               <textarea
                 value={customPrompt}
                 onChange={e => setCustomPrompt(e.target.value)}
                 placeholder={"e.g. Plan a 5-day budget trek to Poon Hill starting from Kathmandu for 2 people. We love photography and local food. Total budget Rs 30,000. Include teahouse accommodation and sunrise viewpoints."}
-                className="flex-1 min-h-[200px] w-full px-3 py-3 rounded-lg glass-input text-sm text-white placeholder-gray-600 resize-none leading-relaxed"
+                className="flex-1 min-h-[200px] w-full px-3 py-3 rounded-lg glass-input text-sm text-white placeholder:text-white/40 resize-none leading-relaxed"
                 autoFocus
               />
             </div>
 
             {/* Example prompts */}
             <div className="glass-card rounded-xl p-4 space-y-2">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Examples — click to use</p>
+              <p className="text-xs font-semibold text-white/50 uppercase tracking-widest">Examples — click to use</p>
               {EXAMPLE_PROMPTS.map((ex, i) => (
                 <button key={i} type="button"
                   onClick={() => setCustomPrompt(ex)}
-                  className="w-full text-left px-3 py-2.5 rounded-lg border border-white/5 text-xs text-gray-400 hover:border-purple-400/30 hover:text-gray-200 hover:bg-purple-500/10 transition-all leading-relaxed">
+                  className="w-full text-left px-3 py-2.5 rounded-lg border border-white/10 text-xs text-white/55 hover:border-purple-400/30 hover:text-white/90 hover:bg-purple-500/10 transition-all leading-relaxed">
                   {ex}
                 </button>
               ))}
@@ -313,7 +313,7 @@ const ItineraryGenerator: React.FC = () => {
 
             {/* Destination input */}
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Destination <span className="text-red-400">*</span></label>
+              <label className="block text-xs text-white/55 mb-1">Destination <span className="text-red-400">*</span></label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400 z-10" />
                 <input
@@ -323,7 +323,7 @@ const ItineraryGenerator: React.FC = () => {
                   onChange={handleChange}
                   onFocus={handleDestinationFocus}
                   placeholder="e.g., Pokhara, Nepal"
-                  className="w-full pl-9 pr-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder-gray-500"
+                  className="w-full pl-9 pr-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder:text-white/40"
                   required autoComplete="off"
                 />
                 {showSuggestions && filteredSuggestions.length > 0 && (
@@ -345,12 +345,12 @@ const ItineraryGenerator: React.FC = () => {
 
             {/* Starting location */}
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Starting Location</label>
+              <label className="block text-xs text-white/55 mb-1">Starting Location</label>
               <div className="relative">
-                <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                 <input type="text" name="startingLocation" value={formData.startingLocation} onChange={handleChange}
                   placeholder="e.g., Kathmandu"
-                  className="w-full pl-9 pr-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder-gray-500" autoComplete="off" />
+                  className="w-full pl-9 pr-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder:text-white/40" autoComplete="off" />
               </div>
             </div>
           </div>
@@ -367,17 +367,17 @@ const ItineraryGenerator: React.FC = () => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Start Date <span className="text-red-400">*</span></label>
+                <label className="block text-xs text-white/55 mb-1">Start Date <span className="text-red-400">*</span></label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                   <input type="date" name="startDate" value={formData.startDate} onChange={handleChange}
                     className="w-full pl-9 pr-2 py-2.5 rounded-lg glass-input text-sm text-white [color-scheme:dark]" required />
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">End Date <span className="text-red-400">*</span></label>
+                <label className="block text-xs text-white/55 mb-1">End Date <span className="text-red-400">*</span></label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                   <input type="date" name="endDate" value={formData.endDate} onChange={handleChange}
                     min={formData.startDate}
                     className="w-full pl-9 pr-2 py-2.5 rounded-lg glass-input text-sm text-white [color-scheme:dark]" required />
@@ -390,23 +390,23 @@ const ItineraryGenerator: React.FC = () => {
           <div className="glass-card rounded-xl p-4 space-y-3">
             <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">Budget & Style</p>
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Budget (NPR)</label>
+              <label className="block text-xs text-white/55 mb-1">Budget (NPR)</label>
               <div className="relative">
-                <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                 <input type="text" name="budget" value={formData.budget} onChange={handleChange}
                   placeholder="e.g., 50000"
-                  className="w-full pl-9 pr-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder-gray-500" />
+                  className="w-full pl-9 pr-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder:text-white/40" />
               </div>
             </div>
             <div>
-              <label className="block text-xs text-gray-400 mb-2">Travel Style</label>
+              <label className="block text-xs text-white/55 mb-2">Travel Style</label>
               <div className="flex flex-wrap gap-2">
                 {TRAVEL_STYLES.map(s => (
                   <button key={s.value} type="button" onClick={() => setFormData(p => ({ ...p, travelStyle: s.value }))}
                     className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
                       formData.travelStyle === s.value
                         ? STYLE_COLORS[s.color]
-                        : 'border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'
+                        : 'border-white/10 text-white/50 hover:border-white/25 hover:text-white/80'
                     }`}>
                     {s.label}
                   </button>
@@ -424,7 +424,7 @@ const ItineraryGenerator: React.FC = () => {
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
                     selectedInterests.includes(label)
                       ? 'bg-indigo-500/20 border-indigo-400/60 text-indigo-300'
-                      : 'border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'
+                      : 'border-white/10 text-white/50 hover:border-white/25 hover:text-white/80'
                   }`}>
                   {icon}{label}
                 </button>
@@ -432,7 +432,7 @@ const ItineraryGenerator: React.FC = () => {
             </div>
             <input type="text" name="interests" value={formData.interests} onChange={handleChange}
               placeholder="Or type custom interests..."
-              className="w-full px-3 py-2 rounded-lg glass-input text-xs text-white placeholder-gray-600" />
+              className="w-full px-3 py-2 rounded-lg glass-input text-xs text-white placeholder:text-white/40" />
           </div>
 
           {/* Notes */}
@@ -441,7 +441,7 @@ const ItineraryGenerator: React.FC = () => {
             <textarea name="additionalNotes" value={formData.additionalNotes} onChange={handleChange}
               placeholder="Special requirements, dietary needs, mobility restrictions..."
               rows={3}
-              className="w-full px-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder-gray-500 resize-none" />
+              className="w-full px-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder:text-white/40 resize-none" />
           </div>
 
           {/* Actions */}
@@ -453,7 +453,7 @@ const ItineraryGenerator: React.FC = () => {
                 : <><Sparkles className="w-4 h-4" /> Generate Itinerary</>}
             </button>
             <button type="button" onClick={handleReset}
-              className="px-4 py-3 rounded-xl glass-button border border-white/10 text-gray-400 hover:text-white transition-all">
+              className="px-4 py-3 rounded-xl glass-button border border-white/10 text-white/50 hover:text-white transition-all">
               <RotateCcw className="w-4 h-4" />
             </button>
           </div>
@@ -471,7 +471,7 @@ const ItineraryGenerator: React.FC = () => {
                 : <><Sparkles className="w-4 h-4" /> Generate with My Prompt</>}
             </button>
             <button type="button" onClick={handleReset}
-              className="px-4 py-3 rounded-xl glass-button border border-white/10 text-gray-400 hover:text-white transition-all">
+              className="px-4 py-3 rounded-xl glass-button border border-white/10 text-white/50 hover:text-white transition-all">
               <RotateCcw className="w-4 h-4" />
             </button>
           </div>
@@ -509,7 +509,7 @@ const ItineraryGenerator: React.FC = () => {
                 </div>
                 <div className="text-center">
                   <p className="text-white font-medium mb-1">Planning your trip...</p>
-                  <p className="text-gray-400 text-sm">Gemini AI is crafting your itinerary</p>
+                  <p className="text-white/55 text-sm">Gemini AI is crafting your itinerary</p>
                 </div>
                 <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
               </div>
@@ -520,11 +520,11 @@ const ItineraryGenerator: React.FC = () => {
             ) : (
               <div className="flex flex-col items-center justify-center h-full gap-4 text-center px-8">
                 <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                  <Mountain className="w-8 h-8 text-gray-600" />
+                  <Mountain className="w-8 h-8 text-white/30" />
                 </div>
                 <div>
-                  <p className="text-gray-400 font-medium mb-1">No itinerary yet</p>
-                  <p className="text-gray-600 text-xs leading-relaxed">
+                  <p className="text-white/60 font-medium mb-1">No itinerary yet</p>
+                  <p className="text-white/40 text-xs leading-relaxed">
                     Fill in your destination and dates on the left,<br />
                     then click <span className="text-indigo-400 font-medium">Generate Itinerary</span>
                   </p>
@@ -532,7 +532,7 @@ const ItineraryGenerator: React.FC = () => {
                 <div className="grid grid-cols-3 gap-3 w-full max-w-xs mt-2">
                   {['Destination', 'Dates', 'Budget'].map(step => (
                     <div key={step} className="glass-card rounded-lg p-2.5 text-center border border-white/5">
-                      <p className="text-[10px] text-gray-500">{step}</p>
+                      <p className="text-[10px] text-white/45">{step}</p>
                     </div>
                   ))}
                 </div>

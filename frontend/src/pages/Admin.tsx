@@ -348,7 +348,7 @@ const Admin: React.FC = () => {
         {(["users", "hikes"] as Tab[]).map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={`px-5 py-2 rounded-lg capitalize font-medium transition-all ${
-              activeTab === tab ? "bg-emerald-500/30 text-emerald-300 border border-emerald-500/50" : "glass-button text-glass-dim"
+              activeTab === tab ? "bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white" : "glass-button text-glass-dim"
             }`}
           >{tab}</button>
         ))}
@@ -367,7 +367,7 @@ const Admin: React.FC = () => {
             <button onClick={fetchUsers} className="glass-button p-2 rounded-lg" title="Refresh"><RefreshCw className="w-4 h-4" /></button>
             <span className="text-sm text-glass-dim">{userTotal} total</span>
             <button onClick={openCreateUser}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-sm font-medium hover:bg-emerald-500/30 transition-all">
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white text-sm font-medium hover:from-indigo-500/40 hover:to-purple-500/40 transition-all">
               <Plus className="w-4 h-4" /> Add User
             </button>
           </div>
@@ -436,7 +436,7 @@ const Admin: React.FC = () => {
             <button onClick={fetchHikes} className="glass-button p-2 rounded-lg" title="Refresh"><RefreshCw className="w-4 h-4" /></button>
             <span className="text-sm text-glass-dim">{hikeTotal} total</span>
             <button onClick={openCreateHike}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-sm font-medium hover:bg-emerald-500/30 transition-all">
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white text-sm font-medium hover:from-indigo-500/40 hover:to-purple-500/40 transition-all">
               <Plus className="w-4 h-4" /> Add Hike
             </button>
           </div>
@@ -507,7 +507,7 @@ const Admin: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => { setViewHike(null); openEditHike(viewHike); }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-500/40 text-blue-300 text-xs font-medium hover:bg-blue-500/30 transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white text-xs font-medium hover:from-indigo-500/40 hover:to-purple-500/40 transition-all"
                 >
                   <Pencil className="w-3.5 h-3.5" /> Edit
                 </button>
@@ -742,7 +742,7 @@ const Admin: React.FC = () => {
             <div className="flex gap-3 mt-6">
               <button onClick={() => setUserModal(false)} className="flex-1 py-2 rounded-lg glass-button text-sm text-glass-dim">Cancel</button>
               <button onClick={saveUser} disabled={userSaving}
-                className="flex-1 py-2 rounded-lg bg-emerald-500/30 border border-emerald-500/50 text-emerald-300 text-sm font-medium hover:bg-emerald-500/40 transition-all disabled:opacity-50">
+                className="flex-1 py-2 rounded-lg bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white text-sm font-medium hover:from-indigo-500/40 hover:to-purple-500/40 transition-all disabled:opacity-50">
                 {userSaving ? "Saving..." : editingUser ? "Update User" : "Create User"}
               </button>
             </div>
@@ -856,7 +856,7 @@ const Admin: React.FC = () => {
             <div className="flex gap-3 mt-6">
               <button onClick={() => setHikeModal(false)} className="flex-1 py-2 rounded-lg glass-button text-sm text-glass-dim">Cancel</button>
               <button onClick={saveHike} disabled={hikeSaving}
-                className="flex-1 py-2 rounded-lg bg-emerald-500/30 border border-emerald-500/50 text-emerald-300 text-sm font-medium hover:bg-emerald-500/40 transition-all disabled:opacity-50">
+                className="flex-1 py-2 rounded-lg bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white text-sm font-medium hover:from-indigo-500/40 hover:to-purple-500/40 transition-all disabled:opacity-50">
                 {hikeSaving ? "Saving..." : editingHike ? "Update Hike" : "Create Hike"}
               </button>
             </div>

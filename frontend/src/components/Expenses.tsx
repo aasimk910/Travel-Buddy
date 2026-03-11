@@ -341,7 +341,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
           </button>
           <button
             onClick={() => openModal()}
-            className="px-3 py-1.5 rounded-md bg-emerald-500 text-white hover:bg-emerald-600 text-sm flex items-center gap-2 transition-colors shadow-lg"
+            className="px-3 py-1.5 rounded-md bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white hover:from-indigo-500/40 hover:to-purple-500/40 text-sm flex items-center gap-2 transition-all shadow-lg"
           >
             <Plus className="w-4 h-4" />
             Add Expense
@@ -692,7 +692,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-colors shadow-lg"
+                    className="flex-1 px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white hover:from-indigo-500/40 hover:to-purple-500/40 transition-all shadow-lg"
                   >
                     {editingExpense ? "Update" : "Add"} Expense
                   </button>

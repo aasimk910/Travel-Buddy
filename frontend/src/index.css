@@ -27,6 +27,7 @@ body {
   background-repeat: no-repeat;
   min-height: 100vh;
   position: relative;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* Animated background overlay */
@@ -108,17 +109,20 @@ body::before {
   border-color: rgba(255, 255, 255, 0.4);
 }
 
-.glass-button-dark {
-  background: rgba(0, 0, 0, 0.4);
+.glass-button-dark,
+.btn-primary {
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3));
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  color: white;
   transition: all 0.3s ease;
 }
 
-.glass-button-dark:hover {
-  background: rgba(0, 0, 0, 0.5);
-  border-color: rgba(255, 255, 255, 0.3);
+.glass-button-dark:hover,
+.btn-primary:hover {
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.4), rgba(168, 85, 247, 0.4));
+  border-color: rgba(129, 140, 248, 0.5);
 }
 
 .glass-input {

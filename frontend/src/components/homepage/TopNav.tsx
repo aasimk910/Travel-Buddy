@@ -46,6 +46,9 @@ const TopNav: React.FC = () => {
           <Link to="/maps" className={getLinkClass("/maps")}>
             Maps
           </Link>
+          <Link to="/shop" className={getLinkClass("/shop")}>
+            Shop
+          </Link>
           <Link to="/about" className={getLinkClass("/about")}>
             About
           </Link>

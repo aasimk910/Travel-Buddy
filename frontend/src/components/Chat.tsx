@@ -211,7 +211,7 @@ const Chat = ({ roomId }: ChatProps) => {
             {messages.map((m, idx) => (
               <div key={m._id || idx} className={`flex mb-4 ${m.senderId === userId ? 'justify-end' : 'justify-start'}`}>
               <div className={`rounded-lg p-3 max-w-lg ${m.senderId === userId ? 'glass-dark text-glass' : 'glass-strong'}`}>
-                <div className="font-bold mb-1 text-gray-800">{m.senderId === userId ? 'Me' : m.senderId}</div>
+                <div className="font-bold mb-1 text-white/80">{m.senderId === userId ? 'Me' : m.senderId}</div>
                 {m.attachment && (
                   <div className="mb-2">
                     {m.attachment.type.startsWith('image/') ? (
@@ -243,9 +243,9 @@ const Chat = ({ roomId }: ChatProps) => {
                   </div>
                 )}
                 {m.message && m.message !== 'Sent an image' && (
-                  <p className={`${m.senderId === userId ? 'text-glass' : 'text-gray-900'}`}>{m.message}</p>
+                  <p className={`${m.senderId === userId ? 'text-glass' : 'text-white/90'}`}>{m.message}</p>
                 )}
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-white/40 mt-1">
                   {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>

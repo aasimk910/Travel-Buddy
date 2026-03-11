@@ -54,6 +54,7 @@ const tripRoutes = require("./routes/trips");
 const itineraryRoutes = require("./routes/itinerary");
 const expenseRoutes = require("./routes/expenses");
 const adminRoutes = require("./routes/admin");
+const paymentRoutes = require("./routes/payment");
 const Hike = require("./models/Hike");
 const Message = require("./models/Message");
 const User = require("./models/User");
@@ -70,6 +71,7 @@ app.use("/api/trips", tripRoutes);
 app.use("/api/itinerary", itineraryRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // GET /api/stats - Public site-wide statistics
 app.get("/api/stats", async (req, res) => {
