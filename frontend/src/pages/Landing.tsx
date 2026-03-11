@@ -38,7 +38,7 @@ const Landing: React.FC = () => {
             <Link to="/hikes" className="text-gray-200 hover:text-white transition-colors">Hikes</Link>
             <Link to="/maps" className="text-gray-200 hover:text-white transition-colors">Maps</Link>
             <Link to="/shop" className="text-gray-200 hover:text-white transition-colors">Shop</Link>
-            <a href="#about" className="text-gray-200 hover:text-white transition-colors">About</a>
+            <Link to="/about" className="text-gray-200 hover:text-white transition-colors">About</Link>
             {isAuthenticated && (
               <Link to="/dashboard" className="text-gray-200 hover:text-white transition-colors">Dashboard</Link>
             )}

@@ -326,7 +326,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
         <div className="flex gap-2">
           <button
             onClick={() => setShowSummary(!showSummary)}
-            className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-glass-light text-sm flex items-center gap-2 transition-colors"
+            className="px-3 py-1.5 rounded-md glass-button text-glass-light text-sm flex items-center gap-2 transition-colors"
           >
             <TrendingUp className="w-4 h-4" />
             {showSummary ? "Hide" : "Show"} Summary
@@ -334,14 +334,14 @@ const Expenses = ({ roomId }: ExpensesProps) => {
           <button
             onClick={exportToCSV}
             disabled={expenses.length === 0}
-            className="px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 text-glass-light text-sm flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-1.5 rounded-md glass-button text-glass-light text-sm flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4" />
             Export CSV
           </button>
           <button
             onClick={() => openModal()}
-            className="px-3 py-1.5 rounded-md bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white hover:from-indigo-500/40 hover:to-purple-500/40 text-sm flex items-center gap-2 transition-all shadow-lg"
+            className="px-3 py-1.5 rounded-md glass-button-dark text-white text-sm flex items-center gap-2 transition-all"
           >
             <Plus className="w-4 h-4" />
             Add Expense
@@ -597,8 +597,8 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                         }
                         className={`px-4 py-2 rounded-lg text-sm transition-all ${
                           formData.splitType === type.value
-                            ? "bg-emerald-500 text-white shadow-lg"
-                            : "bg-white/10 hover:bg-white/20 text-glass-light"
+                            ? "glass-button-dark text-white shadow-lg"
+                            : "glass-button text-glass-light"
                         }`}
                       >
                         {type.label}
@@ -686,13 +686,13 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="flex-1 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-glass"
+                    className="flex-1 px-4 py-2 rounded-lg glass-button transition-colors text-glass"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white hover:from-indigo-500/40 hover:to-purple-500/40 transition-all shadow-lg"
+                    className="flex-1 px-4 py-2 rounded-lg glass-button-dark text-white transition-all"
                   >
                     {editingExpense ? "Update" : "Add"} Expense
                   </button>

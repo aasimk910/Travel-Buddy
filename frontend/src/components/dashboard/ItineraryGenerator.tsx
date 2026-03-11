@@ -447,7 +447,7 @@ const ItineraryGenerator: React.FC = () => {
           {/* Actions */}
           <div className="flex gap-3 pb-2">
             <button type="submit" disabled={isLoading}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white font-semibold text-sm hover:from-indigo-500/40 hover:to-purple-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl glass-button-dark text-white font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">
               {isLoading
                 ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
                 : <><Sparkles className="w-4 h-4" /> Generate Itinerary</>}

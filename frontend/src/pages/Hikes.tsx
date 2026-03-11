@@ -311,7 +311,7 @@ const Hikes: React.FC = () => {
                     key={hike._id}
                     className="glass-card rounded-xl shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow"
                   >
-                    <div className="relative h-48 bg-gray-200">
+                    <div className="relative h-48 glass-dark">
                       {hike.imageUrl ? (
                         <img
                           src={hike.imageUrl}
@@ -319,8 +319,8 @@ const Hikes: React.FC = () => {
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <div className="h-full w-full flex items-center justify-center bg-gray-100">
-                          <Map className="w-12 h-12 text-gray-300" />
+                        <div className="h-full w-full flex items-center justify-center glass-dark">
+                          <Map className="w-12 h-12 text-white/30" />
                         </div>
                       )}
                       <span className="absolute top-3 right-3 inline-flex items-center rounded-full glass-strong px-3 py-1 text-[11px] font-medium text-black shadow-sm">

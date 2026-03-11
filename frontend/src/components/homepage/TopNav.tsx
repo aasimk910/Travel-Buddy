@@ -40,6 +40,11 @@ const TopNav: React.FC = () => {
           <Link to="/hikes" className={getLinkClass("/hikes")}>
             Hikes
           </Link>
+          {isAuthenticated && (
+            <Link to="/dashboard" className={getLinkClass("/dashboard")}>
+              Dashboard
+            </Link>
+          )}
           <Link to="/maps" className={getLinkClass("/maps")}>
             Maps
           </Link>
@@ -49,11 +54,6 @@ const TopNav: React.FC = () => {
           <Link to="/about" className={getLinkClass("/about")}>
             About
           </Link>
-          {isAuthenticated && (
-            <Link to="/dashboard" className={getLinkClass("/dashboard")}>
-              Dashboard
-            </Link>
-          )}
         </nav>
 
         <div className="flex items-center gap-3">
@@ -69,13 +69,13 @@ const TopNav: React.FC = () => {
             <>
               <Link
                 to="/login"
-                className="px-4 py-2 text-sm text-white hover:text-gray-200 transition-colors"
+                className="px-4 py-2 text-sm glass-button rounded-lg text-white transition-colors"
               >
                 Login
               </Link>
               <Link
                 to="/signup"
-                className="px-4 py-2 text-sm bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors backdrop-blur-sm"
+                className="px-4 py-2 text-sm glass-button-dark rounded-lg text-white transition-colors"
               >
                 Sign Up
               </Link>

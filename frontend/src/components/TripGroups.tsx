@@ -100,7 +100,7 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
           tripGroups.map((group) => (
             <li 
               key={group._id} 
-              className={`relative p-2 mb-2 rounded-lg glass-button ${selectedHikeId === group._id ? 'bg-white/30' : ''} group`}
+              className={`relative p-2 mb-2 rounded-lg glass-button ${selectedHikeId === group._id ? 'glass-strong' : ''} group`}
             >
               <button
                 onClick={(e) => handleLeaveHike(e, group._id)}

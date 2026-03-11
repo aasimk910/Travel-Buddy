@@ -353,7 +353,7 @@ const Maps: React.FC = () => {
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm shadow-lg transition ${
               measureActive
                 ? 'bg-indigo-600 text-white'
-                : 'bg-white/90 text-gray-800 hover:bg-white'
+                : 'glass text-white hover:opacity-90'
             }`}
           >
             <Ruler className="w-4 h-4" />
@@ -361,8 +361,8 @@ const Maps: React.FC = () => {
           </button>
 
           {measureActive && (
-            <div className="bg-white/95 rounded-xl shadow-xl p-4 min-w-[220px]">
-              <p className="text-xs text-gray-500 mb-2">
+            <div className="glass-strong rounded-xl p-4 min-w-[220px]">
+              <p className="text-xs text-gray-300 mb-2">
                 {!pointA
                   ? '1. Click the map to set Point A'
                   : !pointB
@@ -373,7 +373,7 @@ const Maps: React.FC = () => {
               <div className="flex gap-3 text-sm mb-3">
                 <div className="flex items-center gap-1">
                   <span className="inline-block w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow" />
-                  <span className="text-gray-600">
+                  <span className="text-gray-300">
                     {pointA ? `${pointA[0].toFixed(4)}, ${pointA[1].toFixed(4)}` : '—'}
                   </span>
                 </div>
@@ -381,36 +381,36 @@ const Maps: React.FC = () => {
               <div className="flex gap-3 text-sm mb-3">
                 <div className="flex items-center gap-1">
                   <span className="inline-block w-3 h-3 rounded-full bg-red-500 border-2 border-white shadow" />
-                  <span className="text-gray-600">
+                  <span className="text-gray-300">
                     {pointB ? `${pointB[0].toFixed(4)}, ${pointB[1].toFixed(4)}` : '—'}
                   </span>
                 </div>
               </div>
 
               {routeLoading && (
-                <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 text-center">
-                  <p className="text-xs text-indigo-500 font-medium uppercase tracking-wide">Calculating trail…</p>
+                <div className="bg-indigo-500/20 border border-indigo-400/40 rounded-lg px-3 py-2 text-center">
+                  <p className="text-xs text-indigo-300 font-medium uppercase tracking-wide">Calculating trail…</p>
                   <div className="mt-1 h-5 flex items-center justify-center">
                     <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                   </div>
                 </div>
               )}
               {routeError && !routeLoading && (
-                <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-center">
-                  <p className="text-xs text-red-600">{routeError}</p>
+                <div className="bg-red-500/20 border border-red-400/40 rounded-lg px-3 py-2 text-center">
+                  <p className="text-xs text-red-300">{routeError}</p>
                 </div>
               )}
               {routeDistance !== null && !routeLoading && !routeError && (
-                <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 text-center">
-                  <p className="text-xs text-indigo-500 font-medium uppercase tracking-wide">Trail Distance</p>
-                  <p className="text-xl font-bold text-indigo-700">{formatDistance(routeDistance)}</p>
+                <div className="bg-indigo-500/20 border border-indigo-400/40 rounded-lg px-3 py-2 text-center">
+                  <p className="text-xs text-indigo-300 font-medium uppercase tracking-wide">Trail Distance</p>
+                  <p className="text-xl font-bold text-white">{formatDistance(routeDistance)}</p>
                 </div>
               )}
 
               {(pointA || pointB) && (
                 <button
                   onClick={clearMeasurement}
-                  className="mt-3 w-full text-xs text-gray-500 hover:text-red-500 transition"
+                  className="mt-3 w-full text-xs text-gray-400 hover:text-red-400 transition"
                 >
                   Clear points
                 </button>
@@ -473,7 +473,7 @@ const Maps: React.FC = () => {
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 glass-card rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl z-10">
             <button
               onClick={() => setSelectedHike(null)}
-              className="absolute top-4 right-4 p-1 hover:bg-white/20 rounded-full transition"
+              className="absolute top-4 right-4 p-1 glass-button rounded-full transition"
             >
               <X className="w-4 h-4 text-white" />
             </button>

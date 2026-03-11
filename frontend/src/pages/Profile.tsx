@@ -466,8 +466,8 @@ const Profile: React.FC = () => {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                            <Camera className="w-8 h-8 text-gray-300" />
+                          <div className="w-full h-full glass-dark flex items-center justify-center">
+                            <Camera className="w-8 h-8 text-white/30" />
                           </div>
                         )}
                         {imageList.length > 1 && (

@@ -55,30 +55,99 @@ const CATEGORIES = [
 ];
 
 const PRODUCTS: Product[] = [
+  // ── Backpacks ──────────────────────────────────────────────────────────────
   {
-    id: 1, name: 'Summit 65L Trekking Pack', category: 'Backpacks', price: 8500, rating: 4.8, reviews: 124, badge: 'Best Seller',
-    img: 'https://images.pexels.com/photos/1153369/pexels-photo-1153369.jpeg?auto=compress&w=400',
+    id: 1, name: 'Osprey Atmos AG 65L', category: 'Backpacks', price: 18500, rating: 4.9, reviews: 312, badge: 'Best Seller',
+    img: 'https://images.pexels.com/photos/1271620/pexels-photo-1271620.jpeg?auto=compress&w=400',
     images: [
-      'https://images.pexels.com/photos/1153369/pexels-photo-1153369.jpeg?auto=compress&w=800',
-      'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1271620/pexels-photo-1271620.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/2166456/pexels-photo-2166456.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=800',
     ],
-    description: 'Built for multi-day expeditions, the Summit 65L features an ergonomic suspension system, rain cover, and 10 organised compartments. Lightweight yet durable ripstop nylon handles any terrain.',
+    description: 'Industry-leading Anti-Gravity suspension distributes weight across hips and back. Includes integrated rain cover, sleeping bag compartment, and 65 L of organised storage. Ideal for Annapurna Circuit and EBC treks.',
   },
   {
-    id: 2, name: 'UltraLight 2-Person Tent', category: 'Camping', price: 12999, rating: 4.6, reviews: 89, badge: 'Top Rated',
+    id: 2, name: 'Deuter Speed Lite 32L', category: 'Backpacks', price: 9800, rating: 4.7, reviews: 184, badge: null,
+    img: 'https://images.pexels.com/photos/2385210/pexels-photo-2385210.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/2385210/pexels-photo-2385210.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1153369/pexels-photo-1153369.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1271620/pexels-photo-1271620.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/2166456/pexels-photo-2166456.jpeg?auto=compress&w=800',
+    ],
+    description: 'Ultralight 32 L pack weighing just 780 g. Ventilated Aircomfort back system, hip belt pockets, and hydration sleeve. The go-to pack for single-day summit attempts.',
+  },
+  {
+    id: 3, name: 'Gregory Baltoro 75L', category: 'Backpacks', price: 22000, rating: 4.8, reviews: 97, badge: 'Top Rated',
+    img: 'https://images.pexels.com/photos/2166456/pexels-photo-2166456.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/2166456/pexels-photo-2166456.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1271620/pexels-photo-1271620.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/2385210/pexels-photo-2385210.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=800',
+    ],
+    description: 'The benchmark for load-hauling comfort on extended expeditions. Response A3 hip-belt auto-adjusts with every step. Dual ice-axe loops and a floating lid make it fully mountaineering-ready.',
+  },
+  {
+    id: 4, name: 'Black Diamond Bullet 16L', category: 'Backpacks', price: 5600, rating: 4.5, reviews: 148, badge: 'New',
+    img: 'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/2385210/pexels-photo-2385210.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1153369/pexels-photo-1153369.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
+    ],
+    description: 'Minimalist 16 L climbing pack with a clean top-loading design and removable frame sheet. Durable Dyneema face fabric keeps it under 450 g — perfect for via ferrata and sport climbing days.',
+  },
+  // ── Camping ────────────────────────────────────────────────────────────────
+  {
+    id: 5, name: 'MSR Hubba Hubba NX 2P', category: 'Camping', price: 28500, rating: 4.9, reviews: 203, badge: 'Best Seller',
+    img: 'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
+    ],
+    description: 'Ultralight freestanding 3-season tent, 1.72 kg. Dual-door design with full-coverage fly, 3000 mm hydrostatic rating, and Easton Syclone poles that snap together in under 3 minutes.',
+  },
+  {
+    id: 6, name: 'Sea to Summit Reactor Sleeping Bag', category: 'Camping', price: 14200, rating: 4.7, reviews: 156, badge: null,
+    img: 'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
+    ],
+    description: '850-fill ethically sourced down rated to -12 °C.  Thermal Comfort mapping adds insulation at feet and core. Side-block baffles prevent down shifting — no more cold spots at night in high camp.',
+  },
+  {
+    id: 7, name: 'MSR PocketRocket Deluxe Stove', category: 'Camping', price: 6500, rating: 4.8, reviews: 289, badge: 'Top Rated',
+    img: 'https://images.pexels.com/photos/6271625/pexels-photo-6271625.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/6271625/pexels-photo-6271625.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
+    ],
+    description: 'Weighs just 73 g and boils 1 L of water in 3.5 minutes. Precision flame control from full simmer to roaring boil. Wind-resistant burner and integrated pressure regulator performs at altitude.',
+  },
+  {
+    id: 8, name: 'Therm-a-Rest NeoAir XLite', category: 'Camping', price: 11800, rating: 4.6, reviews: 134, badge: null,
     img: 'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
-      'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=800',
-      'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=800',
     ],
-    description: 'A freestanding 3-season tent weighing just 1.3 kg. Double-wall construction, waterproof 3000 mm fly, and colour-coded poles make setup in under 3 minutes even at altitude.',
+    description: 'R-value of 4.2 in a 350 g ultralight inflatable pad. Triangular Core Matrix construction and heat-reflective film keep you off the cold ground. WingLock valve inflates in under 60 seconds.',
   },
+  // ── Footwear ───────────────────────────────────────────────────────────────
   {
-    id: 3, name: 'Trail Hiking Boots Pro', category: 'Footwear', price: 6500, rating: 4.7, reviews: 201, badge: null,
+    id: 9, name: 'Salomon X Ultra 4 GTX', category: 'Footwear', price: 12500, rating: 4.8, reviews: 347, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&w=800',
@@ -86,10 +155,44 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1619535/pexels-photo-1619535.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/3682215/pexels-photo-3682215.jpeg?auto=compress&w=800',
     ],
-    description: 'Full-grain leather upper with a Gore-Tex lining keeps your feet dry on river crossings. Vibram outsole delivers aggressive grip on wet rock and loose scree.',
+    description: 'Waterproof Gore-Tex membrane with suede and textile upper. Contagrip MA outsole locks in on wet rocks and muddy switchbacks. Sensifit cradle wraps the foot for a precision, glove-like hold.',
   },
   {
-    id: 4, name: 'Compact Action Camera', category: 'Photography', price: 15000, rating: 4.5, reviews: 67, badge: 'New',
+    id: 10, name: 'La Sportiva Trango TRK GTX', category: 'Footwear', price: 18900, rating: 4.9, reviews: 92, badge: 'Top Rated',
+    img: 'https://images.pexels.com/photos/1464625/pexels-photo-1464625.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/1464625/pexels-photo-1464625.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/3682215/pexels-photo-3682215.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1619535/pexels-photo-1619535.jpeg?auto=compress&w=800',
+    ],
+    description: 'Backpacking boot with a Nubuck leather upper and Gore-Tex lining rated to 3-season use. FriXion AT outsole with self-cleaning lugs designed specifically for Himalayan approach terrain.',
+  },
+  {
+    id: 11, name: 'Black Diamond Distance Carbon Z Poles', category: 'Footwear', price: 7200, rating: 4.7, reviews: 218, badge: null,
+    img: 'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1464625/pexels-photo-1464625.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
+    ],
+    description: 'Carbon fibre Z-style folding poles that pack to 38 cm. Non-flick FlickLock Pro collar adjusts in seconds with gloves. Carbide tech tips and interchangeable baskets for all terrain.',
+  },
+  {
+    id: 12, name: 'Darn Tough Hiker Boot Sock', category: 'Footwear', price: 1850, rating: 4.6, reviews: 504, badge: 'New',
+    img: 'https://images.pexels.com/photos/1619535/pexels-photo-1619535.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/1619535/pexels-photo-1619535.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1464625/pexels-photo-1464625.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/3682215/pexels-photo-3682215.jpeg?auto=compress&w=800',
+    ],
+    description: '61 % fine merino wool construction with targeted cushioning under heel and ball. Machine-washable and backed by the brand\'s unconditional lifetime guarantee against holes and wear.',
+  },
+  // ── Photography ────────────────────────────────────────────────────────────
+  {
+    id: 13, name: 'GoPro HERO 12 Black', category: 'Photography', price: 38000, rating: 4.8, reviews: 276, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=800',
@@ -97,62 +200,130 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/821652/pexels-photo-821652.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&w=800',
     ],
-    description: 'Capture breathtaking trails in 4K at 60 fps. Waterproof to 10 m, freeze-proof to -10 °C, and includes a wide-angle lens and image stabilisation for smooth handheld footage.',
+    description: '5.3K60 video and 27 MP photos in a waterproof body rated to 10 m. HyperSmooth 6.0 eliminates trail-induced shake. Enduro battery adds 38 % more run time in cold mountain conditions.',
   },
   {
-    id: 5, name: 'GPS Trail Navigator', category: 'Navigation', price: 9200, rating: 4.9, reviews: 45, badge: 'Top Rated',
+    id: 14, name: 'Joby GorillaPod 3K Kit', category: 'Photography', price: 8900, rating: 4.6, reviews: 163, badge: null,
+    img: 'https://images.pexels.com/photos/243757/pexels-photo-243757.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/243757/pexels-photo-243757.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/821652/pexels-photo-821652.jpeg?auto=compress&w=800',
+    ],
+    description: 'Flexible tripod holds up to 3 kg and wraps around branches, railings, or uneven rock. Includes quick-release plate and ball head. Folds to 26 cm and weighs just 485 g.',
+  },
+  {
+    id: 15, name: 'Peak Design Capture Clip V3', category: 'Photography', price: 11200, rating: 4.9, reviews: 88, badge: 'Top Rated',
+    img: 'https://images.pexels.com/photos/821652/pexels-photo-821652.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/821652/pexels-photo-821652.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/243757/pexels-photo-243757.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&w=800',
+    ],
+    description: 'Stainless steel camera clip that mounts to any backpack strap or belt. One-handed capture and re-attachment in under a second. Arca-Swiss compatible and rated to 45 kg pull strength.',
+  },
+  {
+    id: 16, name: 'Anker 737 Power Bank 26800mAh', category: 'Photography', price: 9500, rating: 4.7, reviews: 412, badge: null,
+    img: 'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/821652/pexels-photo-821652.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/243757/pexels-photo-243757.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=800',
+    ],
+    description: '26800 mAh, 140 W bi-directional charging charges a MacBook from 0–80 % in 45 min. Charges 3 devices simultaneously. Temperature-optimised for cold ridgeline conditions down to -10 °C.',
+  },
+  // ── Navigation ─────────────────────────────────────────────────────────────
+  {
+    id: 17, name: 'Garmin inReach Mini 2', category: 'Navigation', price: 42000, rating: 4.9, reviews: 134, badge: 'Top Rated',
     img: 'https://images.pexels.com/photos/3608311/pexels-photo-3608311.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/3608311/pexels-photo-3608311.jpeg?auto=compress&w=800',
-      'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
     ],
-    description: 'Pre-loaded with Nepal topo maps and a 20-hour battery life. Satellite multi-constellation support means lock in under 30 seconds even deep in canyon areas.',
+    description: '100 % global satellite coverage for two-way messaging and SOS even where no mobile signal exists. Tracks your route by GPS, syncs with Garmin Explore app, and the 90 g body clips to any strap.',
   },
   {
-    id: 6, name: 'Emergency Bivvy Shelter', category: 'Safety', price: 2100, rating: 4.4, reviews: 158, badge: null,
+    id: 18, name: 'Suunto 9 Baro Titanium', category: 'Navigation', price: 56000, rating: 4.8, reviews: 67, badge: 'New',
+    img: 'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/3608311/pexels-photo-3608311.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
+    ],
+    description: 'GPS multisport watch with barometric altimeter and storm-alert function. 170-hour battery in Tour mode. Titanium bezel, sapphire glass, and 100 m water resistance built for serious expedition use.',
+  },
+  {
+    id: 19, name: 'Suunto A-10 Field Compass', category: 'Navigation', price: 2400, rating: 4.5, reviews: 298, badge: null,
+    img: 'https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/3608311/pexels-photo-3608311.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
+    ],
+    description: 'Liquid-filled baseplate compass with a clinometer and 1:25000 scale. Luminous bezel markings for night navigation. A reliable backup for any electronic device in the field.',
+  },
+  {
+    id: 20, name: 'Garmin GPSMAP 67i', category: 'Navigation', price: 68000, rating: 4.9, reviews: 49, badge: 'Best Seller',
+    img: 'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/3608311/pexels-photo-3608311.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&w=800',
+    ],
+    description: 'Handheld GPS with built-in inReach satellite communication, 2.7-inch sunlight-readable display, and 36-hour Li-ion battery. Preloaded TopoActive maps cover all of Nepal at 1:24000 resolution.',
+  },
+  // ── Safety ─────────────────────────────────────────────────────────────────
+  {
+    id: 21, name: 'Adventure Medical Kits Mountain', category: 'Safety', price: 5800, rating: 4.8, reviews: 231, badge: 'Best Seller',
+    img: 'https://images.pexels.com/photos/3735747/pexels-photo-3735747.jpeg?auto=compress&w=400',
+    images: [
+      'https://images.pexels.com/photos/3735747/pexels-photo-3735747.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
+    ],
+    description: '200+ medical supplies for up to 4 people over 10 days. Includes SAM splint, blister kit, QuikClot gauze, and a comprehensive first-aid guide. Waterproof roll-top bag weighs 620 g.',
+  },
+  {
+    id: 22, name: 'Black Diamond Spot 400 Headlamp', category: 'Safety', price: 3200, rating: 4.7, reviews: 489, badge: null,
     img: 'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/3735747/pexels-photo-3735747.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
-      'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
-      'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=800',
-    ],
-    description: 'Mylar thermal bivvy reflects 90 % of body heat. Fits in a shirt pocket at just 85 g, fits two adults, and opens in seconds — an essential safety item for every pack.',
-  },
-  {
-    id: 7, name: 'Daypack 28L Ultralight', category: 'Backpacks', price: 4200, rating: 4.3, reviews: 93, badge: null,
-    img: 'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=400',
-    images: [
-      'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=800',
-      'https://images.pexels.com/photos/1153369/pexels-photo-1153369.jpeg?auto=compress&w=800',
-      'https://images.pexels.com/photos/2166456/pexels-photo-2166456.jpeg?auto=compress&w=800',
-      'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
-    ],
-    description: 'Perfect for day hikes and summit pushes. Hydration-compatible (3 L reservoir sleeve), padded laptop sleeve, and 28 L of smart storage in a 680 g minimalist package.',
-  },
-  {
-    id: 8, name: 'Sleeping Bag -10°C', category: 'Camping', price: 7800, rating: 4.7, reviews: 112, badge: 'Best Seller',
-    img: 'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=400',
-    images: [
       'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=800',
+    ],
+    description: '400-lumen waterproof headlamp with strobe, dimming, and red mode. Proximity and distance beams in a single light. PowerTap technology shifts instantly from full to dimmed with a single tap.',
+  },
+  {
+    id: 23, name: 'SOL Escape Bivvy', category: 'Safety', price: 2600, rating: 4.5, reviews: 307, badge: null,
+    img: 'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=400',
+    images: [
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=800',
-      'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/3735747/pexels-photo-3735747.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
     ],
-    description: '800-fill-power duck down rated to -10 °C comfort. Mummy cut minimises cold spots, left/right zip allows pairing, and a water-repellent shell sheds light condensation.',
+    description: 'Breathable aluminised shell reflects 70 % of radiated body heat. Fits one adult with room for a sleeping bag. Stuffs to fist size at 241 g — the lightest survival shelter in its class.',
   },
   {
-    id: 9, name: 'Trekking Pole Set', category: 'Footwear', price: 3200, rating: 4.5, reviews: 176, badge: null,
+    id: 24, name: 'Fox Whistle + Signal Mirror Combo', category: 'Safety', price: 950, rating: 4.4, reviews: 622, badge: 'New',
     img: 'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
-      'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&w=800',
-      'https://images.pexels.com/photos/1464625/pexels-photo-1464625.jpeg?auto=compress&w=800',
-      'https://images.pexels.com/photos/3608311/pexels-photo-3608311.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/3735747/pexels-photo-3735747.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
     ],
-    description: 'Aircraft-grade aluminium poles with a 3-section twist-lock and EVA foam grips. Anti-shock spring absorbs impact on descents, reducing knee strain over long distances.',
+    description: '120 dB pealess whistle audible up to 2 km combined with an acrylic signal mirror visible to aircraft beyond 15 km. Both attach to a single carabiner — 18 g of emergency signalling capability.',
   },
 ];
 
@@ -360,7 +531,7 @@ const Shop: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen px-4 py-8 max-w-7xl mx-auto">
+    <div className="min-h-screen w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -421,7 +592,7 @@ const Shop: React.FC = () => {
               <button key={cat.label} onClick={() => setActiveCategory(cat.label)}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all text-left w-full ${
                   activeCategory === cat.label
-                    ? 'bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border-indigo-400/40 text-white'
+                    ? 'glass-button-dark border-transparent text-white'
                     : 'border-transparent text-white/50 hover:bg-white/5 hover:text-white/80'
                 }`}>
                 {cat.icon && <span className="shrink-0">{cat.icon}</span>}
@@ -441,7 +612,7 @@ const Shop: React.FC = () => {
               <p className="text-white/40 font-medium">No products found</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
           {filtered.map(product => {
             const inCart = cartItems.find(i => i.product.id === product.id);
             return (
@@ -449,7 +620,10 @@ const Shop: React.FC = () => {
               onClick={() => setSelectedProduct(product)}
               className="glass-card rounded-2xl overflow-hidden flex flex-col group hover:border-white/30 transition-all duration-300 cursor-pointer">
                 <div className="relative h-48 overflow-hidden">
-                  <img src={product.img} alt={product.name}
+                  <img
+                    src={product.img.replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
+                    alt={product.name}
+                    onError={(e) => { e.currentTarget.src = `https://placehold.co/400x300/1e1b4b/6366f1?text=${encodeURIComponent(product.name)}`; e.currentTarget.onerror = null; }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   {product.badge && (
@@ -494,7 +668,7 @@ const Shop: React.FC = () => {
                       </div>
                     ) : (
                       <button onClick={e => { e.stopPropagation(); addToCart(product); }}
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white text-xs font-semibold hover:from-indigo-500/40 hover:to-purple-500/40 transition-all">
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl glass-button-dark text-white text-xs font-semibold transition-all">
                         <ShoppingCart className="w-3.5 h-3.5" /> Add to Cart
                       </button>
                     )}
@@ -524,8 +698,9 @@ const Shop: React.FC = () => {
                 <div className="relative flex-1 min-h-64 md:min-h-0 overflow-hidden">
                   <img
                     key={activeImg}
-                    src={activeImg || selectedProduct.images[0]}
+                    src={(activeImg || selectedProduct.images[0]).replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
                     alt={selectedProduct.name}
+                    onError={(e) => { e.currentTarget.src = `https://placehold.co/800x600/1e1b4b/6366f1?text=${encodeURIComponent(selectedProduct.name)}`; e.currentTarget.onerror = null; }}
                     className="w-full h-full object-cover transition-opacity duration-200"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
@@ -553,7 +728,11 @@ const Shop: React.FC = () => {
                           : 'border-white/15 opacity-55 hover:opacity-90 hover:border-white/40'
                       }`}
                     >
-                      <img src={src.replace('w=800', 'w=120')} alt={`view ${idx + 1}`} className="w-full h-full object-cover" />
+                      <img
+                        src={src.replace('?auto=compress&', '?auto=compress&cs=tinysrgb&').replace('w=800', 'w=120')}
+                        alt={`view ${idx + 1}`}
+                        onError={(e) => { e.currentTarget.src = 'https://placehold.co/120x96/1e1b4b/6366f1'; e.currentTarget.onerror = null; }}
+                        className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -617,19 +796,19 @@ const Shop: React.FC = () => {
                           <span className="text-white/60 text-sm">In cart</span>
                           <div className="flex items-center gap-3">
                             <button onClick={() => changeQty(selectedProduct.id, -1)}
-                              className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 transition-all text-white">
+                              className="w-8 h-8 flex items-center justify-center rounded-xl glass-button transition-all text-white">
                               <Minus className="w-3.5 h-3.5" />
                             </button>
                             <span className="text-white font-bold w-6 text-center text-lg">{inCart.qty}</span>
                             <button onClick={() => changeQty(selectedProduct.id, 1)}
-                              className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 transition-all text-white">
+                              className="w-8 h-8 flex items-center justify-center rounded-xl glass-button transition-all text-white">
                               <Plus className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
                       ) : (
                         <button onClick={() => addToCart(selectedProduct)}
-                          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-500/50 to-purple-500/50 border border-indigo-400/50 text-white font-semibold text-base hover:from-indigo-500/65 hover:to-purple-500/65 transition-all">
+                          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl glass-button-dark text-white font-semibold text-base transition-all">
                           <ShoppingCart className="w-5 h-5" /> Add to Cart
                         </button>
                       );
@@ -679,7 +858,7 @@ const Shop: React.FC = () => {
               <p className="text-white/50 font-medium">No orders yet</p>
               <p className="text-white/35 text-sm">Your placed orders will appear here.</p>
               <button onClick={() => setOrdersOpen(false)}
-                className="mt-2 flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white text-sm font-semibold hover:from-indigo-500/40 hover:to-purple-500/40 transition-all">
+                className="mt-2 flex items-center gap-1.5 px-5 py-2.5 rounded-xl glass-button-dark text-white text-sm font-semibold transition-all">
                 Browse Shop <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -747,7 +926,10 @@ const Shop: React.FC = () => {
                       <div className="space-y-2.5">
                         {order.items.map(i => (
                           <div key={i.product.id} className="flex items-center gap-3">
-                            <img src={i.product.img} alt={i.product.name}
+                            <img
+                              src={i.product.img.replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
+                              alt={i.product.name}
+                              onError={(e) => { e.currentTarget.src = 'https://placehold.co/36x36/1e1b4b/6366f1'; e.currentTarget.onerror = null; }}
                               className="w-9 h-9 rounded-lg object-cover shrink-0" />
                             <div className="flex-1 min-w-0">
                               <p className="text-white text-xs font-semibold line-clamp-1">{i.product.name}</p>
@@ -932,7 +1114,10 @@ const Shop: React.FC = () => {
                 <p className="text-white/40 text-[10px] uppercase tracking-widest">Items Ordered</p>
                 {orderSnapshot.items.map(i => (
                   <div key={i.product.id} className="flex items-center gap-3">
-                    <img src={i.product.img} alt={i.product.name}
+                    <img
+                      src={i.product.img.replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
+                      alt={i.product.name}
+                      onError={(e) => { e.currentTarget.src = 'https://placehold.co/40x40/1e1b4b/6366f1'; e.currentTarget.onerror = null; }}
                       className="w-10 h-10 rounded-lg object-cover shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-xs font-semibold line-clamp-1">{i.product.name}</p>
@@ -1019,7 +1204,7 @@ const Shop: React.FC = () => {
               </div>
 
               <button onClick={() => { setCartOpen(false); clearCart(); }}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white font-semibold hover:from-indigo-500/40 hover:to-purple-500/40 transition-all">
+                className="w-full py-3 rounded-xl glass-button-dark text-white font-semibold transition-all">
                 Continue Shopping
               </button>
               <button onClick={() => { setCartOpen(false); clearCart(); setOrdersOpen(true); }}
@@ -1096,7 +1281,7 @@ const Shop: React.FC = () => {
               </div>
 
               <button onClick={validateAndProceed}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-indigo-500/40 to-purple-500/40 border border-indigo-400/50 text-white font-bold text-sm hover:from-indigo-500/55 hover:to-purple-500/55 transition-all shadow-lg mt-1">
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl glass-button-dark text-white font-bold text-sm transition-all mt-1">
                 Continue to Payment <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -1174,7 +1359,7 @@ const Shop: React.FC = () => {
                 }}
                 className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg mt-2 ${
                   paymentMethod && !khaltiLoading
-                    ? 'bg-gradient-to-r from-indigo-500/40 to-purple-500/40 border border-indigo-400/50 text-white hover:from-indigo-500/55 hover:to-purple-500/55 cursor-pointer'
+                    ? 'glass-button-dark cursor-pointer'
                     : 'bg-white/5 border border-white/10 text-white/30 cursor-not-allowed'
                 }`}
               >
@@ -1194,7 +1379,7 @@ const Shop: React.FC = () => {
               <p className="text-white/50 font-medium">Your cart is empty</p>
               <p className="text-white/35 text-sm">Browse the shop and add some gear!</p>
               <button onClick={() => setCartOpen(false)}
-                className="mt-2 flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500/30 to-purple-500/30 border border-indigo-400/40 text-white text-sm font-semibold hover:from-indigo-500/40 hover:to-purple-500/40 transition-all">
+                className="mt-2 flex items-center gap-1.5 px-5 py-2.5 rounded-xl glass-button-dark text-white text-sm font-semibold transition-all">
                 Browse Shop <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -1203,7 +1388,10 @@ const Shop: React.FC = () => {
             <>
               {cartItems.map(({ product, qty }) => (
                 <div key={product.id} className="flex gap-3 glass-card rounded-xl p-3">
-                  <img src={product.img} alt={product.name}
+                  <img
+                    src={product.img.replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
+                    alt={product.name}
+                    onError={(e) => { e.currentTarget.src = `https://placehold.co/64x64/1e1b4b/6366f1?text=${encodeURIComponent(product.category)}`; e.currentTarget.onerror = null; }}
                     className="w-16 h-16 rounded-lg object-cover shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm font-semibold leading-snug line-clamp-2 mb-1">{product.name}</p>
@@ -1277,7 +1465,7 @@ const Shop: React.FC = () => {
             {isAuthenticated ? (
               <button
                 onClick={() => setDetailsStep(true)}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-indigo-500/40 to-purple-500/40 border border-indigo-400/50 text-white font-bold text-sm hover:from-indigo-500/55 hover:to-purple-500/55 transition-all shadow-lg"
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl glass-button-dark text-white font-bold text-sm transition-all"
               >
                 Checkout — NPR {total.toLocaleString()} <ChevronRight className="w-4 h-4" />
               </button>
@@ -1297,13 +1485,13 @@ const Shop: React.FC = () => {
                     } catch { /* ignore */ }
                     navigate('/login', { state: { from: '/shop' } });
                   }}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-indigo-500/40 to-purple-500/40 border border-indigo-400/50 text-white font-bold text-sm hover:from-indigo-500/55 hover:to-purple-500/55 transition-all shadow-lg"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl glass-button-dark text-white font-bold text-sm transition-all"
                 >
                   <LogIn className="w-4 h-4" /> Log in to Checkout
                 </button>
                 <button
                   onClick={() => navigate('/signup')}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/15 text-white/60 text-sm font-medium hover:bg-white/5 hover:text-white/90 transition-all"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl glass-button text-white text-sm font-medium transition-all"
                 >
                   Create a free account
                 </button>
