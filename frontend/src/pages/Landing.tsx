@@ -1,10 +1,17 @@
 // src/pages/Landing.tsx
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Map, Users, Compass, MessageCircle, Shield } from "lucide-react";
+import { Map, Users, Compass, MessageCircle, Shield, LayoutDashboard, LogOut, ChevronRight } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -27,46 +34,65 @@ const Landing: React.FC = () => {
 
           {/* Nav links (desktop) */}
           <nav className="hidden md:flex items-center gap-6 text-sm">
-            <Link
-              to="/"
-              className="text-white font-medium border-b-2 border-white pb-1"
-            >
-              Home
-            </Link>
-            <Link
-              to="/hikes"
-              className="text-gray-200 hover:text-white transition-colors"
-            >
-              Hikes
-            </Link>
-            <Link
-              to="/dashboard"
-              className="text-gray-200 hover:text-white transition-colors"
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/maps"
-              className="text-gray-200 hover:text-white transition-colors"
-            >
-              Maps
-            </Link>
+            <Link to="/" className="text-white font-medium border-b-2 border-white pb-1">Home</Link>
+            <Link to="/hikes" className="text-gray-200 hover:text-white transition-colors">Hikes</Link>
+            <Link to="/maps" className="text-gray-200 hover:text-white transition-colors">Maps</Link>
+            <Link to="/shop" className="text-gray-200 hover:text-white transition-colors">Shop</Link>
+            <a href="#about" className="text-gray-200 hover:text-white transition-colors">About</a>
+            {isAuthenticated && (
+              <Link to="/dashboard" className="text-gray-200 hover:text-white transition-colors">Dashboard</Link>
+            )}
           </nav>
 
           {/* Auth buttons */}
           <div className="flex items-center gap-3">
-            <Link
-              to="/login"
-              className="hidden sm:inline-flex text-sm text-gray-200 hover:text-white transition-colors"
-            >
-              Log in
-            </Link>
-            <Link
-              to="/signup"
-              className="inline-flex items-center justify-center rounded-full glass-button-dark px-4 py-1.5 text-sm font-medium text-white shadow-sm"
-            >
-              Get started
-            </Link>
+            {isAuthenticated ? (
+              <>
+                {/* Avatar / name */}
+                <button
+                  onClick={() => navigate("/dashboard")}
+                  className="hidden sm:flex items-center gap-2 text-sm text-gray-200 hover:text-white transition-colors"
+                >
+                  {user?.avatarUrl ? (
+                    <img src={user.avatarUrl} alt={user.name} className="w-7 h-7 rounded-full object-cover border border-white/30" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full glass-button-dark flex items-center justify-center text-xs font-semibold text-white">
+                      {user?.name?.[0]?.toUpperCase() ?? "U"}
+                    </div>
+                  )}
+                  <span className="max-w-[120px] truncate">{user?.name}</span>
+                </button>
+                <Link
+                  to="/dashboard"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full glass-button-dark px-4 py-1.5 text-sm font-medium text-white shadow-sm"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  Dashboard
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="hidden sm:inline-flex items-center justify-center rounded-full glass-button px-3 py-1.5 text-sm text-gray-200 hover:text-white transition-colors gap-1"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="hidden sm:inline-flex text-sm text-gray-200 hover:text-white transition-colors"
+                >
+                  Log in
+                </Link>
+                <Link
+                  to="/signup"
+                  className="inline-flex items-center justify-center rounded-full glass-button-dark px-4 py-1.5 text-sm font-medium text-white shadow-sm"
+                >
+                  Get started
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -78,38 +104,73 @@ const Landing: React.FC = () => {
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 grid gap-10 lg:grid-cols-2 items-center">
             {/* Left: text */}
             <div className="max-w-xl">
-              <p className="inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1 text-xs font-medium text-black mb-4">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                Find people who travel like you
-              </p>
+              {isAuthenticated ? (
+                <p className="inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1 text-xs font-medium text-black mb-4">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  Welcome back, {user?.name?.split(' ')[0] ?? 'traveler'}!
+                </p>
+              ) : (
+                <p className="inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1 text-xs font-medium text-black mb-4">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  Find people who travel like you
+                </p>
+              )}
 
               <h1 className="text-3xl sm:text-4xl xl:text-5xl font-bold tracking-tight text-white mb-4">
-                Find your next{" "}
-                <span className="inline-block bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
-                  Travel Buddy
-                </span>
-                , not just your next trip.
+                {isAuthenticated ? (
+                  <>Your next adventure<br />
+                    <span className="inline-block bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+                      is waiting for you.
+                    </span>
+                  </>
+                ) : (
+                  <>Find your next{" "}
+                    <span className="inline-block bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+                      Travel Buddy
+                    </span>
+                    , not just your next trip.
+                  </>
+                )}
               </h1>
 
               <p className="text-gray-200 text-sm sm:text-base leading-relaxed mb-6">
-                Travel Buddy connects you with travelers who share your style,
-                budget, and destinations. Plan trips together, split costs, and
-                turn solo ideas into shared adventures.
+                {isAuthenticated
+                  ? "Head to your dashboard to manage trips, connect with buddies, track expenses, and plan your next hike."
+                  : "Travel Buddy connects you with travelers who share your style, budget, and destinations. Plan trips together, split costs, and turn solo ideas into shared adventures."}
               </p>
 
               <div className="flex flex-wrap gap-3 mb-6">
-                <Link
-                  to="/signup"
-                  className="inline-flex items-center justify-center rounded-full glass-button-dark px-5 py-2 text-sm font-semibold text-white shadow-sm"
-                >
-                  Start for free
-                </Link>
-                <Link
-                  to="/hikes"
-                  className="inline-flex items-center justify-center rounded-full glass-button px-5 py-2 text-sm font-medium text-white"
-                >
-                  Explore hikes
-                </Link>
+                {isAuthenticated ? (
+                  <>
+                    <Link
+                      to="/dashboard"
+                      className="inline-flex items-center justify-center gap-2 rounded-full glass-button-dark px-5 py-2 text-sm font-semibold text-white shadow-sm"
+                    >
+                      <LayoutDashboard className="w-4 h-4" /> Go to Dashboard
+                    </Link>
+                    <Link
+                      to="/hikes"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-full glass-button px-5 py-2 text-sm font-medium text-white"
+                    >
+                      Explore hikes <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/signup"
+                      className="inline-flex items-center justify-center rounded-full glass-button-dark px-5 py-2 text-sm font-semibold text-white shadow-sm"
+                    >
+                      Start for free
+                    </Link>
+                    <Link
+                      to="/hikes"
+                      className="inline-flex items-center justify-center rounded-full glass-button px-5 py-2 text-sm font-medium text-white"
+                    >
+                      Explore hikes
+                    </Link>
+                  </>
+                )}
               </div>
 
               <div className="flex flex-wrap items-center gap-4 text-xs text-gray-300">
@@ -166,8 +227,9 @@ const Landing: React.FC = () => {
                   </div>
                 </div>
                 <p className="mt-4 text-[11px] text-gray-300">
-                  Log in to see trips that match your dates, budget, and travel
-                  style.
+                  {isAuthenticated
+                    ? "Visit your dashboard to see trips matched to your travel style."
+                    : "Log in to see trips that match your dates, budget, and travel style."}
                 </p>
               </div>
             </div>
@@ -370,7 +432,7 @@ const Landing: React.FC = () => {
         </section>
 
         {/* Community / testimonials */}
-        <section id="community" className="py-10 sm:py-14">
+        <section id="about" className="py-10 sm:py-14">
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
             <div className="grid gap-8 md:grid-cols-[1.3fr_minmax(0,1fr)] items-center">
               <div>
@@ -412,27 +474,59 @@ const Landing: React.FC = () => {
         <section className="py-10 sm:py-14">
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl sm:text-2xl font-semibold text-white mb-2">
-                Ready to find your next travel buddy?
-              </h2>
-              <p className="text-sm text-gray-200 max-w-xl">
-                Create a free profile in under two minutes. You can decide later
-                which trips to actually say yes to.
-              </p>
+              {isAuthenticated ? (
+                <>
+                  <h2 className="text-xl sm:text-2xl font-semibold text-white mb-2">
+                    You're all set, {user?.name?.split(' ')[0] ?? 'traveler'}.
+                  </h2>
+                  <p className="text-sm text-gray-200 max-w-xl">
+                    Your profile is live. Explore hikes, manage your trips, and connect with travel buddies right from your dashboard.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl sm:text-2xl font-semibold text-white mb-2">
+                    Ready to find your next travel buddy?
+                  </h2>
+                  <p className="text-sm text-gray-200 max-w-xl">
+                    Create a free profile in under two minutes. You can decide later
+                    which trips to actually say yes to.
+                  </p>
+                </>
+              )}
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link
-                to="/signup"
-                className="inline-flex items-center justify-center rounded-full glass-strong px-5 py-2 text-sm font-semibold text-black shadow-sm"
-              >
-                Get started
-              </Link>
-              <Link
-                to="/login"
-                className="inline-flex items-center justify-center rounded-full glass-button px-5 py-2 text-sm font-medium text-white"
-              >
-                Log in
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/dashboard"
+                    className="inline-flex items-center justify-center gap-2 rounded-full glass-strong px-5 py-2 text-sm font-semibold text-black shadow-sm"
+                  >
+                    <LayoutDashboard className="w-4 h-4" /> Go to Dashboard
+                  </Link>
+                  <Link
+                    to="/hikes"
+                    className="inline-flex items-center justify-center rounded-full glass-button px-5 py-2 text-sm font-medium text-white"
+                  >
+                    Browse Hikes
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/signup"
+                    className="inline-flex items-center justify-center rounded-full glass-strong px-5 py-2 text-sm font-semibold text-black shadow-sm"
+                  >
+                    Get started
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center justify-center rounded-full glass-button px-5 py-2 text-sm font-medium text-white"
+                  >
+                    Log in
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </section>

@@ -5,13 +5,42 @@
 /* DO NOT DELETE THESE TAILWIND IMPORTS, OTHERWISE THE STYLING WILL NOT RENDER AT ALL */
 
 /* Hide scrollbar globally but keep functionality */
-* {
+*,
+*::before,
+*::after {
   -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  scrollbar-width: none;     /* Firefox */
 }
 
-*::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
+*::-webkit-scrollbar,
+*::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-track {
+  display: none;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent;   /* Chrome, Safari, Opera */
+}
+
+html {
+  scrollbar-width: none;
+  overflow-x: hidden;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+body {
+  scrollbar-width: none;
+  overflow-x: hidden;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* Background with mountain/trail images */

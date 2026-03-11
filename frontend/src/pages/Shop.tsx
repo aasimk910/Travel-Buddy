@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   ShoppingCart, Star, Search, SlidersHorizontal, Backpack, Tent,
   Camera, Mountain, Compass, Shield, X, Plus, Minus, Trash2,
   Package, ChevronRight, Tag, User, Phone, Mail, MapPin, Loader2,
-  ClipboardList, ChevronDown, ChevronUp,
+  ClipboardList, ChevronDown, ChevronUp, LogIn,
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/env';
+import { useAuth } from '../context/AuthContext';
 
 const LS_ORDERS_KEY = 'tb_saved_orders';
 
@@ -168,8 +169,23 @@ const SHIPPING_FEE       = 350;
 const Shop: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState('All');
   const [search, setSearch]                 = useState('');
-  const [cartOpen, setCartOpen]             = useState(false);
-  const [cartItems, setCartItems]           = useState<CartItem[]>([]);
+  const [cartItems, setCartItems]           = useState<CartItem[]>(() => {
+    // Restore cart saved before login redirect
+    try {
+      const saved = sessionStorage.getItem('tb_pending_cart');
+      if (saved) { sessionStorage.removeItem('tb_pending_cart'); return JSON.parse(saved); }
+    } catch { /* ignore */ }
+    return [];
+  });
+  const [cartOpen, setCartOpen]             = useState(() => {
+    // Auto-open cart if we just returned from login with a saved cart
+    try { return !!sessionStorage.getItem('tb_cart_open_after_login'); } catch { return false; }
+  });
+
+  // Clear the open-after-login flag once used
+  useEffect(() => {
+    try { sessionStorage.removeItem('tb_cart_open_after_login'); } catch { /* ignore */ }
+  }, []);
   const [checkedOut, setCheckedOut]         = useState(false);
   const [detailsStep, setDetailsStep]       = useState(false);
   const [paymentStep, setPaymentStep]       = useState(false);
@@ -193,6 +209,8 @@ const Shop: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [activeImg, setActiveImg]             = useState<string>('');
   const [, setSearchParams]                 = useSearchParams();
+  const navigate                            = useNavigate();
+  const { isAuthenticated }                 = useAuth();
 
   // Reset active image whenever a new product is opened
   useEffect(() => {
@@ -1256,12 +1274,41 @@ const Shop: React.FC = () => {
             </div>
 
             {/* Checkout button */}
-            <button
-              onClick={() => setDetailsStep(true)}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-indigo-500/40 to-purple-500/40 border border-indigo-400/50 text-white font-bold text-sm hover:from-indigo-500/55 hover:to-purple-500/55 transition-all shadow-lg"
-            >
-              Checkout — NPR {total.toLocaleString()} <ChevronRight className="w-4 h-4" />
-            </button>
+            {isAuthenticated ? (
+              <button
+                onClick={() => setDetailsStep(true)}
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-indigo-500/40 to-purple-500/40 border border-indigo-400/50 text-white font-bold text-sm hover:from-indigo-500/55 hover:to-purple-500/55 transition-all shadow-lg"
+              >
+                Checkout — NPR {total.toLocaleString()} <ChevronRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-start gap-3 px-3 py-3 rounded-xl bg-amber-500/10 border border-amber-400/25">
+                  <LogIn className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-200 leading-relaxed">
+                    You need to be logged in to place an order.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    try {
+                      sessionStorage.setItem('tb_pending_cart', JSON.stringify(cartItems));
+                      sessionStorage.setItem('tb_cart_open_after_login', '1');
+                    } catch { /* ignore */ }
+                    navigate('/login', { state: { from: '/shop' } });
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-indigo-500/40 to-purple-500/40 border border-indigo-400/50 text-white font-bold text-sm hover:from-indigo-500/55 hover:to-purple-500/55 transition-all shadow-lg"
+                >
+                  <LogIn className="w-4 h-4" /> Log in to Checkout
+                </button>
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/15 text-white/60 text-sm font-medium hover:bg-white/5 hover:text-white/90 transition-all"
+                >
+                  Create a free account
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
