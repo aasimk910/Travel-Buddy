@@ -35,6 +35,8 @@ export interface UseRoomKeyResult {
 
 export function useRoomKey(hikeId: string | undefined): UseRoomKeyResult {
   const { user } = useAuth();
+  // Use the same stable identifier as Chat.tsx so the hook always runs
+  const userId = user?.id || user?.email || user?.name;
   const [roomKey, setRoomKey] = useState<CryptoKey | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export function useRoomKey(hikeId: string | undefined): UseRoomKeyResult {
   const loadingRef = useRef(false);
 
   useEffect(() => {
-    if (!hikeId || !user?.id) {
+    if (!hikeId || !userId) {
       setRoomKey(null);
       setIsReady(false);
       return;
@@ -105,14 +107,14 @@ export function useRoomKey(hikeId: string | undefined): UseRoomKeyResult {
         );
 
         // Also wrap for ourselves if we weren't included
-        const selfIncluded = participants.some((p) => p.userId === user.id);
+        const selfIncluded = participants.some((p) => p.userId === userId);
         if (!selfIncluded) {
           const { wrappedKey, iv, senderPublicKeyJwk } = await wrapRoomKey(
             newKey,
             privateKey,
             myPubJwk
           );
-          wrappedEntries.push({ userId: user.id!, wrappedKey, iv, senderPublicKeyJwk });
+          wrappedEntries.push({ userId: userId!, wrappedKey, iv, senderPublicKeyJwk });
         }
 
         if (wrappedEntries.length > 0) {
@@ -140,7 +142,7 @@ export function useRoomKey(hikeId: string | undefined): UseRoomKeyResult {
     return () => {
       cancelled = true;
     };
-  }, [hikeId, user?.id]);
+  }, [hikeId, userId]);
 
   // ── Peer socket fallback ────────────────────────────────────────────────────
   // When we can't get the key from the server, ask another online room member.
@@ -148,7 +150,7 @@ export function useRoomKey(hikeId: string | undefined): UseRoomKeyResult {
     const myPubJwkStr = localStorage.getItem("tb_e2e_pub");
     socket.emit("request_room_key", {
       roomId: rid,
-      requesterId: user?.id,
+      requesterId: userId,
       requesterPublicKeyJwk: myPubJwkStr ? JSON.parse(myPubJwkStr) : null,
     });
     setError("Waiting for a room member to share the encryption key…");
@@ -156,7 +158,6 @@ export function useRoomKey(hikeId: string | undefined): UseRoomKeyResult {
 
   // Listen for a peer responding to our key request
   useEffect(() => {
-    const userId = user?.id;
     if (!hikeId || !userId) return;
 
     const handleKeyProvided = async (data: {
@@ -224,7 +225,7 @@ export function useRoomKey(hikeId: string | undefined): UseRoomKeyResult {
       socket.off("room_key_provided", handleKeyProvided);
       socket.off("room_key_requested", handleKeyRequested);
     };
-  }, [hikeId, user?.id]);
+  }, [hikeId, userId]);
 
   return { roomKey, isReady, error };
 }

@@ -10,6 +10,7 @@ import { API_BASE_URL } from '../config/env';
 import { useAuth } from '../context/AuthContext';
 
 const LS_ORDERS_KEY = 'tb_saved_orders';
+const ordersKey = (userId?: string) => userId ? `${LS_ORDERS_KEY}_${userId}` : LS_ORDERS_KEY;
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface Product {
@@ -365,23 +366,29 @@ const Shop: React.FC = () => {
   const [detailsErrors, setDetailsErrors]   = useState<Record<string, string>>({});
   const [khaltiLoading, setKhaltiLoading]   = useState(false);
   const [orderSnapshot, setOrderSnapshot]   = useState<OrderSnapshot | null>(null);
-  const [savedOrders, setSavedOrders]       = useState<OrderSnapshot[]>(() => {
-    try {
-      const raw = localStorage.getItem(LS_ORDERS_KEY);
-      if (!raw) return [];
-      return (JSON.parse(raw) as Array<OrderSnapshot & { placedAt: string }>).map(o => ({
-        ...o, placedAt: new Date(o.placedAt),
-        status: o.status ?? 'placed',
-      }));
-    } catch { return []; }
-  });
   const [ordersOpen, setOrdersOpen]         = useState(false);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [activeImg, setActiveImg]             = useState<string>('');
   const [, setSearchParams]                 = useSearchParams();
   const navigate                            = useNavigate();
-  const { isAuthenticated }                 = useAuth();
+  const { isAuthenticated, user }           = useAuth();
+  const userOrdersKey                       = ordersKey(user?.id || user?.email);
+
+  // Load orders scoped to the current user
+  const [savedOrders, setSavedOrders]       = useState<OrderSnapshot[]>([]);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(userOrdersKey);
+      if (!raw) { setSavedOrders([]); return; }
+      setSavedOrders(
+        (JSON.parse(raw) as Array<OrderSnapshot & { placedAt: string }>).map(o => ({
+          ...o, placedAt: new Date(o.placedAt), status: o.status ?? 'placed',
+        }))
+      );
+    } catch { setSavedOrders([]); }
+  }, [userOrdersKey]);
+
 
   // Reset active image whenever a new product is opened
   useEffect(() => {
@@ -419,7 +426,7 @@ const Shop: React.FC = () => {
   const saveOrder = (snapshot: OrderSnapshot) => {
     setSavedOrders(prev => {
       const updated = [snapshot, ...prev];
-      localStorage.setItem(LS_ORDERS_KEY, JSON.stringify(updated));
+      localStorage.setItem(userOrdersKey, JSON.stringify(updated));
       return updated;
     });
   };

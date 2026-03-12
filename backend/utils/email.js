@@ -102,7 +102,51 @@ const sendWelcomeEmail = async ({ name, email }) => {
   }
 };
 
+const sendPasswordResetEmail = async ({ name, email, resetUrl }) => {
+  const safeName = name || "Traveler";
+  const html = `
+<div style="background-color:#f3f4f6; padding:32px 16px; font-family: Arial, sans-serif; color:#111827;">
+  <div style="max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:12px; padding:24px 24px 28px; box-shadow:0 10px 25px rgba(15,23,42,0.12);">
+    <div style="text-align:center; margin-bottom:20px;">
+      <div style="display:inline-block; padding:10px 16px; border-radius:999px; background:linear-gradient(135deg,#2563eb,#22c55e); color:#ffffff; font-weight:bold; font-size:18px;">
+        Travel Buddy ✈️
+      </div>
+    </div>
+    <h2 style="color:#111827; font-size:22px; margin:16px 0 8px; text-align:center;">
+      Reset your password, ${safeName}
+    </h2>
+    <p style="color:#4b5563; font-size:14px; text-align:center; margin:0 0 20px;">
+      We received a request to reset your Travel Buddy password. Click the button below to choose a new one.
+    </p>
+    <div style="text-align:center; margin:22px 0 18px;">
+      <a href="${resetUrl}"
+         style="display:inline-block; padding:12px 28px; border-radius:999px; background:linear-gradient(135deg,#2563eb,#22c55e); color:#ffffff; font-weight:600; font-size:15px; text-decoration:none;">
+        Reset Password
+      </a>
+    </div>
+    <p style="color:#6b7280; font-size:13px; text-align:center; margin:0 0 12px;">
+      This link expires in <strong>1 hour</strong>. If you didn't request a password reset, you can safely ignore this email.
+    </p>
+    <hr style="border:none; border-top:1px solid #e5e7eb; margin:20px 0 10px;" />
+    <p style="font-size:11px; color:#9ca3af; margin:0; text-align:center;">
+      — The Travel Buddy Team
+    </p>
+  </div>
+</div>
+`;
+  try {
+    await sendMail({
+      to: email,
+      subject: "Reset your Travel Buddy password 🔑",
+      html,
+    });
+  } catch (err) {
+    console.error("Failed to send password reset email:", err.message);
+  }
+};
+
 module.exports = {
   sendWelcomeEmail,
+  sendPasswordResetEmail,
 };
 

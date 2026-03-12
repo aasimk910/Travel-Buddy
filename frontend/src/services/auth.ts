@@ -45,3 +45,9 @@ export const googleAuth = (credential: string) => postJson("/api/auth/google", {
 export const storeToken = (token?: string) => {
   if (token) localStorage.setItem("travelBuddyToken", token);
 };
+
+export const forgotPassword = (email: string) =>
+  postJson("/api/auth/forgot-password", { email }) as Promise<{ message: string; provider?: string }>;
+
+export const resetPassword = (token: string, password: string) =>
+  postJson(`/api/auth/reset-password/${token}`, { password });

@@ -1,11 +1,12 @@
 // backend/routes/auth.js
 const express = require("express");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const axios = require("axios");
 const User = require("../models/User");
-const { sendWelcomeEmail } = require("../utils/email");
+const { sendWelcomeEmail, sendPasswordResetEmail } = require("../utils/email");
 const { authLimiter } = require("../middleware/rateLimiter");
 
 const router = express.Router();
@@ -236,6 +237,80 @@ router.post("/google", authLimiter, async (req, res) => {
     return res
       .status(500)
       .json({ message: "Server error during Google login." });
+  }
+});
+
+// POST /api/auth/forgot-password
+router.post("/forgot-password", authLimiter, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email is required." });
+    }
+
+    const user = await User.findOne({ email });
+
+    // Debug log (safe — no sensitive data exposed to client)
+    if (!user) {
+      console.log(`[forgot-password] No account found for ${email}`);
+    } else if (user.provider !== "password") {
+      console.log(`[forgot-password] Account ${email} uses ${user.provider} login — password reset not applicable`);
+      // Tell the client this account uses social login (safe — email already known to user)
+      return res.json({
+        message: "This account was created with Google. Please sign in using the Google button instead.",
+        provider: "google",
+      });
+    } else {
+      const rawToken = crypto.randomBytes(32).toString("hex");
+      const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+      user.resetPasswordToken = hashedToken;
+      user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+      await user.save();
+
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+      const resetUrl = `${frontendUrl}/reset-password/${rawToken}`;
+      console.log(`[forgot-password] Reset URL for ${email}: ${resetUrl}`);
+      await sendPasswordResetEmail({ name: user.name, email: user.email, resetUrl });
+      console.log(`[forgot-password] Email dispatched to ${email}`);
+    }
+
+    // Always return 200 to prevent user enumeration
+    return res.json({
+      message: "If that email is registered, you'll receive a reset link shortly.",
+    });
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    return res.status(500).json({ message: "Server error." });
+  }
+});
+
+// POST /api/auth/reset-password/:token
+router.post("/reset-password/:token", async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password || password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters." });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Password reset link is invalid or has expired." });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    return res.json({ message: "Password has been reset successfully. You can now log in." });
+  } catch (err) {
+    console.error("Reset password error:", err);
+    return res.status(500).json({ message: "Server error." });
   }
 });
 

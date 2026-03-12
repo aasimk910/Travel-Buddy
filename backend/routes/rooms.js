@@ -113,7 +113,7 @@ router.get("/:hikeId/participants-public-keys", authenticateToken, async (req, r
     const userId = req.user._id.toString();
     const isParticipant =
       hike.participants.some((p) => p.toString() === userId) ||
-      hike.organizerId?.toString() === userId;
+      hike.userId?.toString() === userId;
 
     if (!isParticipant) {
       return res.status(403).json({ message: "You are not a participant of this hike." });

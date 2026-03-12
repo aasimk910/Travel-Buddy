@@ -230,10 +230,13 @@ const Maps: React.FC = () => {
   }, []);
 
   const filteredHikes = hikes.filter(hike => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const isUpcoming = new Date(hike.date) >= today;
     const matchesSearch = hike.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           hike.location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesDifficulty = difficultyFilter === 'all' || hike.difficulty.toString() === difficultyFilter;
-    return matchesSearch && matchesDifficulty;
+    return isUpcoming && matchesSearch && matchesDifficulty;
   });
 
   const getDifficultyColor = (difficulty: number) => {
@@ -261,29 +264,29 @@ const Maps: React.FC = () => {
   return (
     <div className="h-[calc(100vh-64px)] flex">
       {/* Sidebar */}
-      <div className="w-96 glass-card flex flex-col overflow-hidden">
+      <div className="w-96 flex flex-col overflow-hidden">
         {/* Search and Filters */}
-        <div className="p-4 space-y-3 border-b border-white/20">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+        <div className="m-3 p-4 space-y-3 rounded-xl glass-card">
+          <h2 className="text-2xl font-bold text-glass flex items-center gap-2">
             <MapPin className="w-6 h-6" />
             Hikes Map
           </h2>
           
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-glass-dim" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search hikes, locations..."
-              className="w-full pl-10 pr-3 py-2 rounded-lg glass-input text-white placeholder:text-gray-400"
+              className="w-full pl-10 pr-3 py-2 rounded-lg glass-input text-glass placeholder:text-glass-dim"
             />
           </div>
 
           {/* Difficulty Filter */}
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-300" />
+            <Filter className="w-4 h-4 text-glass-light" />
             <select
               value={difficultyFilter}
               onChange={(e) => setDifficultyFilter(e.target.value)}
@@ -298,17 +301,17 @@ const Maps: React.FC = () => {
             </select>
           </div>
 
-          <div className="text-sm text-gray-300">
+          <div className="text-sm text-glass-dim">
             Showing {filteredHikes.length} of {hikes.length} hikes
           </div>
         </div>
 
         {/* Hikes List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
           {isLoading ? (
-            <div className="text-center py-8 text-gray-300">Loading hikes...</div>
+            <div className="text-center py-8 text-glass-light">Loading hikes...</div>
           ) : filteredHikes.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">No hikes found</div>
+            <div className="text-center py-8 text-glass-dim">No hikes found</div>
           ) : (
             filteredHikes.map((hike) => {
               const coords = hikeCoordinates.get(hike._id) || [27.7172, 85.324];
@@ -316,21 +319,21 @@ const Maps: React.FC = () => {
                 <div
                   key={hike._id}
                   onClick={() => handleHikeClick(hike, coords)}
-                  className={`glass-card rounded-lg p-4 cursor-pointer transition hover:opacity-90 ${
-                    selectedHike?._id === hike._id ? 'ring-2 ring-white' : ''
+                  className={`glass-card rounded-xl p-4 cursor-pointer transition-all ${
+                    selectedHike?._id === hike._id ? 'glass-strong' : 'glass-button hover:glass-strong'
                   }`}
                 >
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-white">{hike.title}</h3>
+                    <h3 className="font-semibold text-glass">{hike.title}</h3>
                     <span className={`px-2 py-1 rounded-full text-xs text-white ${getDifficultyColor(hike.difficulty)}`}>
                       {getDifficultyLabel(hike.difficulty)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-300 mb-2">
+                  <div className="flex items-center gap-2 text-sm text-glass-light mb-2">
                     <MapPin className="w-3 h-3" />
                     <span>{hike.location}</span>
                   </div>
-                  <div className="text-xs text-gray-400">
+                  <div className="text-xs text-glass-dim">
                     {new Date(hike.date).toLocaleDateString()} • {hike.spotsLeft} spots left
                   </div>
                 </div>
@@ -341,7 +344,7 @@ const Maps: React.FC = () => {
       </div>
 
       {/* Map Area */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative m-3 rounded-xl overflow-hidden glass-card">
         {/* Measure Distance Toolbar */}
         <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 items-end">
           <button
@@ -470,10 +473,13 @@ const Maps: React.FC = () => {
 
         {/* Selected Hike Details Popup */}
         {selectedHike && (
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 glass-card rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl z-10">
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 max-w-md w-full mx-4 z-10"
+               style={{ filter: 'drop-shadow(0 8px 32px rgba(0,0,0,0.7))' }}>
+            <div className="rounded-xl p-6 shadow-2xl"
+                 style={{ background: 'rgba(10,15,30,0.92)', border: '1px solid rgba(255,255,255,0.18)', backdropFilter: 'blur(16px)' }}>
             <button
               onClick={() => setSelectedHike(null)}
-              className="absolute top-4 right-4 p-1 glass-button rounded-full transition"
+              className="absolute top-4 right-4 p-1 rounded-full bg-white/10 hover:bg-white/25 transition"
             >
               <X className="w-4 h-4 text-white" />
             </button>
@@ -486,39 +492,41 @@ const Maps: React.FC = () => {
               />
             )}
             
-            <div className="flex items-start justify-between mb-3">
+            <div className="flex items-start justify-between mb-3 pr-6">
               <h3 className="text-xl font-bold text-white">{selectedHike.title}</h3>
-              <span className={`px-3 py-1 rounded-full text-xs text-white ${getDifficultyColor(selectedHike.difficulty)}`}>
+              <span className={`ml-2 shrink-0 px-3 py-1 rounded-full text-xs font-semibold text-white ${getDifficultyColor(selectedHike.difficulty)}`}>
                 {getDifficultyLabel(selectedHike.difficulty)}
               </span>
             </div>
             
             <div className="flex items-center gap-2 text-sm text-gray-300 mb-3">
-              <MapPin className="w-4 h-4" />
-              <span>{selectedHike.location}</span>
+              <MapPin className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="text-gray-200">{selectedHike.location}</span>
             </div>
             
             {selectedHike.description && (
-              <p className="text-sm text-gray-300 mb-4">{selectedHike.description}</p>
+              <p className="text-sm text-gray-300 mb-4 leading-relaxed">{selectedHike.description}</p>
             )}
             
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-400">
+            <div className="flex items-center justify-between text-sm py-3 border-t border-white/10">
+              <span className="text-white font-medium">
                 {new Date(selectedHike.date).toLocaleDateString('en-US', {
                   month: 'long',
                   day: 'numeric',
                   year: 'numeric'
                 })}
               </span>
-              <span className="text-gray-400">{selectedHike.spotsLeft} spots left</span>
+              <span className="text-emerald-400 font-medium">{selectedHike.spotsLeft} spots left</span>
             </div>
             
             <button
               onClick={() => setConnectHike(selectedHike)}
-              className="w-full mt-4 py-2 px-4 rounded-lg glass-button-dark text-white font-medium hover:opacity-90 transition"
+              className="w-full mt-3 py-2.5 px-4 rounded-lg text-white font-semibold transition"
+              style={{ background: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
             >
               View Details
             </button>
+            </div>
           </div>
         )}
       </div>

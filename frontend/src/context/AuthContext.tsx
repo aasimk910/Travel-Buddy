@@ -109,6 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = () => {
     setUser(null);
     localStorage.removeItem("travelBuddyToken");
+    window.location.href = "/";
   };
 
   const value: AuthContextType = {

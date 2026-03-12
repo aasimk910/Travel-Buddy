@@ -98,7 +98,9 @@ const Hikes: React.FC = () => {
   );
 
   const filteredHikes = useMemo(() => {
-    let list = [...hikes];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let list = hikes.filter((h) => new Date(h.date) >= today);
 
     if (search.trim()) {
       const term = search.toLowerCase();

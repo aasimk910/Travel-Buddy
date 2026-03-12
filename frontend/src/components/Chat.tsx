@@ -349,10 +349,10 @@ const Chat = ({ roomId }: ChatProps) => {
           <input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && !isUploading && sendMessage()}
-            placeholder="Type a message..."
+            onKeyPress={(e) => e.key === 'Enter' && !isUploading && keyReady && sendMessage()}
+            placeholder={roomId && !keyReady ? "Setting up encryption…" : "Type a message..."}
             className="flex-1 p-2 rounded-lg glass-input"
-            disabled={isUploading}
+            disabled={isUploading || (!!roomId && !keyReady)}
           />
           {/* Hidden file input */}
           <input
@@ -375,7 +375,7 @@ const Chat = ({ roomId }: ChatProps) => {
           <button 
             onClick={sendMessage} 
             className="ml-2 p-2 glass-button-dark disabled:opacity-50"
-            disabled={isUploading || (!message.trim() && !selectedFile)}
+            disabled={isUploading || (!message.trim() && !selectedFile) || (!!roomId && !keyReady)}
           >
             {isUploading ? (
               <svg className="w-6 h-6 text-glass-light animate-spin" fill="none" viewBox="0 0 24 24">
