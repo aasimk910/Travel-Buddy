@@ -6,8 +6,11 @@ import React, {
   useEffect,
 } from "react";
 import { socket } from '../socket';
+import { getOrCreateKeyPair } from '../utils/e2e';
+import { uploadPublicKey } from '../services/rooms';
 
 export type AuthUser = {
+  id?: string;
   name: string;
   email: string;
   age?: number;
@@ -15,7 +18,6 @@ export type AuthUser = {
   travelStyle?: string;
   budgetRange?: string;
   interests?: string;
-  bio?: string;
   avatarUrl?: string;
   provider?: "password" | "google";
   role?: "user" | "admin";
@@ -54,6 +56,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         socket.connect();
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      // Initialise E2E key pair and upload public key to server
+      getOrCreateKeyPair().then((pubJwk) => {
+        uploadPublicKey(pubJwk).catch((err) =>
+          console.warn("E2E public key upload failed:", err)
+        );
+      });
     } else {
       if (socket.connected) {
         socket.disconnect();

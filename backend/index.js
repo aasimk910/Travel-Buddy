@@ -12,8 +12,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // Adjust for production
-    methods: ["GET", "POST"]
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST'],
+    credentials: true,
   }
 });
 
@@ -29,7 +30,19 @@ if (!MONGO_URI) {
 console.log("🚀 Starting Travel Buddy backend...");
 
 // === Middlewares ===
-app.use(cors());
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:5173',
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. same-origin, mobile, curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error(`CORS: origin '${origin}' not allowed`));
+  },
+  credentials: true,
+}));
 app.use(
   express.json({
     limit: "10mb",
@@ -55,6 +68,7 @@ const itineraryRoutes = require("./routes/itinerary");
 const expenseRoutes = require("./routes/expenses");
 const adminRoutes = require("./routes/admin");
 const paymentRoutes = require("./routes/payment");
+const roomRoutes = require("./routes/rooms");
 const Hike = require("./models/Hike");
 const Message = require("./models/Message");
 const User = require("./models/User");
@@ -72,6 +86,7 @@ app.use("/api/itinerary", itineraryRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/rooms", roomRoutes);
 
 // GET /api/stats - Public site-wide statistics
 app.get("/api/stats", async (req, res) => {
@@ -106,8 +121,8 @@ app.get("/api/user-trips", authenticateToken, async (req, res) => {
   }
 });
 
-// GET /api/messages/:hikeId - Get messages for a hike chat room
-app.get("/api/messages/:hikeId", async (req, res) => {
+// GET /api/messages/:hikeId - Get messages for a hike chat room (authenticated)
+app.get("/api/messages/:hikeId", authenticateToken, async (req, res) => {
   try {
     const { hikeId } = req.params;
     const limit = parseInt(req.query.limit) || 100;
@@ -154,6 +169,24 @@ io.on('connection', (socket) => {
     }
   });
 
+  // E2E key exchange: when a user lacks the room key, they broadcast a request
+  // to all online peers in the room; any peer that has the key responds directly.
+  socket.on('request_room_key', (data) => {
+    const { roomId, requesterId, requesterPublicKeyJwk } = data || {};
+    if (!roomId || !requesterId) return;
+    // Broadcast to all OTHER members in the room (exclude the requester)
+    socket.to(roomId).emit('room_key_requested', { roomId, requesterId, requesterPublicKeyJwk });
+  });
+
+  // A peer responds with a freshly wrapped copy of the room key for the requester.
+  // The payload is addressed by requesterId so only that socket acts on it.
+  socket.on('provide_room_key', (data) => {
+    const { roomId, recipientId, wrappedKey, iv, senderPublicKeyJwk } = data || {};
+    if (!roomId || !recipientId) return;
+    // Broadcast into the room; the recipient filters on their own ID.
+    io.to(roomId).emit('room_key_provided', { recipientId, wrappedKey, iv, senderPublicKeyJwk });
+  });
+
   socket.on('send_message', async (msg) => {
     if (msg.roomId) {
       try {
@@ -164,7 +197,7 @@ io.on('connection', (socket) => {
           hikeId: msg.roomId,
           senderId: msg.senderId,
           senderName: msg.senderId,
-          message: msg.message,
+          message: msg.message || "",
         };
 
         // Upload attachment to Cloudinary if present

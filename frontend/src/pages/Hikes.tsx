@@ -11,7 +11,6 @@ import {
   User,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import LogoutButton from "../components/LogoutButton";
 import { getHikes } from "../services/hikes";
 import ConnectModal from "../components/hikes/ConnectModal";
 import CreateHikeModal from "../components/homepage/CreateHikeModal";

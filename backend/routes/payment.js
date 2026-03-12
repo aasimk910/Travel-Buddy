@@ -2,12 +2,13 @@
 const express = require('express');
 const router  = express.Router();
 const axios   = require('axios');
+const { authenticateToken } = require('../middleware/auth');
 
 const KHALTI_API = 'https://a.khalti.com/api/v2';
 
 // ── POST /api/payment/khalti/initiate ─────────────────────────────────────
 // Initiates a Khalti ePay session.  Returns { pidx, payment_url, ... }
-router.post('/khalti/initiate', async (req, res) => {
+router.post('/khalti/initiate', authenticateToken, async (req, res) => {
   try {
     const {
       amount,          // in NPR (we convert to paisa here)
@@ -56,7 +57,7 @@ router.post('/khalti/initiate', async (req, res) => {
 
 // ── GET /api/payment/khalti/verify?pidx=xxx ───────────────────────────────
 // Looks up the payment status after user returns from Khalti.
-router.get('/khalti/verify', async (req, res) => {
+router.get('/khalti/verify', authenticateToken, async (req, res) => {
   try {
     const { pidx } = req.query;
     if (!pidx) return res.status(400).json({ error: 'pidx is required' });

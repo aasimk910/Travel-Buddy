@@ -15,6 +15,8 @@ const userSchema = new mongoose.Schema(
     interests: { type: String },
 
     avatarUrl: { type: String },
+    // E2E encryption: client-generated ECDH P-256 public key (JWK, stringified)
+    publicKey: { type: String },
     provider: {
       type: String,
       enum: ["password", "google"],

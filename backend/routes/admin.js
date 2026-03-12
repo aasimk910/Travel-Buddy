@@ -50,7 +50,7 @@ router.post("/users", async (req, res) => {
     if (travelStyle) userData.travelStyle = travelStyle.trim();
     if (budgetRange) userData.budgetRange = budgetRange.trim();
     if (avatarUrl) userData.avatarUrl = avatarUrl.trim();
-    if (interests) userData.interests = Array.isArray(interests) ? interests : interests.split(",").map((s) => s.trim()).filter(Boolean);
+    if (interests) userData.interests = Array.isArray(interests) ? interests.join(", ") : String(interests);
     const user = await User.create(userData);
     const { password: _pw, ...userOut } = user.toObject();
     res.status(201).json({ message: "User created.", user: userOut });
@@ -82,7 +82,7 @@ router.put("/users/:id", async (req, res) => {
     if (travelStyle !== undefined) update.travelStyle = travelStyle.trim();
     if (budgetRange !== undefined) update.budgetRange = budgetRange.trim();
     if (avatarUrl !== undefined) update.avatarUrl = avatarUrl.trim();
-    if (interests !== undefined) update.interests = Array.isArray(interests) ? interests : interests.split(",").map((s) => s.trim()).filter(Boolean);
+    if (interests !== undefined) update.interests = Array.isArray(interests) ? interests.join(", ") : String(interests);
 
     const user = await User.findByIdAndUpdate(req.params.id, update, { new: true }).select("-password");
     if (!user) return res.status(404).json({ message: "User not found." });

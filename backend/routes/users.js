@@ -79,5 +79,22 @@ router.put("/profile", authenticateToken, async (req, res) => {
   }
 });
 
+// PUT /api/users/public-key - Store the user's ECDH public key for E2E encryption
+router.put("/public-key", authenticateToken, async (req, res) => {
+  try {
+    const { publicKeyJwk } = req.body;
+    if (!publicKeyJwk || typeof publicKeyJwk !== "object") {
+      return res.status(400).json({ message: "publicKeyJwk is required." });
+    }
+    await User.findByIdAndUpdate(req.user._id, {
+      publicKey: JSON.stringify(publicKeyJwk),
+    });
+    res.json({ message: "Public key stored." });
+  } catch (err) {
+    console.error("Store public key error:", err);
+    res.status(500).json({ message: "Unable to store public key." });
+  }
+});
+
 module.exports = router;
 

@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { socket } from "../socket";
 import { useAuth } from "../context/AuthContext";
 import { API_BASE_URL } from "../config/env";
+import { useRoomKey } from "../hooks/useRoomKey";
+import { encryptMessage, decryptMessage, isEncrypted } from "../utils/e2e";
 
 interface ChatProps {
   roomId?: string;
@@ -27,7 +29,10 @@ interface Message {
 // Fetch previous messages from the API
 const fetchMessages = async (hikeId: string): Promise<Message[]> => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/messages/${hikeId}`);
+    const token = localStorage.getItem("travelBuddyToken");
+    const res = await fetch(`${API_BASE_URL}/api/messages/${hikeId}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
     if (!res.ok) return [];
     return await res.json();
   } catch (error) {
@@ -48,9 +53,11 @@ const fileToBase64 = (file: File): Promise<string> => {
 
 const Chat = ({ roomId }: ChatProps) => {
   const { user } = useAuth();
-  const userId = user?.name;
+  const userId = user?.id || user?.email || user?.name;
+  const { roomKey, isReady: keyReady, error: keyError } = useRoomKey(roomId);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [decryptedTexts, setDecryptedTexts] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -87,12 +94,20 @@ const Chat = ({ roomId }: ChatProps) => {
     socket.emit("join_room", { roomId });
 
     // Listen for incoming messages
-    const handleReceiveMessage = (payload: Message) => {
+    const handleReceiveMessage = async (payload: Message) => {
       console.log("Received message:", payload);
       console.log("Has attachment:", !!payload.attachment);
       if (payload.attachment) {
         console.log("Attachment URL:", payload.attachment.url);
       }
+
+      // Decrypt the message text if we have the room key
+      if (roomKey && isEncrypted(payload.message)) {
+        const plain = await decryptMessage(payload.message, roomKey);
+        const msgKey = payload._id || `recv-${Date.now()}`;
+        setDecryptedTexts((prev) => ({ ...prev, [msgKey]: plain }));
+      }
+
       setMessages((prev) => {
         // Replace temp message with server message, or add new message
         if (payload._id) {
@@ -119,6 +134,26 @@ const Chat = ({ roomId }: ChatProps) => {
       socket.off("receive_message", handleReceiveMessage);
     };
   }, [roomId]);
+
+  // Decrypt all messages whenever the room key becomes available
+  useEffect(() => {
+    if (!roomKey || messages.length === 0) return;
+    const decrypt = async () => {
+      const entries: Record<string, string> = {};
+      await Promise.all(
+        messages.map(async (m, idx) => {
+          const key = m._id || String(idx);
+          if (isEncrypted(m.message)) {
+            entries[key] = await decryptMessage(m.message, roomKey);
+          } else {
+            entries[key] = m.message;
+          }
+        })
+      );
+      setDecryptedTexts(entries);
+    };
+    decrypt();
+  }, [roomKey, messages]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -161,9 +196,15 @@ const Chat = ({ roomId }: ChatProps) => {
         };
       }
 
+      // Encrypt the text payload if the room key is ready
+      const plaintext = message.trim() || (selectedFile ? `Sent an image` : "");
+      const encryptedText = roomKey
+        ? await encryptMessage(plaintext, roomKey)
+        : plaintext;
+
       const payload = {
         roomId,
-        message: message.trim() || (selectedFile ? `Sent an image` : ""),
+        message: encryptedText,
         senderId: userId,
         createdAt: new Date().toISOString(),
         attachment,
@@ -171,21 +212,26 @@ const Chat = ({ roomId }: ChatProps) => {
 
       console.log("Sending message with attachment:", attachment ? "yes" : "no");
       
-      // Optimistically add message to UI immediately (for sender)
+      // Optimistically add message to UI (show plaintext to sender)
       const optimisticMessage: Message = {
-        _id: `temp-${Date.now()}`, // Temporary ID
+        _id: `temp-${Date.now()}`,
         roomId,
-        message: payload.message,
+        message: encryptedText,
         senderId: userId,
         createdAt: payload.createdAt,
         attachment: attachment ? {
           name: attachment.name,
           type: attachment.type,
-          data: attachment.data, // Show base64 initially
+          data: attachment.data,
         } : undefined,
       };
       
       setMessages((prev) => [...prev, optimisticMessage]);
+      // Show plaintext immediately for the sender
+      setDecryptedTexts((prev) => ({
+        ...prev,
+        [optimisticMessage._id!]: plaintext,
+      }));
       
       // Send to server
       socket.emit("send_message", payload);
@@ -201,6 +247,17 @@ const Chat = ({ roomId }: ChatProps) => {
 
   return (
     <div className="flex flex-col h-full min-h-0">
+      {/* E2E status bar */}
+      {keyError && (
+        <div className="px-4 py-1 text-xs text-yellow-300 bg-yellow-900/30 border-b border-yellow-700/30">
+          🔑 {keyError}
+        </div>
+      )}
+      {keyReady && (
+        <div className="px-4 py-1 text-xs text-green-400/70 bg-green-900/20 border-b border-green-700/20 flex items-center gap-1">
+          <span>🔒</span> End-to-end encrypted
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto px-4 py-2 min-h-0 scrollbar-hide" ref={messagesContainerRef} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {isLoading ? (
           <p className="text-center text-glass-dim">Loading messages...</p>
@@ -208,8 +265,11 @@ const Chat = ({ roomId }: ChatProps) => {
           <p className="text-center text-glass-dim">No messages yet. Start the conversation!</p>
         ) : (
           <>
-            {messages.map((m, idx) => (
-              <div key={m._id || idx} className={`flex mb-4 ${m.senderId === userId ? 'justify-end' : 'justify-start'}`}>
+            {messages.map((m, idx) => {
+              const msgKey = m._id || String(idx);
+              const displayText = decryptedTexts[msgKey] ?? (isEncrypted(m.message) ? "[decrypting…]" : m.message);
+              return (
+              <div key={msgKey} className={`flex mb-4 ${m.senderId === userId ? 'justify-end' : 'justify-start'}`}>
               <div className={`rounded-lg p-3 max-w-lg ${m.senderId === userId ? 'glass-dark text-glass' : 'glass-strong'}`}>
                 <div className="font-bold mb-1 text-white/80">{m.senderId === userId ? 'Me' : m.senderId}</div>
                 {m.attachment && (
@@ -242,16 +302,17 @@ const Chat = ({ roomId }: ChatProps) => {
                     )}
                   </div>
                 )}
-                {m.message && m.message !== 'Sent an image' && (
-                  <p className={`${m.senderId === userId ? 'text-glass' : 'text-white/90'}`}>{m.message}</p>
+                {displayText && displayText !== 'Sent an image' && (
+                  <p className={`${m.senderId === userId ? 'text-glass' : 'text-white/90'}`}>{displayText}</p>
                 )}
                 <p className="text-xs text-white/40 mt-1">
                   {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
             </div>
-          ))}
-          <div ref={messagesEndRef} />
+              );
+            })}
+            <div ref={messagesEndRef} />
           </>
         )}
       </div>

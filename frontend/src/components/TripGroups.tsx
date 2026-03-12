@@ -23,6 +23,7 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
   const [tripGroups, setTripGroups] = useState<Hike[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [leavingHikeId, setLeavingHikeId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchTrips = async () => {
     setIsLoading(true);
@@ -67,6 +68,12 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
     }
   };
 
+  const filteredGroups = tripGroups.filter(
+    (g) =>
+      g.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      g.location.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="glass-card rounded-lg p-4 h-full flex flex-col">
       <h3 className="font-semibold mb-4 text-glass">Trip Groups</h3>
@@ -74,6 +81,8 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
         <input
           type="text"
           placeholder="Search groups..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full p-2 pl-10 rounded-lg glass-input"
         />
         <svg
@@ -94,10 +103,10 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
       <ul className="flex-1 overflow-y-auto">
         {isLoading ? (
           <p className="text-glass-dim text-center">Loading trips...</p>
-        ) : tripGroups.length === 0 ? (
-          <p className="text-glass-dim text-center">No trip groups found.</p>
+        ) : filteredGroups.length === 0 ? (
+          <p className="text-glass-dim text-center">{tripGroups.length === 0 ? "No trip groups found." : "No groups match your search."}</p>
         ) : (
-          tripGroups.map((group) => (
+          filteredGroups.map((group) => (
             <li 
               key={group._id} 
               className={`relative p-2 mb-2 rounded-lg glass-button ${selectedHikeId === group._id ? 'glass-strong' : ''} group`}
