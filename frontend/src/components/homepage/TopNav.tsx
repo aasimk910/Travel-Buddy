@@ -1,12 +1,11 @@
 import React from "react";
-import { Map, User } from "lucide-react";
+import { Map, LayoutDashboard, LogOut } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import LogoutButton from "../LogoutButton";
 
 const TopNav: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
 
   const getLinkClass = (path: string) => {
@@ -40,11 +39,6 @@ const TopNav: React.FC = () => {
           <Link to="/hikes" className={getLinkClass("/hikes")}>
             Hikes
           </Link>
-          {isAuthenticated && (
-            <Link to="/dashboard" className={getLinkClass("/dashboard")}>
-              Dashboard
-            </Link>
-          )}
           <Link to="/maps" className={getLinkClass("/maps")}>
             Maps
           </Link>
@@ -59,11 +53,29 @@ const TopNav: React.FC = () => {
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <>
-              <div className="hidden sm:flex items-center gap-2 text-sm text-white">
-                <User className="w-4 h-4" />
-                <span>{user?.name}</span>
-              </div>
-              <LogoutButton />
+              <button
+                onClick={() => navigate("/profile")}
+                className="hidden sm:flex items-center gap-2 text-sm text-gray-200 hover:text-white transition-colors"
+              >
+                <div className="w-7 h-7 rounded-full glass-button-dark flex items-center justify-center text-xs font-semibold text-white">
+                  {user?.name?.[0]?.toUpperCase() ?? "U"}
+                </div>
+                <span className="max-w-[120px] truncate">{user?.name}</span>
+              </button>
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center justify-center gap-1.5 rounded-full glass-button-dark px-4 py-1.5 text-sm font-medium text-white shadow-sm"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                Dashboard
+              </Link>
+              <button
+                onClick={() => { logout?.(); navigate("/"); }}
+                className="hidden sm:inline-flex items-center justify-center rounded-full glass-button px-3 py-1.5 text-sm text-gray-200 hover:text-white transition-colors gap-1"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Log out
+              </button>
             </>
           ) : (
             <>
