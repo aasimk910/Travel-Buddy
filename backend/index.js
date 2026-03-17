@@ -69,10 +69,16 @@ const io = new Server(server, {
 
 // === Config ===
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI =
+  process.env.MONGO_URI ||
+  process.env.MONGODB_URI ||
+  process.env.MONGO_URL ||
+  process.env.DATABASE_URL;
 
 if (!MONGO_URI) {
-  console.error("❌ MONGO_URI is not defined in .env");
+  console.error(
+    "❌ MongoDB connection string missing. Set MONGO_URI (or MONGODB_URI) in environment variables."
+  );
   process.exit(1);
 }
 
