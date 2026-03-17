@@ -3,6 +3,6 @@ import { API_BASE_URL } from "./config/env";
 
 export const socket = io(API_BASE_URL, {
   withCredentials: true,
-  transports: ['websocket', 'polling'],
+  transports: ['websocket'],
   autoConnect: false,
 });
