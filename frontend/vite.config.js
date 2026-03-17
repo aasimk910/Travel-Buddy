@@ -15,4 +15,21 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+
+          if (id.includes('jspdf')) return 'jspdf';
+          if (id.includes('html2canvas')) return 'html2canvas';
+          if (id.includes('leaflet') || id.includes('react-leaflet')) return 'leaflet';
+          if (id.includes('socket.io-client')) return 'socketio';
+          if (id.includes('formik') || id.includes('yup')) return 'forms';
+
+          return 'vendor';
+        },
+      },
+    },
+  },
 })

@@ -466,11 +466,17 @@ const Shop: React.FC = () => {
   const handleKhaltiPay = async () => {
     setKhaltiLoading(true);
     try {
+      const token = localStorage.getItem('travelBuddyToken');
+      if (!token) {
+        alert('Your session has expired. Please log in again.');
+        navigate('/login', { state: { from: '/shop' } });
+        return;
+      }
       const orderId = `TB-${Date.now()}`;
       sessionStorage.setItem('khalti_pending', JSON.stringify({ cartItems, customer, subtotal, shipping, total, orderId, paymentMethod: 'khalti' }));
       const res = await fetch(`${API_BASE_URL}/api/payment/khalti/initiate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           amount: total, orderId,
           orderName: `Travel Buddy Order (${totalItems} item${totalItems !== 1 ? 's' : ''})`,
@@ -479,6 +485,15 @@ const Shop: React.FC = () => {
         }),
       });
       const data = await res.json();
+      if (res.status === 401) {
+        alert(data?.message || 'Unauthorized. Please log in again.');
+        navigate('/login', { state: { from: '/shop' } });
+        return;
+      }
+      if (!res.ok) {
+        alert(data?.error || data?.message || 'Khalti payment initiation failed. Please try again.');
+        return;
+      }
       if (data.payment_url) {
         window.location.href = data.payment_url;
       } else {

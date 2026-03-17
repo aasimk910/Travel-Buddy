@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { compressImage } from "../../utils/imageCompression";
+import { uploadPhotos } from "../../services/photos";
 
 const MAX_PHOTO_SIZE_BYTES = 6 * 1024 * 1024;
 
@@ -77,8 +78,6 @@ const PhotoUploadCard: React.FC<PhotoUploadCardProps> = ({ onUploaded }) => {
 
       const imagesData = await Promise.all(selectedPhotos.map((file) => convertFileToBase64(file)));
       const token = localStorage.getItem("travelBuddyToken") || undefined;
-
-      const { uploadPhotos } = await import("../../services/photos");
       await uploadPhotos(imagesData, photoCaption, token);
 
       setMessage({ type: "success", text: "Photo(s) uploaded successfully!" });

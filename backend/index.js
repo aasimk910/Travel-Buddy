@@ -8,11 +8,60 @@ const { Server } = require("socket.io");
 
 dotenv.config(); // loads .env from backend folder
 
+const isAllowedOrigin = (origin) => {
+  // Allow requests with no origin (server-to-server, curl, native apps)
+  if (!origin) return true;
+
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const allowVercelPreviews = String(process.env.ALLOW_VERCEL_PREVIEWS || '').toLowerCase() === 'true';
+  const isProd = process.env.NODE_ENV === 'production';
+
+  // Always allow the configured frontend URL
+  if (origin === frontendUrl) return true;
+
+  // Allow local dev unless explicitly in production
+  if (!isProd && origin === 'http://localhost:5173') return true;
+
+  // Optionally allow Vercel preview deployments
+  if (allowVercelPreviews) {
+    try {
+      const originUrl = new URL(origin);
+      const host = (originUrl.host || '').toLowerCase();
+
+      // Allow only previews for the same Vercel project as FRONTEND_URL.
+      // Example: FRONTEND_URL=https://travelbuddy-np.vercel.app
+      // Allowed previews: travelbuddy-np-*.vercel.app
+      try {
+        const frontendHost = new URL(frontendUrl).host.toLowerCase();
+        if (frontendHost.endsWith('.vercel.app')) {
+          const slug = frontendHost.replace(/\.vercel\.app$/i, '');
+          if (host === `${slug}.vercel.app`) return true;
+          if (host.endsWith('.vercel.app') && host.startsWith(`${slug}-`)) return true;
+        } else {
+          // If FRONTEND_URL is a custom domain, fall back to allowing *.vercel.app
+          // (still gated by ALLOW_VERCEL_PREVIEWS).
+          if (host.endsWith('.vercel.app')) return true;
+        }
+      } catch {
+        // If FRONTEND_URL isn't a valid URL, fall back to allowing *.vercel.app
+        if (host.endsWith('.vercel.app')) return true;
+      }
+    } catch {
+      // ignore invalid origins
+    }
+  }
+
+  return false;
+};
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) return callback(null, true);
+      return callback(new Error(`Socket.IO CORS: origin '${origin}' not allowed`));
+    },
     methods: ['GET', 'POST'],
     credentials: true,
   }
@@ -30,16 +79,10 @@ if (!MONGO_URI) {
 console.log("🚀 Starting Travel Buddy backend...");
 
 // === Middlewares ===
-const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:5173',
-];
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (e.g. same-origin, mobile, curl)
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    callback(new Error(`CORS: origin '${origin}' not allowed`));
+    if (isAllowedOrigin(origin)) return callback(null, true);
+    return callback(new Error(`CORS: origin '${origin}' not allowed`));
   },
   credentials: true,
 }));
