@@ -29,7 +29,15 @@ const postJson = async (path: string, body: unknown): Promise<AuthResponse> => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  const data = (await res.json()) as AuthResponse;
+
+  let data: AuthResponse = {};
+  try {
+    data = (await res.json()) as AuthResponse;
+  } catch {
+    // Non-JSON response (e.g. proxy misconfig, HTML error page, empty response)
+    const text = await res.text().catch(() => "");
+    data = { message: text || "Request failed" };
+  }
   if (!res.ok) {
     throw new Error(data?.message || "Request failed");
   }

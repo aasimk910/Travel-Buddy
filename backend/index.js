@@ -10,17 +10,26 @@ dotenv.config(); // loads .env from backend folder
 
 const app = express();
 const server = http.createServer(app);
+const isProduction = process.env.NODE_ENV === "production";
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  // Always allow local dev frontend when not in production.
+  !isProduction ? "http://localhost:5173" : null,
+].filter(Boolean);
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-    methods: ['GET', 'POST'],
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
     credentials: true,
-  }
+  },
 });
 
 // === Config ===
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
+const MONGO_DB_NAME = process.env.MONGO_DB_NAME;
 
 if (!MONGO_URI) {
   console.error("❌ MONGO_URI is not defined in .env");
@@ -30,9 +39,6 @@ if (!MONGO_URI) {
 console.log("🚀 Starting Travel Buddy backend...");
 
 // === Middlewares ===
-const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:5173',
-];
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (e.g. same-origin, mobile, curl)
@@ -262,11 +268,27 @@ io.on('connection', (socket) => {
 });
 
 // === Start server & connect DB ===
+function mongoUriHasDbName(uri) {
+  // MongoDB URI format: mongodb(+srv)://[creds@]hosts[/dbName][?options]
+  // If the segment after the first '/' is empty or starts with '?', no db is specified.
+  const withoutProtocol = uri.replace(/^mongodb(\+srv)?:\/\//, "");
+  const firstSlash = withoutProtocol.indexOf("/");
+  if (firstSlash === -1) return false;
+  const afterSlash = withoutProtocol.slice(firstSlash + 1);
+  if (!afterSlash) return false;
+  if (afterSlash.startsWith("?")) return false;
+  const dbName = afterSlash.split("?")[0];
+  return Boolean(dbName);
+}
+
 async function startServer() {
   try {
-    await mongoose.connect(MONGO_URI, {
-      dbName: "travelbuddy",
-    });
+    const connectOptions = {};
+    if (!mongoUriHasDbName(MONGO_URI)) {
+      connectOptions.dbName = MONGO_DB_NAME || "travelbuddy";
+    }
+
+    await mongoose.connect(MONGO_URI, connectOptions);
     console.log("✅ Connected to MongoDB");
 
     server.listen(PORT, () => {
@@ -277,6 +299,25 @@ async function startServer() {
     process.exit(1);
   }
 }
+
+// === Global error handler ===
+app.use((err, req, res, next) => {
+  console.error('❌ Unhandled error:', err);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: err.message || 'Unknown error occurred'
+  });
+});
+
+// === Handle unhandled promise rejections ===
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err);
+  process.exit(1);
+});
 
 startServer();
 

@@ -23,6 +23,12 @@ const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
   className,
 }) => {
   const buttonRef = useRef<HTMLDivElement | null>(null);
+  const initializedRef = useRef(false);
+  const onCredentialRef = useRef(onCredential);
+
+  useEffect(() => {
+    onCredentialRef.current = onCredential;
+  }, [onCredential]);
 
   useEffect(() => {
     if (!clientId) return;
@@ -31,13 +37,18 @@ const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
       const w = window as any;
       if (!w.google || !buttonRef.current) return;
 
-      w.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: (response: any) => {
-          const cred = response?.credential;
-          if (cred) onCredential(cred);
-        },
-      });
+      // React 18 StrictMode runs effects twice in dev.
+      // Guard initialize() to avoid GSI warning + unexpected behavior.
+      if (!initializedRef.current) {
+        w.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: (response: any) => {
+            const cred = response?.credential;
+            if (cred) onCredentialRef.current(cred);
+          },
+        });
+        initializedRef.current = true;
+      }
 
       w.google.accounts.id.renderButton(buttonRef.current, {
         theme: "outline",

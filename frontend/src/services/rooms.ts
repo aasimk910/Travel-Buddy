@@ -7,11 +7,24 @@ const authHeaders = (): Record<string, string> => {
 
 /** Upload our ECDH public key to the server so others can wrap keys for us. */
 export async function uploadPublicKey(publicKeyJwk: JsonWebKey): Promise<void> {
-  await fetch(`${API_BASE_URL}/api/users/public-key`, {
+  const res = await fetch(`${API_BASE_URL}/api/users/public-key`, {
     method: "PUT",
     headers: authHeaders(),
     body: JSON.stringify({ publicKeyJwk }),
   });
+
+  // Handle 401 Unauthorized
+  if (res.status === 401) {
+    localStorage.removeItem("travelBuddyToken");
+    localStorage.removeItem("travelBuddyUser");
+    window.location.href = "/login";
+    throw new Error("Session expired - please log in again");
+  }
+
+  if (!res.ok) {
+    const error = await res.text();
+    throw new Error(`Upload public key failed: ${res.status} - ${error}`);
+  }
 }
 
 /** Fetch our wrapped room key from the server, if it exists. */

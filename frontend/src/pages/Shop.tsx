@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/env';
 import { useAuth } from '../context/AuthContext';
+import { initiateKhaltiPayment } from '../services/payment';
 
 const LS_ORDERS_KEY = 'tb_saved_orders';
 const ordersKey = (userId?: string) => userId ? `${LS_ORDERS_KEY}_${userId}` : LS_ORDERS_KEY;
@@ -431,37 +432,6 @@ const Shop: React.FC = () => {
     });
   };
 
-  // ── Place COD order ───────────────────────────────────────────────────────
-  const placeCodOrder = () => {
-    const snap: OrderSnapshot = {
-      orderId:       `TB-${Date.now()}`,
-      placedAt:      new Date(),
-      items:         cartItems,
-      customer,
-      subtotal,
-      shipping,
-      total,
-      paymentMethod: 'cod',
-      status:        'placed',
-    };
-    setOrderSnapshot(snap);
-    saveOrder(snap);
-    setPaymentStep(false);
-    setCheckedOut(true);
-  };
-
-  // ── Validate customer details & advance ───────────────────────────────────
-  const validateAndProceed = () => {
-    const errs: Record<string, string> = {};
-    if (!customer.name.trim())    errs.name    = 'Name is required';
-    if (!customer.phone.trim())   errs.phone   = 'Phone number is required';
-    else if (!/^[9][6-9]\d{8}$/.test(customer.phone)) errs.phone = 'Enter a valid Nepal phone number (e.g. 98XXXXXXXX)';
-    if (!customer.address.trim()) errs.address = 'Address is required';
-    if (!customer.city.trim())    errs.city    = 'City / District is required';
-    setDetailsErrors(errs);
-    if (Object.keys(errs).length === 0) { setDetailsStep(false); setPaymentStep(true); }
-  };
-
   // ── Khalti payment initiation ─────────────────────────────────────────────
   const handleKhaltiPay = async () => {
     setKhaltiLoading(true);
@@ -474,33 +444,28 @@ const Shop: React.FC = () => {
       }
       const orderId = `TB-${Date.now()}`;
       sessionStorage.setItem('khalti_pending', JSON.stringify({ cartItems, customer, subtotal, shipping, total, orderId, paymentMethod: 'khalti' }));
-      const res = await fetch(`${API_BASE_URL}/api/payment/khalti/initiate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          amount: total, orderId,
-          orderName: `Travel Buddy Order (${totalItems} item${totalItems !== 1 ? 's' : ''})`,
-          returnUrl: `${window.location.origin}/shop`,
-          customer: { name: customer.name, email: customer.email || 'customer@travelbuddy.app', phone: customer.phone },
-        }),
-      });
-      const data = await res.json();
-      if (res.status === 401) {
-        alert(data?.message || 'Unauthorized. Please log in again.');
-        navigate('/login', { state: { from: '/shop' } });
-        return;
-      }
-      if (!res.ok) {
-        alert(data?.error || data?.message || 'Khalti payment initiation failed. Please try again.');
-        return;
-      }
+      
+      const data = await initiateKhaltiPayment({
+        amount: total,
+        orderId,
+        orderName: `Travel Buddy Order (${totalItems} item${totalItems !== 1 ? 's' : ''})`,
+        returnUrl: `${window.location.origin}/shop`,
+        customer: {
+          name: customer.name,
+          email: customer.email || 'customer@travelbuddy.app',
+          phone: customer.phone,
+        },
+      }, token);
+      
       if (data.payment_url) {
         window.location.href = data.payment_url;
       } else {
         alert(data.error || 'Khalti payment initiation failed. Please try again.');
       }
-    } catch {
-      alert('Could not connect to Khalti. Please check your connection.');
+    } catch (err: any) {
+      console.error('Khalti payment error:', err);
+      const errMsg = err?.message || 'Could not connect to Khalti. Please check your connection.';
+      alert(errMsg);
     } finally {
       setKhaltiLoading(false);
     }
@@ -538,6 +503,38 @@ const Shop: React.FC = () => {
       }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Place COD order ───────────────────────────────────────────────────────
+  const placeCodOrder = () => {
+    const snap: OrderSnapshot = {
+      orderId:       `TB-${Date.now()}`,
+      placedAt:      new Date(),
+      items:         cartItems,
+      customer,
+      subtotal,
+      shipping,
+      total,
+      paymentMethod: 'cod',
+      status:        'placed',
+    };
+    setOrderSnapshot(snap);
+    saveOrder(snap);
+    setPaymentStep(false);
+    setCheckedOut(true);
+  };
+
+  // ── Validate customer details & advance ───────────────────────────────────
+  const validateAndProceed = () => {
+    const errs: Record<string, string> = {};
+    if (!customer.name.trim())    errs.name    = 'Name is required';
+    if (!customer.phone.trim())   errs.phone   = 'Phone number is required';
+    else if (!/^[9][6-9]\d{8}$/.test(customer.phone)) errs.phone = 'Enter a valid Nepal phone number (e.g. 98XXXXXXXX)';
+    if (!customer.address.trim()) errs.address = 'Address is required';
+    if (!customer.city.trim())    errs.city    = 'City / District is required';
+    setDetailsErrors(errs);
+    if (Object.keys(errs).length === 0) { setDetailsStep(false); setPaymentStep(true); }
+  };
+
 
   const totalItems   = cartItems.reduce((s, i) => s + i.qty, 0);
   const subtotal     = cartItems.reduce((s, i) => s + i.product.price * i.qty, 0);
@@ -897,12 +894,8 @@ const Shop: React.FC = () => {
                     <div className="text-left">
                       <div className="flex items-center gap-2">
                         <p className="text-white font-semibold text-sm">{order.orderId}</p>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${
-                          order.paymentMethod === 'khalti'
-                            ? 'bg-purple-500/15 border-purple-400/30 text-purple-300'
-                            : 'bg-emerald-500/15 border-emerald-400/30 text-emerald-300'
-                        }`}>
-                          {order.paymentMethod === 'khalti' ? 'Khalti' : 'COD'}
+                        <span className="text-[10px] px-2 py-0.5 rounded-full border font-semibold bg-emerald-500/15 border-emerald-400/30 text-emerald-300">
+                          COD
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5">
@@ -1191,11 +1184,7 @@ const Shop: React.FC = () => {
               </div>
 
               {/* Delivery status on confirmation */}
-              <div className={`w-full px-4 py-3 rounded-xl border ${
-                orderSnapshot.paymentMethod === 'khalti'
-                  ? 'bg-purple-500/10 border-purple-400/30'
-                  : 'bg-emerald-500/10 border-emerald-400/30'
-              }`}>
+              <div className="w-full px-4 py-3 rounded-xl border bg-emerald-500/10 border-emerald-400/30">
                 <p className="text-white/40 text-[10px] uppercase tracking-widest mb-2">Delivery Status</p>
                 <div className="flex items-center gap-3">
                   <div className="w-4 h-4 rounded-full border-2 border-indigo-400 bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)] flex items-center justify-center shrink-0">
