@@ -26,6 +26,11 @@ type Hike = {
   description?: string;
   startPoint?: { lat: number; lng: number };
   endPoint?: { lat: number; lng: number };
+  hotels?: Array<{
+    _id: string;
+    name: string;
+    location: string;
+  }>;
   createdAt?: string;
   updatedAt?: string;
 };

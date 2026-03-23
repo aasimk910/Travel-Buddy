@@ -13,6 +13,7 @@ router.get("/", async (req, res) => {
     const skip = (page - 1) * limit;
 
     const hikes = await Hike.find()
+      .populate("hotels")
       .sort({ date: 1 })
       .limit(limit)
       .skip(skip);
@@ -39,7 +40,13 @@ router.get("/:id", async (req, res) => {
   try {
     const hike = await Hike.findById(req.params.id)
       .populate("userId", "name email")
-      .populate("participants", "name email");
+      .populate("participants", "name email")
+      .populate({
+        path: "hotels",
+        populate: {
+          path: "packages",
+        },
+      });
     if (!hike) {
       return res.status(404).json({ message: "Hike not found." });
     }

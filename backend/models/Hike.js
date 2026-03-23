@@ -57,6 +57,10 @@ const HikeSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     }],
+    hotels: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Hotel",
+    }],
   },
   {
     timestamps: true,

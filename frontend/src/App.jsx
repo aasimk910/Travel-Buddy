@@ -11,6 +11,7 @@ import Homepage from "./pages/Homepage";
 import Hikes from "./pages/Hikes";
 import Dashboard from "./pages/Dashboard";
 import Maps from "./pages/Maps";
+import BookingConfirmation from "./pages/BookingConfirmation";
 import PrivateRoute from "./components/PrivateRoute";
 import AdminRoute from "./components/AdminRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -87,6 +88,16 @@ const App = () => {
               <PrivateRoute>
                 <MainLayout>
                   <Dashboard />
+                </MainLayout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/booking-confirmation"
+            element={
+              <PrivateRoute>
+                <MainLayout>
+                  <BookingConfirmation />
                 </MainLayout>
               </PrivateRoute>
             }

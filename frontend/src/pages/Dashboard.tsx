@@ -10,6 +10,7 @@ import DashboardNav from '../components/dashboard/DashboardNav';
 import UpcomingTrips from '../components/dashboard/UpcomingTrips';
 import MyTrips from '../components/dashboard/MyTrips';
 import ItineraryGenerator from '../components/dashboard/ItineraryGenerator';
+import HikeHotelsPanel from '../components/dashboard/HikeHotelsPanel';
 
 const Dashboard: React.FC = () => {
   const { hikeId } = useParams<{ hikeId: string }>();
@@ -39,6 +40,7 @@ const Dashboard: React.FC = () => {
                   {activeChatTab === 'chat' && <Chat roomId={hikeId} />}
                   {activeChatTab === 'files' && <Files roomId={hikeId} />}
                   {activeChatTab === 'expenses' && <Expenses roomId={hikeId} />}
+                  {activeChatTab === 'hotels' && <HikeHotelsPanel hikeId={hikeId} />}
                 </div>
               </div>
             </div>

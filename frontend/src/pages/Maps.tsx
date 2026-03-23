@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, Polyline, Tooltip } from 'react-leaflet';
-import { getHikes } from '../services/hikes';
+import { getHikes, getHike } from '../services/hikes';
 import { MapPin, Search, Filter, X, Ruler, Navigation } from 'lucide-react';
 import L from 'leaflet';
 import ConnectModal from '../components/hikes/ConnectModal';
@@ -25,12 +25,32 @@ interface Hike {
   spotsLeft: number;
   imageUrl?: string;
   description?: string;
+  hotels?: Array<{
+    _id: string;
+    name: string;
+    location: string;
+    coordinates?: { lat: number; lng: number };
+  } | string>;
 }
 
 // Component to handle map center changes
-const ChangeMapView: React.FC<{ center: [number, number]; zoom: number }> = ({ center, zoom }) => {
+const ChangeMapView: React.FC<{ center: [number, number]; zoom: number; focusPoints?: [number, number][] }> = ({
+  center,
+  zoom,
+  focusPoints = [],
+}) => {
   const map = useMap();
-  map.setView(center, zoom);
+
+  useEffect(() => {
+    if (focusPoints.length >= 2) {
+      const bounds = L.latLngBounds(focusPoints);
+      map.fitBounds(bounds, { padding: [60, 60], maxZoom: 13 });
+      return;
+    }
+
+    map.setView(center, zoom);
+  }, [map, center, zoom, focusPoints]);
+
   return null;
 };
 
@@ -47,6 +67,13 @@ const pointBIcon = L.divIcon({
   html: `<div style="background:#ef4444;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,0.5);"></div>`,
   iconSize: [16, 16],
   iconAnchor: [8, 8],
+});
+
+const hotelMarkerIcon = L.divIcon({
+  className: '',
+  html: `<div style="background:#0f766e;width:24px;height:24px;border-radius:50%;border:2px solid white;box-shadow:0 0 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;color:white;font-size:14px;">🏨</div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
 });
 
 // Distance measurement click handler
@@ -120,6 +147,16 @@ const getHikeCoordinates = (hike: Hike): [number, number] => {
   return [27.7172, 85.324];
 };
 
+const getStableIndexFromId = (id: string, length: number) => {
+  if (length <= 0) return 0;
+  let hash = 0;
+  for (let i = 0; i < id.length; i += 1) {
+    hash = (hash << 5) - hash + id.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash) % length;
+};
+
 const Maps: React.FC = () => {
   const [hikes, setHikes] = useState<Hike[]>([]);
   const [selectedHike, setSelectedHike] = useState<Hike | null>(null);
@@ -138,6 +175,7 @@ const Maps: React.FC = () => {
   const [routeDistance, setRouteDistance] = useState<number | null>(null);
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState<string | null>(null);
+  const [selectedTrailGeometry, setSelectedTrailGeometry] = useState<[number, number][] | null>(null);
 
   const handleMeasurePoint = (pt: [number, number]) => {
     if (!pointA || (pointA && pointB)) {
@@ -205,6 +243,42 @@ const Maps: React.FC = () => {
     return () => controller.abort();
   }, [pointA, pointB]);
 
+  // Build selected hike trail geometry from start/end points.
+  useEffect(() => {
+    if (!selectedHike?.startPoint?.lat || !selectedHike?.startPoint?.lng || !selectedHike?.endPoint?.lat || !selectedHike?.endPoint?.lng) {
+      setSelectedTrailGeometry(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    const start = selectedHike.startPoint;
+    const end = selectedHike.endPoint;
+    const url =
+      `https://router.project-osrm.org/route/v1/foot/` +
+      `${start.lng},${start.lat};${end.lng},${end.lat}` +
+      `?overview=full&geometries=geojson`;
+
+    fetch(url, { signal: controller.signal })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.code !== 'Ok' || !data.routes?.length) {
+          setSelectedTrailGeometry(null);
+          return;
+        }
+        const coords: [number, number][] = data.routes[0].geometry.coordinates.map(
+          ([lon, lat]: [number, number]) => [lat, lon]
+        );
+        setSelectedTrailGeometry(coords);
+      })
+      .catch((err) => {
+        if (err.name !== 'AbortError') {
+          setSelectedTrailGeometry(null);
+        }
+      });
+
+    return () => controller.abort();
+  }, [selectedHike]);
+
   // Create a mapping of hike IDs to coordinates
   const hikeCoordinates = useMemo(() => {
     const coordMap = new Map<string, [number, number]>();
@@ -213,6 +287,94 @@ const Maps: React.FC = () => {
     });
     return coordMap;
   }, [hikes]);
+
+  const selectedHikeHotels = useMemo(() => {
+    if (!selectedHike?.hotels?.length) return [] as Array<{
+      _id: string;
+      name: string;
+      location: string;
+      position: [number, number];
+      isApproximate: boolean;
+    }>;
+
+    const normalizedHotels = selectedHike.hotels.filter(
+      (
+        hotel
+      ): hotel is {
+        _id: string;
+        name: string;
+        location: string;
+        coordinates?: { lat: number; lng: number };
+      } => typeof hotel === 'object' && hotel !== null
+    );
+
+    if (!normalizedHotels.length) return [];
+
+    const [centerLat, centerLng] = getHikeCoordinates(selectedHike);
+    const missingCoordsHotels = normalizedHotels.filter(
+      (hotel) =>
+        !Number.isFinite(hotel.coordinates?.lat) ||
+        !Number.isFinite(hotel.coordinates?.lng)
+    );
+
+    return normalizedHotels.map((hotel) => {
+      const hasCoords =
+        Number.isFinite(hotel.coordinates?.lat) &&
+        Number.isFinite(hotel.coordinates?.lng);
+
+      if (hasCoords) {
+        return {
+          _id: hotel._id,
+          name: hotel.name,
+          location: hotel.location,
+          position: [hotel.coordinates!.lat, hotel.coordinates!.lng] as [number, number],
+          isApproximate: false,
+        };
+      }
+
+      // Prefer placing missing hotels on selected trail geometry.
+      if (selectedTrailGeometry && selectedTrailGeometry.length > 1) {
+        const trailIndex = getStableIndexFromId(hotel._id, selectedTrailGeometry.length);
+        const trailPoint = selectedTrailGeometry[trailIndex];
+        return {
+          _id: hotel._id,
+          name: hotel.name,
+          location: hotel.location,
+          position: trailPoint,
+          isApproximate: true,
+        };
+      }
+
+      // Fallback: place around hike center in a small ring.
+      const missingIndex = Math.max(
+        0,
+        missingCoordsHotels.findIndex((h) => h._id === hotel._id)
+      );
+      const angle = (missingIndex * 2 * Math.PI) / Math.max(missingCoordsHotels.length, 1);
+      const radiusDeg = 0.004; // ~400m latitude offset
+      const latOffset = Math.sin(angle) * radiusDeg;
+      const lngOffset =
+        (Math.cos(angle) * radiusDeg) /
+        Math.max(Math.cos((centerLat * Math.PI) / 180), 0.2);
+
+      return {
+        _id: hotel._id,
+        name: hotel.name,
+        location: hotel.location,
+        position: [centerLat + latOffset, centerLng + lngOffset] as [number, number],
+        isApproximate: true,
+      };
+    });
+  }, [selectedHike, selectedTrailGeometry]);
+
+  const selectedHikeFocusPoints = useMemo(() => {
+    if (!selectedHike) return [] as [number, number][];
+
+    const hikeCenter = getHikeCoordinates(selectedHike);
+    if (!selectedHikeHotels.length) return [hikeCenter];
+
+    return [hikeCenter, ...selectedHikeHotels.map((hotel) => hotel.position)];
+  }, [selectedHike, selectedHikeHotels]);
 
   useEffect(() => {
     const fetchHikes = async () => {
@@ -255,10 +417,17 @@ const Maps: React.FC = () => {
     return labels[difficulty] || 'Unknown';
   };
 
-  const handleHikeClick = (hike: Hike, coords: [number, number]) => {
+  const handleHikeClick = async (hike: Hike, coords: [number, number]) => {
     setSelectedHike(hike);
     setMapCenter(coords);
     setMapZoom(13);
+
+    try {
+      const fullHike = await getHike(hike._id);
+      setSelectedHike(fullHike as Hike);
+    } catch (error) {
+      console.error('Failed to fetch full hike details:', error);
+    }
   };
 
   return (
@@ -428,7 +597,7 @@ const Maps: React.FC = () => {
           style={{ height: '100%', width: '100%', cursor: measureActive ? 'crosshair' : '' }}
           className="z-0"
         >
-          <ChangeMapView center={mapCenter} zoom={mapZoom} />
+          <ChangeMapView center={mapCenter} zoom={mapZoom} focusPoints={selectedHikeFocusPoints} />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -443,6 +612,17 @@ const Maps: React.FC = () => {
             routeLoading={routeLoading}
             onPointSet={handleMeasurePoint}
           />
+
+          {selectedTrailGeometry && selectedTrailGeometry.length > 1 && (
+            <Polyline
+              positions={selectedTrailGeometry}
+              pathOptions={{ color: '#14b8a6', weight: 3, opacity: 0.8 }}
+            >
+              <Tooltip sticky>
+                <span className="font-semibold">Selected hike trail</span>
+              </Tooltip>
+            </Polyline>
+          )}
           
           {filteredHikes.map((hike) => {
             const coords = hikeCoordinates.get(hike._id) || [27.7172, 85.324];
@@ -469,6 +649,22 @@ const Maps: React.FC = () => {
               </Marker>
             );
           })}
+
+          {selectedHikeHotels.map((hotel) => (
+            <Marker key={`hotel-${hotel._id}`} position={hotel.position} icon={hotelMarkerIcon}>
+              <Popup>
+                <div className="p-2">
+                  <h4 className="font-bold text-sm mb-1">🏨 {hotel.name}</h4>
+                  <p className="text-xs text-gray-600 mb-1">{hotel.location}</p>
+                  <p className="text-[11px] text-gray-500">
+                    {hotel.isApproximate
+                      ? 'Estimated placement on this trail'
+                      : 'Hotel linked to this hike'}
+                  </p>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
         </MapContainer>
 
         {/* Selected Hike Details Popup */}

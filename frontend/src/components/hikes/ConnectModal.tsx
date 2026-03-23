@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { CalendarDays, Users, Ruler } from "lucide-react";
 import { useToast } from "../../context/ToastContext";
 import { useAuth } from "../../context/AuthContext";
-import { joinHike } from "../../services/hikes";
+import { joinHike, getHike } from "../../services/hikes";
 import { getUserTrips } from "../../services/trips";
 import { MapContainer, TileLayer, Marker, Polyline, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
+import HotelDetails from "./HotelDetails";
 
 // Fix leaflet default icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -38,6 +39,36 @@ type Hike = {
   description?: string;
   startPoint?: { lat: number; lng: number };
   endPoint?: { lat: number; lng: number };
+  hotels?: Array<{
+    _id: string;
+    name: string;
+    location: string;
+    coordinates?: { lat: number; lng: number };
+    description?: string;
+    contactPhone?: string;
+    email?: string;
+    website?: string;
+    imageUrl?: string;
+    rating: number;
+    reviewCount: number;
+    amenities: string[];
+    packages: Array<{
+      _id: string;
+      hotelId: string;
+      name: string;
+      description?: string;
+      roomType: string;
+      pricePerNight: number;
+      currency: string;
+      capacity: number;
+      amenities: string[];
+      image?: string;
+      availableRooms: number;
+      maxStayNights?: number;
+      minStayNights: number;
+      cancellationPolicy: string;
+    }>;
+  }>;
 };
 
 type ConnectModalProps = {
@@ -67,9 +98,27 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
   const [routeGeometry, setRouteGeometry] = useState<[number, number][] | null>(null);
   const [routeDistance, setRouteDistance] = useState<number | null>(null);
   const [routeLoading, setRouteLoading] = useState(false);
+  const [fullHike, setFullHike] = useState<Hike>(hike);
 
   const formatDistance = (m: number) =>
     m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`;
+
+  // Fetch full hike details including hotels and packages
+  useEffect(() => {
+    if (!open || !hike._id) return;
+    
+    const fetchFullHikeDetails = async () => {
+      try {
+        const fullHikeData = await getHike(hike._id);
+        setFullHike(fullHikeData);
+      } catch (error) {
+        console.error("Failed to fetch full hike details:", error);
+        setFullHike(hike);
+      }
+    };
+
+    fetchFullHikeDetails();
+  }, [open, hike._id, hike]);
 
   // Fetch OSRM trail route between start and end points
   useEffect(() => {
@@ -337,6 +386,15 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
                     <span className="ml-auto font-semibold text-indigo-300">Trail distance: {formatDistance(routeDistance)}</span>
                   )}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Hotels Along Trail */}
+          {fullHike.hotels && fullHike.hotels.length > 0 && (
+            <div className="mt-6 glass-card rounded-xl overflow-hidden">
+              <div className="px-6 py-4">
+                <HotelDetails hotels={fullHike.hotels} hikeId={fullHike._id} hikeDate={fullHike.date} />
               </div>
             </div>
           )}

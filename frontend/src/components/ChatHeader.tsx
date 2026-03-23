@@ -89,6 +89,12 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ hikeId, activeTab, onTabChange 
         >
           Files
         </button>
+        <button
+          onClick={() => onTabChange('hotels')}
+          className={`px-3 py-1 rounded-md font-semibold ${activeTab === 'hotels' ? 'bg-white/10 text-glass' : 'text-glass-dim hover:bg-white/10 hover:text-glass'}`}
+        >
+          Hotels
+        </button>
       </div>
     </div>
   );

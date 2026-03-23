@@ -1,5 +1,38 @@
 import { API_BASE_URL } from "../config/env";
 
+export type HotelPackage = {
+  _id: string;
+  hotelId: string;
+  name: string;
+  description?: string;
+  roomType: "single" | "double" | "twin" | "suite" | "deluxe";
+  pricePerNight: number;
+  currency: string;
+  capacity: number;
+  amenities: string[];
+  image?: string;
+  availableRooms: number;
+  maxStayNights?: number;
+  minStayNights: number;
+  cancellationPolicy: "free" | "partial" | "non-refundable";
+};
+
+export type Hotel = {
+  _id: string;
+  name: string;
+  location: string;
+  coordinates?: { lat: number; lng: number };
+  description?: string;
+  contactPhone?: string;
+  email?: string;
+  website?: string;
+  imageUrl?: string;
+  rating: number;
+  reviewCount: number;
+  amenities: string[];
+  packages: HotelPackage[];
+};
+
 export type Hike = {
   _id: string;
   title: string;
@@ -12,6 +45,32 @@ export type Hike = {
   spotsLeft: number;
   imageUrl?: string;
   description?: string;
+  hotels?: Hotel[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type HotelBooking = {
+  _id: string;
+  userId: string;
+  hikeId: string;
+  hotelId: string;
+  packageId: string;
+  checkInDate: string;
+  checkOutDate: string;
+  numberOfRooms: number;
+  numberOfNights: number;
+  pricePerNight: number;
+  totalPrice: number;
+  currency: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  specialRequests?: string;
+  status: "pending" | "confirmed" | "cancelled";
+  bookingReference: string;
+  paymentStatus: "unpaid" | "partial" | "paid";
+  notes?: string;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -21,6 +80,13 @@ export const getHikes = async (): Promise<Hike[]> => {
   const data = await res.json();
   if (!res.ok) throw new Error(data?.message || "Unable to fetch hikes.");
   return data.hikes || data;
+};
+
+export const getHike = async (id: string): Promise<Hike> => {
+  const res = await fetch(`${API_BASE_URL}/api/hikes/${id}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.message || "Unable to fetch hike.");
+  return data;
 };
 
 export type CreateHikePayload = {
@@ -90,4 +156,98 @@ export const joinHike = async (hikeId: string, token: string) => {
   }
   const data = await res.json();
   return data;
+};
+
+// Booking Service Functions
+export const createBooking = async (payload: {
+  hikeId: string;
+  hotelId: string;
+  packageId: string;
+  checkInDate: string;
+  checkOutDate: string;
+  numberOfRooms: number;
+  specialRequests?: string;
+}, token: string): Promise<HotelBooking> => {
+  const res = await fetch(`${API_BASE_URL}/api/bookings`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem("travelBuddyToken");
+      throw new Error("AUTH_EXPIRED");
+    }
+    try {
+      const data = await res.json();
+      throw new Error(data?.message || "Unable to create booking.");
+    } catch (e) {
+      if (e instanceof Error && e.message.includes('AUTH_EXPIRED')) throw e;
+      throw new Error("Unable to create booking.");
+    }
+  }
+
+  const data = await res.json();
+  return data.booking;
+};
+
+export const getUserBookings = async (token: string): Promise<HotelBooking[]> => {
+  const res = await fetch(`${API_BASE_URL}/api/bookings`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem("travelBuddyToken");
+      throw new Error("AUTH_EXPIRED");
+    }
+    throw new Error("Unable to fetch bookings.");
+  }
+
+  const data = await res.json();
+  return data.bookings || [];
+};
+
+export const getBooking = async (bookingId: string, token: string): Promise<HotelBooking> => {
+  const res = await fetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem("travelBuddyToken");
+      throw new Error("AUTH_EXPIRED");
+    }
+    throw new Error("Unable to fetch booking.");
+  }
+
+  return await res.json();
+};
+
+export const cancelBooking = async (bookingId: string, token: string): Promise<HotelBooking> => {
+  const res = await fetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem("travelBuddyToken");
+      throw new Error("AUTH_EXPIRED");
+    }
+    throw new Error("Unable to cancel booking.");
+  }
+
+  const data = await res.json();
+  return data.booking;
 };

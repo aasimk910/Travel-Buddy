@@ -75,6 +75,9 @@ const expenseRoutes = require("./routes/expenses");
 const adminRoutes = require("./routes/admin");
 const paymentRoutes = require("./routes/payment");
 const roomRoutes = require("./routes/rooms");
+const hotelRoutes = require("./routes/hotels");
+const bookingRoutes = require("./routes/bookings");
+const khaltiPaymentRoutes = require("./routes/khalti-payments");
 const Hike = require("./models/Hike");
 const Message = require("./models/Message");
 const User = require("./models/User");
@@ -92,7 +95,10 @@ app.use("/api/itinerary", itineraryRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/payments", khaltiPaymentRoutes);
 app.use("/api/rooms", roomRoutes);
+app.use("/api/hotels", hotelRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 // GET /api/stats - Public site-wide statistics
 app.get("/api/stats", async (req, res) => {
