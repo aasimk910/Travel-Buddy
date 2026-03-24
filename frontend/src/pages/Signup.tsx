@@ -80,7 +80,7 @@ const Signup: React.FC = () => {
       interests: Yup.string(),
     }),
         onSubmit: async (formValues, { setSubmitting, setStatus }) => {
-      if (!recaptchaToken) {
+      if (VITE_RECAPTCHA_SITE_KEY && !recaptchaToken) {
         setStatus("Please complete the reCAPTCHA.");
         return;
       }
@@ -365,14 +365,16 @@ const Signup: React.FC = () => {
 
 
             {/* Recaptcha */}
-            <div className="flex justify-center">
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={VITE_RECAPTCHA_SITE_KEY}
-                onChange={(token) => setRecaptchaToken(token)}
-                onExpired={() => setRecaptchaToken(null)}
-              />
-            </div>
+            {VITE_RECAPTCHA_SITE_KEY && (
+              <div className="flex justify-center">
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={VITE_RECAPTCHA_SITE_KEY}
+                  onChange={(token) => setRecaptchaToken(token)}
+                  onExpired={() => setRecaptchaToken(null)}
+                />
+              </div>
+            )}
 
             {/* Submit */}
             <div>
