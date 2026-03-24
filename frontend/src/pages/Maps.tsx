@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, Polyline, Tooltip } from 'react-leaflet';
 import { getHikes, getHike } from '../services/hikes';
-import { MapPin, Search, Filter, X, Ruler, Navigation } from 'lucide-react';
+import { MapPin, Search, Filter, X, Ruler, Navigation, BedDouble, Hotel } from 'lucide-react';
 import L from 'leaflet';
 import ConnectModal from '../components/hikes/ConnectModal';
 
@@ -71,9 +71,11 @@ const pointBIcon = L.divIcon({
 
 const hotelMarkerIcon = L.divIcon({
   className: '',
-  html: `<div style="background:#0f766e;width:24px;height:24px;border-radius:50%;border:2px solid white;box-shadow:0 0 8px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;color:white;font-size:14px;">🏨</div>`,
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
+  html: `<div style="background:#0f766e;width:30px;height:30px;border-radius:8px;border:2px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;">
+    <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/><polyline points='9 22 9 12 15 12 15 22'/></svg>
+  </div>`,
+  iconSize: [30, 30],
+  iconAnchor: [15, 15],
 });
 
 // Distance measurement click handler
@@ -295,6 +297,7 @@ const Maps: React.FC = () => {
       location: string;
       position: [number, number];
       isApproximate: boolean;
+      nearestTrailPoint: [number, number] | null;
     }>;
 
     const normalizedHotels = selectedHike.hotels.filter(
@@ -310,6 +313,18 @@ const Maps: React.FC = () => {
 
     if (!normalizedHotels.length) return [];
 
+    // Find the closest point on the trail to a given [lat, lng] position
+    const getNearestTrailPoint = (pos: [number, number]): [number, number] | null => {
+      if (!selectedTrailGeometry || selectedTrailGeometry.length < 2) return null;
+      let nearest = selectedTrailGeometry[0];
+      let minDist = Infinity;
+      for (const pt of selectedTrailGeometry) {
+        const d = (pt[0] - pos[0]) ** 2 + (pt[1] - pos[1]) ** 2;
+        if (d < minDist) { minDist = d; nearest = pt; }
+      }
+      return nearest;
+    };
+
     const [centerLat, centerLng] = getHikeCoordinates(selectedHike);
     const missingCoordsHotels = normalizedHotels.filter(
       (hotel) =>
@@ -323,25 +338,32 @@ const Maps: React.FC = () => {
         Number.isFinite(hotel.coordinates?.lng);
 
       if (hasCoords) {
+        const position: [number, number] = [hotel.coordinates!.lat, hotel.coordinates!.lng];
         return {
           _id: hotel._id,
           name: hotel.name,
           location: hotel.location,
-          position: [hotel.coordinates!.lat, hotel.coordinates!.lng] as [number, number],
+          position,
           isApproximate: false,
+          nearestTrailPoint: getNearestTrailPoint(position),
         };
       }
 
-      // Prefer placing missing hotels on selected trail geometry.
+      // Prefer placing missing hotels offset beside a stable trail point.
       if (selectedTrailGeometry && selectedTrailGeometry.length > 1) {
         const trailIndex = getStableIndexFromId(hotel._id, selectedTrailGeometry.length);
         const trailPoint = selectedTrailGeometry[trailIndex];
+        // Offset slightly perpendicular to trail so marker doesn't overlap the line
+        const offsetLat = trailPoint[0] + 0.0015;
+        const offsetLng = trailPoint[1] + 0.0015;
+        const position: [number, number] = [offsetLat, offsetLng];
         return {
           _id: hotel._id,
           name: hotel.name,
           location: hotel.location,
-          position: trailPoint,
+          position,
           isApproximate: true,
+          nearestTrailPoint: trailPoint,
         };
       }
 
@@ -351,18 +373,19 @@ const Maps: React.FC = () => {
         missingCoordsHotels.findIndex((h) => h._id === hotel._id)
       );
       const angle = (missingIndex * 2 * Math.PI) / Math.max(missingCoordsHotels.length, 1);
-      const radiusDeg = 0.004; // ~400m latitude offset
+      const radiusDeg = 0.004;
       const latOffset = Math.sin(angle) * radiusDeg;
       const lngOffset =
         (Math.cos(angle) * radiusDeg) /
         Math.max(Math.cos((centerLat * Math.PI) / 180), 0.2);
-
+      const position: [number, number] = [centerLat + latOffset, centerLng + lngOffset];
       return {
         _id: hotel._id,
         name: hotel.name,
         location: hotel.location,
-        position: [centerLat + latOffset, centerLng + lngOffset] as [number, number],
+        position,
         isApproximate: true,
+        nearestTrailPoint: null,
       };
     });
   }, [selectedHike, selectedTrailGeometry]);
@@ -650,17 +673,29 @@ const Maps: React.FC = () => {
             );
           })}
 
+          {/* Hotel connector lines from trail to marker */}
+          {selectedHikeHotels.map((hotel) => {
+            if (!hotel.nearestTrailPoint) return null;
+            return (
+              <Polyline
+                key={`hotel-connector-${hotel._id}`}
+                positions={[hotel.nearestTrailPoint, hotel.position]}
+                pathOptions={{ color: '#0f766e', weight: 1.5, opacity: 0.6, dashArray: '4 4' }}
+              />
+            );
+          })}
+
           {selectedHikeHotels.map((hotel) => (
             <Marker key={`hotel-${hotel._id}`} position={hotel.position} icon={hotelMarkerIcon}>
               <Popup>
-                <div className="p-2">
-                  <h4 className="font-bold text-sm mb-1">🏨 {hotel.name}</h4>
+                <div className="p-2 min-w-[160px]">
+                  <h4 className="font-bold text-sm mb-1 flex items-center gap-1">
+                    <BedDouble className="w-4 h-4 inline text-teal-600" /> {hotel.name}
+                  </h4>
                   <p className="text-xs text-gray-600 mb-1">{hotel.location}</p>
-                  <p className="text-[11px] text-gray-500">
-                    {hotel.isApproximate
-                      ? 'Estimated placement on this trail'
-                      : 'Hotel linked to this hike'}
-                  </p>
+                  {hotel.isApproximate && (
+                    <p className="text-[10px] text-amber-600 italic">Approximate position along trail</p>
+                  )}
                 </div>
               </Popup>
             </Marker>
@@ -715,6 +750,29 @@ const Maps: React.FC = () => {
               <span className="text-emerald-400 font-medium">{selectedHike.spotsLeft} spots left</span>
             </div>
             
+            {selectedHikeHotels.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-white/10">
+                <h4 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <BedDouble className="w-3.5 h-3.5" />
+                  Accommodation Along Trail ({selectedHikeHotels.length})
+                </h4>
+                <div className="space-y-1.5 max-h-28 overflow-y-auto pr-1">
+                  {selectedHikeHotels.map((hotel) => (
+                    <div key={hotel._id} className="flex items-start gap-2 rounded-lg px-2 py-1.5" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <Hotel className="w-3.5 h-3.5 text-teal-400 mt-0.5 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs text-white font-medium truncate">{hotel.name}</p>
+                        <p className="text-[10px] text-gray-400 truncate">{hotel.location}</p>
+                      </div>
+                      {hotel.isApproximate && (
+                        <span className="text-[9px] text-amber-400 shrink-0 mt-0.5">~</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <button
               onClick={() => setConnectHike(selectedHike)}
               className="w-full mt-3 py-2.5 px-4 rounded-lg text-white font-semibold transition"

@@ -3,7 +3,7 @@ import { useToast } from "../../context/ToastContext";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import DOMPurify from "dompurify";
-import { MapPin } from "lucide-react";
+import { MapPin, PenLine, RefreshCw, Star } from "lucide-react";
 import { submitReview } from "../../services/reviews";
 
 const FEATURED_LOCATIONS = [
@@ -98,18 +98,8 @@ const ReviewCard: React.FC = () => {
       <form onSubmit={handleSubmit}>
         {/* Icon */}
         <div className="flex justify-center mb-5">
-          <div className="w-16 h-16">
-            <svg viewBox="0 0 100 100" className="w-full h-full">
-              <defs>
-                <linearGradient id="mountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" style={{ stopColor: "#10b981", stopOpacity: 1 }} />
-                  <stop offset="100%" style={{ stopColor: "#059669", stopOpacity: 1 }} />
-                </linearGradient>
-              </defs>
-              <polygon points="50,20 70,60 30,60" fill="url(#mountainGrad)" />
-              <polygon points="35,60 55,30 75,60" fill="#047857" opacity="0.8" />
-              <rect x="0" y="60" width="100" height="40" fill="#86efac" />
-            </svg>
+          <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center">
+            <Star className="w-8 h-8 text-emerald-400" />
           </div>
         </div>
 
@@ -185,7 +175,7 @@ const ReviewCard: React.FC = () => {
           disabled={isSubmittingReview}
           className="w-full glass-button-dark font-semibold py-3 px-4 rounded-lg transition-all mb-3 flex items-center justify-center gap-2 disabled:opacity-60 text-white"
         >
-          <span>✍️</span>
+          <PenLine className="w-4 h-4" />
           {isSubmittingReview ? "Submitting..." : "Submit Review"}
         </button>
         <button
@@ -194,7 +184,7 @@ const ReviewCard: React.FC = () => {
           disabled={isSubmittingReview}
           className="w-full glass-button text-white font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
         >
-          <span>🔄</span>
+          <RefreshCw className="w-4 h-4" />
           Suggest another place
         </button>
       </form>

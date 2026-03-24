@@ -1,5 +1,6 @@
 // src/components/Toast.tsx
 import React, { useEffect } from "react";
+import { CheckCircle, XCircle, Info, AlertTriangle, X as XIcon } from "lucide-react";
 
 export type ToastType = "success" | "error" | "info" | "warning";
 
@@ -30,24 +31,24 @@ const ToastComponent: React.FC<ToastProps> = ({ toast, onClose }) => {
     warning: "glass-strong text-black",
   }[toast.type];
 
-  const icon = {
-    success: "✓",
-    error: "✕",
-    info: "ℹ",
-    warning: "⚠",
+  const IconComponent = {
+    success: CheckCircle,
+    error: XCircle,
+    info: Info,
+    warning: AlertTriangle,
   }[toast.type];
 
   return (
     <div
       className={`${bgColor} rounded-lg px-4 py-3 shadow-lg flex items-center gap-3 min-w-[300px] max-w-md animate-slide-in`}
     >
-      <span className="text-lg font-bold">{icon}</span>
+      <IconComponent className="w-5 h-5 flex-shrink-0" />
       <p className="flex-1 text-sm font-medium">{toast.message}</p>
       <button
         onClick={() => onClose(toast.id)}
-        className="text-gray-300 hover:text-white text-lg font-bold"
+        className="text-gray-300 hover:text-white"
       >
-        ×
+        <XIcon className="w-4 h-4" />
       </button>
     </div>
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import TopNav from './homepage/TopNav';
 import Footer from './SiteFooter';
 
@@ -7,10 +7,28 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Parallax floating orbs that drift opposite to scroll */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+        style={{ transform: `translateY(${scrollY * 0.08}px)` }}
+      >
+        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-blue-500/5 blur-3xl" />
+        <div className="absolute top-1/3 -right-32 w-80 h-80 rounded-full bg-purple-500/5 blur-3xl" />
+        <div className="absolute bottom-1/4 left-1/3 w-64 h-64 rounded-full bg-emerald-500/5 blur-3xl" />
+      </div>
       <TopNav />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 relative z-10">{children}</main>
       <Footer />
     </div>
   );

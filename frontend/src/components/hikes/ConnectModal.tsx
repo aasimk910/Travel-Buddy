@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, Users, Ruler } from "lucide-react";
 import { useToast } from "../../context/ToastContext";
@@ -26,6 +26,11 @@ const endIcon = L.divIcon({
   className: '',
   html: `<div style="background:#ef4444;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:8px;font-weight:700">E</span></div>`,
   iconSize: [16, 16], iconAnchor: [8, 8],
+});
+const hotelIcon = L.divIcon({
+  className: '',
+  html: `<div style="background:#0f766e;width:26px;height:26px;border-radius:7px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;"><svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/><polyline points='9 22 9 12 15 12 15 22'/></svg></div>`,
+  iconSize: [26, 26], iconAnchor: [13, 13],
 });
 
 type Hike = {
@@ -99,6 +104,30 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
   const [routeDistance, setRouteDistance] = useState<number | null>(null);
   const [routeLoading, setRouteLoading] = useState(false);
   const [fullHike, setFullHike] = useState<Hike>(hike);
+
+  // Compute hotel positions along the trail for display in the mini-map
+  const hotelTrailMarkers = useMemo(() => {
+    const hotels = fullHike.hotels;
+    if (!hotels?.length) return [];
+
+    return hotels.map((hotel, idx) => {
+      const name = (hotel as any).name || 'Hotel';
+      const id = (hotel as any)._id || String(idx);
+
+      // Always anchor hotels near the trail end point regardless of stored GPS coords
+      if (routeGeometry && routeGeometry.length > 1) {
+        // Spread multiple hotels in the last 15% of the trail so they don't overlap
+        const endFraction = 1 - (idx * 0.08);
+        const trailIdx = Math.round(Math.max(0.85, Math.min(1, endFraction)) * (routeGeometry.length - 1));
+        const trailPoint = routeGeometry[trailIdx];
+        // Small perpendicular offset so the icon doesn't sit exactly on the route line
+        const position: [number, number] = [trailPoint[0] + 0.0012 * (idx + 1), trailPoint[1] + 0.0012 * (idx + 1)];
+        return { _id: id, name, position, nearestTrailPoint: trailPoint };
+      }
+
+      return null;
+    }).filter(Boolean) as { _id: string; name: string; position: [number, number]; nearestTrailPoint: [number, number] | null }[];
+  }, [fullHike.hotels, routeGeometry]);
 
   const formatDistance = (m: number) =>
     m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`;
@@ -374,14 +403,34 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
                             </Tooltip>
                           </Polyline>
                         )}
+                        {hotelTrailMarkers.map((hotel) => (
+                          <React.Fragment key={`hotel-trail-${hotel._id}`}>
+                            {hotel.nearestTrailPoint && (
+                              <Polyline
+                                positions={[hotel.nearestTrailPoint, hotel.position]}
+                                pathOptions={{ color: '#0f766e', weight: 1.5, opacity: 0.7, dashArray: '4 4' }}
+                              />
+                            )}
+                            <Marker position={hotel.position} icon={hotelIcon}>
+                              <Tooltip permanent={false} direction="top" offset={[0, -14]}>
+                                <span className="font-semibold text-xs">{hotel.name}</span>
+                              </Tooltip>
+                            </Marker>
+                          </React.Fragment>
+                        ))}
                       </MapContainer>
                     );
                   })()}
                 </div>
 
-                <div className="flex gap-4 mt-2 text-xs text-gray-400">
+                <div className="flex flex-wrap gap-4 mt-2 text-xs text-gray-400">
                   <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-full bg-green-500" /> Start</span>
                   <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-full bg-red-500" /> End</span>
+                  {hotelTrailMarkers.length > 0 && (
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block w-3 h-3 rounded" style={{ background: '#0f766e' }} /> Accommodation
+                    </span>
+                  )}
                   {routeDistance !== null && !routeLoading && (
                     <span className="ml-auto font-semibold text-indigo-300">Trail distance: {formatDistance(routeDistance)}</span>
                   )}

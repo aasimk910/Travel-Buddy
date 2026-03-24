@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, MapPin, Navigation } from "lucide-react";
+import { Users, MapPin, Navigation, CheckCircle2, Flag, MousePointerClick } from "lucide-react";
 import DOMPurify from "dompurify";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
@@ -238,7 +238,7 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
                           : 'glass border-white/20 text-gray-300 hover:border-white/40'
                       }`}
                     >
-                      {startPoint ? `✅ Start (${startPoint.lat.toFixed(4)}, ${startPoint.lng.toFixed(4)})` : '📍 Set Start Point'}
+                      {startPoint ? <><CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />Start ({startPoint.lat.toFixed(4)}, {startPoint.lng.toFixed(4)})</> : <><MapPin className="w-3.5 h-3.5 inline mr-1" />Set Start Point</>}
                     </button>
                     <button
                       type="button"
@@ -249,11 +249,12 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
                           : 'glass border-white/20 text-gray-300 hover:border-white/40'
                       }`}
                     >
-                      {endPoint ? `✅ End (${endPoint.lat.toFixed(4)}, ${endPoint.lng.toFixed(4)})` : '🏁 Set End Point'}
+                      {endPoint ? <><CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />End ({endPoint.lat.toFixed(4)}, {endPoint.lng.toFixed(4)})</> : <><Flag className="w-3.5 h-3.5 inline mr-1" />Set End Point</>}
                     </button>
                   </div>
-                  <p className="text-xs text-gray-300 mb-2">
-                    {activePoint === 'start' ? '👇 Click on the map to set the trail start point' : '👇 Click on the map to set the trail end point'}
+                  <p className="text-xs text-gray-300 mb-2 flex items-center gap-1">
+                    <MousePointerClick className="w-3.5 h-3.5" />
+                    {activePoint === 'start' ? 'Click on the map to set the trail start point' : 'Click on the map to set the trail end point'}
                   </p>
                   <div className="glass rounded-lg overflow-hidden border border-white/20" style={{ height: '300px' }}>
                     <MapContainer

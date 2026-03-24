@@ -4,7 +4,7 @@ import {
   ShoppingCart, Star, Search, SlidersHorizontal, Backpack, Tent,
   Camera, Mountain, Compass, Shield, X, Plus, Minus, Trash2,
   Package, ChevronRight, Tag, User, Phone, Mail, MapPin, Loader2,
-  ClipboardList, ChevronDown, ChevronUp, LogIn,
+  ClipboardList, ChevronDown, ChevronUp, LogIn, PartyPopper, Wallet, Banknote, CheckCircle, Check, Heart,
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/env';
 import { useAuth } from '../context/AuthContext';
@@ -42,7 +42,7 @@ const ORDER_STATUSES: { key: OrderSnapshot['status']; label: string; desc: strin
   { key: 'placed',           label: 'Order Placed',     desc: 'We received your order' },
   { key: 'processing',      label: 'Processing',       desc: 'Preparing your gear' },
   { key: 'out_for_delivery', label: 'Out for Delivery', desc: 'On the way to you' },
-  { key: 'delivered',        label: 'Delivered',        desc: 'Enjoy your gear! 🎉' },
+  { key: 'delivered',        label: 'Delivered',        desc: 'Enjoy your gear!' },
 ];
 
 // ── Data ─────────────────────────────────────────────────────────────────────
@@ -460,7 +460,7 @@ const Shop: React.FC = () => {
       if (data.payment_url) {
         window.location.href = data.payment_url;
       } else {
-        alert(data.error || 'Khalti payment initiation failed. Please try again.');
+        alert('Khalti payment initiation failed. Please try again.');
       }
     } catch (err: any) {
       console.error('Khalti payment error:', err);
@@ -994,9 +994,7 @@ const Shop: React.FC = () => {
                                         : 'border-white/15 bg-white/5'
                                   }`}>
                                     {isDone && !isCurrent && (
-                                      <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 12 12">
-                                        <path d="M10 3L5 8.5 2 5.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                                      </svg>
+                                      <Check className="w-2 h-2 text-white" />
                                     )}
                                     {isCurrent && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                                   </div>
@@ -1050,7 +1048,7 @@ const Shop: React.FC = () => {
                           ? 'bg-purple-500/10 border-purple-400/30'
                           : 'bg-emerald-500/10 border-emerald-400/30'
                       }`}>
-                        <span>{order.paymentMethod === 'khalti' ? '💜' : '💵'}</span>
+                        {order.paymentMethod === 'khalti' ? <Heart className="w-4 h-4 text-purple-400" /> : <Banknote className="w-4 h-4 text-emerald-400" />}
                         <span className={order.paymentMethod === 'khalti' ? 'text-purple-300 font-semibold' : 'text-emerald-300 font-semibold'}>
                           {order.paymentMethod === 'khalti' ? 'Paid via Khalti' : 'Cash on Delivery'}
                         </span>
@@ -1102,7 +1100,7 @@ const Shop: React.FC = () => {
                   <Package className="w-8 h-8 text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="text-white font-bold text-xl">Order Placed! 🎉</h3>
+                  <h3 className="text-white font-bold text-xl flex items-center gap-2">Order Placed! <PartyPopper className="w-5 h-5 text-emerald-400" /></h3>
                   <p className="text-white/55 text-sm mt-1">Your gear is on its way. Estimated delivery in 3–5 business days.</p>
                 </div>
               </div>
@@ -1203,7 +1201,7 @@ const Shop: React.FC = () => {
                   ? 'bg-purple-500/10 border-purple-400/30'
                   : 'bg-emerald-500/10 border-emerald-400/30'
               }`}>
-                <span className="text-xl">{orderSnapshot.paymentMethod === 'khalti' ? '💜' : '💵'}</span>
+                {orderSnapshot.paymentMethod === 'khalti' ? <Wallet className="w-5 h-5 text-purple-400" /> : <Banknote className="w-5 h-5 text-emerald-400" />}
                 <div>
                   <p className="text-white/40 text-[10px] uppercase tracking-widest">Payment</p>
                   <p className={`text-sm font-semibold ${
@@ -1318,9 +1316,9 @@ const Shop: React.FC = () => {
                     : 'bg-white/5 border-white/10 hover:border-white/20'
                 }`}
               >
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
                   paymentMethod === 'cod' ? 'bg-emerald-500/20' : 'bg-white/5'
-                }`}>💵</div>
+                }`}><Banknote className="w-6 h-6 text-emerald-400" /></div>
                 <div className="text-left flex-1">
                   <p className="text-white font-semibold text-sm">Cash on Delivery</p>
                   <p className="text-white/45 text-xs mt-0.5">Pay when your order arrives</p>
@@ -1344,7 +1342,7 @@ const Shop: React.FC = () => {
                 <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
                   paymentMethod === 'khalti' ? 'bg-purple-500/20' : 'bg-white/5'
                 }`}>
-                  <span className="text-xl">💜</span>
+                  <Heart className="w-6 h-6 text-purple-400" />
                 </div>
                 <div className="text-left flex-1">
                   <p className="text-white font-semibold text-sm">Pay by Khalti</p>
@@ -1450,7 +1448,7 @@ const Shop: React.FC = () => {
             ) : (
               <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-400/20">
                 <Tag className="w-4 h-4 text-emerald-400 shrink-0" />
-                <p className="text-xs text-emerald-300 font-medium">🎉 Free shipping unlocked!</p>
+                <p className="text-xs text-emerald-300 font-medium flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Free shipping unlocked!</p>
               </div>
             )}
 

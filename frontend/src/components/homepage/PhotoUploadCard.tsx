@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { compressImage } from "../../utils/imageCompression";
 import { uploadPhotos } from "../../services/photos";
+import { Camera, Upload, CloudUpload } from "lucide-react";
 
 const MAX_PHOTO_SIZE_BYTES = 6 * 1024 * 1024;
 
@@ -98,8 +99,8 @@ const PhotoUploadCard: React.FC<PhotoUploadCardProps> = ({ onUploaded }) => {
   return (
     <div className="glass-card rounded-xl shadow-sm p-8">
       <div className="flex flex-col items-center text-center mb-6">
-        <div className="w-20 h-20 mb-4 flex items-center justify-center">
-          <span className="text-6xl">📸</span>
+        <div className="w-20 h-20 mb-4 flex items-center justify-center rounded-full bg-white/10 border border-white/20">
+          <Camera className="w-10 h-10 text-white/70" />
         </div>
         <h3 className="text-xl font-bold text-white mb-2">
           Share your <span className="underline decoration-2 decoration-white">Trail Photos</span>
@@ -110,9 +111,7 @@ const PhotoUploadCard: React.FC<PhotoUploadCardProps> = ({ onUploaded }) => {
       <div className="mb-4">
         <label htmlFor="photo-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/30 rounded-lg cursor-pointer hover:border-white/50 hover:bg-white/5 transition-all glass">
           <div className="flex flex-col items-center justify-center pt-5 pb-6">
-            <svg className="w-10 h-10 mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
+            <CloudUpload className="w-10 h-10 mb-2 text-gray-300" />
             <p className="text-sm text-gray-200 font-medium">Click to upload or drag and drop</p>
             <p className="text-xs text-gray-300 mt-1">PNG, JPG up to 10MB</p>
           </div>
@@ -152,7 +151,7 @@ const PhotoUploadCard: React.FC<PhotoUploadCardProps> = ({ onUploaded }) => {
         disabled={isUploading}
         className="w-full glass-button-dark font-semibold py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60 text-white"
       >
-        <span>📤</span>
+        <Upload className="w-4 h-4" />
         {isUploading ? "Uploading..." : "Upload Photos"}
       </button>
     </div>

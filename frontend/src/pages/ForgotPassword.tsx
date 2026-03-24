@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import AuthHeader from "../components/AuthHeader";
 import StatusAlert from "../components/StatusAlert";
 import { forgotPassword } from "../services/auth";
+import { Info, CheckCircle } from "lucide-react";
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -42,9 +43,7 @@ const ForgotPassword: React.FC = () => {
           {isGoogleAccount ? (
             <div className="text-center space-y-4">
               <div className="flex items-center justify-center w-14 h-14 mx-auto rounded-full bg-blue-500/20 border border-blue-400/30">
-                <svg className="w-7 h-7 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                </svg>
+                <Info className="w-7 h-7 text-blue-400" />
               </div>
               <h3 className="text-white font-semibold text-lg">Google account detected</h3>
               <p className="text-gray-300 text-sm">
@@ -60,9 +59,7 @@ const ForgotPassword: React.FC = () => {
           ) : success ? (
             <div className="text-center space-y-4">
               <div className="flex items-center justify-center w-14 h-14 mx-auto rounded-full bg-green-500/20 border border-green-400/30">
-                <svg className="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                </svg>
+                <CheckCircle className="w-7 h-7 text-green-400" />
               </div>
               <h3 className="text-white font-semibold text-lg">Check your inbox</h3>
               <p className="text-gray-300 text-sm">

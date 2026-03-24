@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { MapPin } from "lucide-react";
 
 const ProfileSummaryCard: React.FC = () => {
   const { user } = useAuth();
@@ -20,7 +21,7 @@ const ProfileSummaryCard: React.FC = () => {
             <h2 className="text-xl font-semibold text-white">{user?.name || "User"}</h2>
             <p className="text-sm text-gray-200">{user?.email}</p>
             {user?.country && (
-              <p className="text-xs text-gray-300 mt-1">📍 {user.country}</p>
+              <p className="text-xs text-gray-300 mt-1 flex items-center gap-1"><MapPin className="w-3 h-3" /> {user.country}</p>
             )}
           </div>
         </div>

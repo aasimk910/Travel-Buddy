@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../config/env';
+import { Download, X, Loader2, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 
 interface FilesProps {
   roomId?: string;
@@ -154,14 +155,9 @@ const Files = ({ roomId }: FilesProps) => {
                     className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white/70 hover:text-white transition-colors disabled:opacity-50"
                   >
                     {downloading ? (
-                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
-                      </svg>
+                      <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                      </svg>
+                      <Download className="w-4 h-4" />
                     )}
                   </button>
                   <button
@@ -169,9 +165,7 @@ const Files = ({ roomId }: FilesProps) => {
                     title="Close (Esc)"
                     className="w-8 h-8 rounded-full bg-white/10 hover:bg-red-500/70 flex items-center justify-center text-white/70 hover:text-white transition-colors"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -189,9 +183,7 @@ const Files = ({ roomId }: FilesProps) => {
                     onClick={() => setLightboxIdx(i => (i! > 0 ? i! - 1 : images.length - 1))}
                     className="absolute left-2 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 border border-white/10 flex items-center justify-center text-white transition-colors"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <ChevronLeft className="w-5 h-5" />
                   </button>
                 )}
                 {images.length > 1 && (
@@ -199,9 +191,7 @@ const Files = ({ roomId }: FilesProps) => {
                     onClick={() => setLightboxIdx(i => (i! < images.length - 1 ? i! + 1 : 0))}
                     className="absolute right-2 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 border border-white/10 flex items-center justify-center text-white transition-colors"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                    </svg>
+                    <ChevronRight className="w-5 h-5" />
                   </button>
                 )}
               </div>
@@ -233,14 +223,7 @@ const Files = ({ roomId }: FilesProps) => {
                   className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center"
                   onClick={() => setLightboxIdx(idx)}
                 >
-                  <svg 
-                    className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path>
-                  </svg>
+                  <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
               <div className="p-2">

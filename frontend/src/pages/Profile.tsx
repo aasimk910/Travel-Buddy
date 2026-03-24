@@ -1,7 +1,7 @@
 // src/pages/Profile.tsx
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Camera, MapPin, Globe, DollarSign, CalendarDays } from "lucide-react";
+import { Camera, MapPin, Globe, DollarSign, CalendarDays, Tag } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import DOMPurify from "dompurify";
@@ -281,7 +281,7 @@ const Profile: React.FC = () => {
                 )}
               </div>
               {user?.interests && (
-                <p className="mt-2 text-xs text-gray-300">🏷️ {user.interests}</p>
+                <p className="mt-2 text-xs text-gray-300 flex items-center gap-1"><Tag className="w-3 h-3" /> {user.interests}</p>
               )}
             </div>
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { API_BASE_URL } from "../../config/env";
+import { CreditCard, Loader2 } from "lucide-react";
 
 interface KhaltiPaymentButtonProps {
   bookingId: string;
@@ -66,12 +67,12 @@ export default function KhaltiPaymentButton({
     >
       {isLoading ? (
         <>
-          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+          <Loader2 className="w-5 h-5 animate-spin" />
           Processing...
         </>
       ) : (
         <>
-          💳 Pay NPR {amount.toLocaleString()} with Khalti
+          <CreditCard className="w-5 h-5" /> Pay NPR {amount.toLocaleString()} with Khalti
         </>
       )}
     </button>

@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { API_BASE_URL } from "../config/env";
 import { useRoomKey } from "../hooks/useRoomKey";
 import { encryptMessage, decryptMessage, isEncrypted } from "../utils/e2e";
+import { Key, Lock, Paperclip, FileText, X, Send, Loader2 } from "lucide-react";
 
 interface ChatProps {
   roomId?: string;
@@ -249,13 +250,13 @@ const Chat = ({ roomId }: ChatProps) => {
     <div className="flex flex-col h-full min-h-0">
       {/* E2E status bar */}
       {keyError && (
-        <div className="px-4 py-1 text-xs text-yellow-300 bg-yellow-900/30 border-b border-yellow-700/30">
-          🔑 {keyError}
+        <div className="px-4 py-1 text-xs text-yellow-300 bg-yellow-900/30 border-b border-yellow-700/30 flex items-center gap-1">
+          <Key className="w-3 h-3 flex-shrink-0" /> {keyError}
         </div>
       )}
       {keyReady && (
         <div className="px-4 py-1 text-xs text-green-400/70 bg-green-900/20 border-b border-green-700/20 flex items-center gap-1">
-          <span>🔒</span> End-to-end encrypted
+          <Lock className="w-3 h-3 flex-shrink-0" /> End-to-end encrypted
         </div>
       )}
       <div className="flex-1 overflow-y-auto px-4 py-2 min-h-0 scrollbar-hide" ref={messagesContainerRef} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
@@ -294,9 +295,7 @@ const Chat = ({ roomId }: ChatProps) => {
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 p-2 rounded glass-button transition"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
+                        <FileText className="w-5 h-5 flex-shrink-0" />
                         <span className="text-sm truncate">{m.attachment.name}</span>
                       </a>
                     )}
@@ -328,9 +327,7 @@ const Chat = ({ roomId }: ChatProps) => {
                   className="w-10 h-10 object-cover rounded"
                 />
               ) : (
-                <svg className="w-8 h-8 text-glass-dim" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
+                <FileText className="w-8 h-8 text-glass-dim" />
               )}
               <span className="text-sm text-glass-light truncate">{selectedFile.name}</span>
             </div>
@@ -339,9 +336,7 @@ const Chat = ({ roomId }: ChatProps) => {
               className="p-1 glass-button rounded"
               title="Remove file"
             >
-              <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
+              <X className="w-5 h-5 text-red-400" />
             </button>
           </div>
         )}
@@ -368,9 +363,7 @@ const Chat = ({ roomId }: ChatProps) => {
             title="Attach file"
             disabled={isUploading}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
-            </svg>
+            <Paperclip className="w-6 h-6" />
           </button>
           <button 
             onClick={sendMessage} 
@@ -378,12 +371,9 @@ const Chat = ({ roomId }: ChatProps) => {
             disabled={isUploading || (!message.trim() && !selectedFile) || (!!roomId && !keyReady)}
           >
             {isUploading ? (
-              <svg className="w-6 h-6 text-glass-light animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+              <Loader2 className="w-6 h-6 text-glass-light animate-spin" />
             ) : (
-              <svg className="w-6 h-6 text-glass-light" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+              <Send className="w-6 h-6 text-glass-light" />
             )}
           </button>
         </div>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Calendar, Users, AlertCircle } from "lucide-react";
+import { X, Calendar, Users, AlertCircle, CheckCircle } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { Hotel, HotelPackage, createBooking } from "../../services/hikes";
@@ -305,8 +305,8 @@ const BookingModal: React.FC<BookingModalProps> = ({
           ) : (
             <>
               <div className="glass-card-inner rounded-lg p-4 border border-emerald-400/40 bg-emerald-400/10">
-                <p className="text-base text-white mb-2">
-                  ✅ Booking Created Successfully!
+                <p className="text-base text-white mb-2 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Booking Created Successfully!
                 </p>
                 <p className="text-sm text-gray-200">
                   Reference: <span className="font-mono text-emerald-400">{bookingReference}</span>

@@ -5,7 +5,7 @@ import L from 'leaflet';
 import {
   Users, Mountain, ShieldCheck, Trash2, ChevronLeft, ChevronRight,
   Search, RefreshCw, Plus, Pencil, X, LogOut, MapPin, CalendarDays,
-  Navigation, Eye,
+  Navigation, Eye, CheckCircle2, Flag, MousePointerClick,
 } from "lucide-react";
 import { API_BASE_URL } from "../config/env";
 import { useAuth } from "../context/AuthContext";
@@ -810,7 +810,7 @@ const Admin: React.FC = () => {
                         : 'glass border-white/20 text-gray-400 hover:border-white/40'
                     }`}
                   >
-                    {hikeStartPoint ? `✅ Start (${hikeStartPoint.lat.toFixed(3)}, ${hikeStartPoint.lng.toFixed(3)})` : '📍 Set Start'}
+                    {hikeStartPoint ? <><CheckCircle2 className="w-3 h-3 inline mr-1" />Start ({hikeStartPoint.lat.toFixed(3)}, {hikeStartPoint.lng.toFixed(3)})</> : <><MapPin className="w-3 h-3 inline mr-1" />Set Start</>}
                   </button>
                   <button
                     type="button"
@@ -821,7 +821,7 @@ const Admin: React.FC = () => {
                         : 'glass border-white/20 text-gray-400 hover:border-white/40'
                     }`}
                   >
-                    {hikeEndPoint ? `✅ End (${hikeEndPoint.lat.toFixed(3)}, ${hikeEndPoint.lng.toFixed(3)})` : '🏁 Set End'}
+                    {hikeEndPoint ? <><CheckCircle2 className="w-3 h-3 inline mr-1" />End ({hikeEndPoint.lat.toFixed(3)}, {hikeEndPoint.lng.toFixed(3)})</> : <><Flag className="w-3 h-3 inline mr-1" />Set End</>}
                   </button>
                 </div>
                 <p className="text-[10px] text-gray-400 mb-1">
