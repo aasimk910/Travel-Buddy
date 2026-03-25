@@ -14,14 +14,14 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  // Always allow local dev frontend when not in production.
-  !isProduction ? "http://localhost:5173" : null,
+  "http://localhost:5173",
+  "http://localhost:5000",
 ].filter(Boolean);
 
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   },
 });
@@ -47,6 +47,20 @@ app.use(cors({
     }
     callback(new Error(`CORS: origin '${origin}' not allowed`));
   },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
+// Handle preflight requests for all routes
+app.options("*", cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error(`CORS: origin '${origin}' not allowed`));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 }));
 app.use(
