@@ -2,11 +2,11 @@
 const express = require("express");
 const router = express.Router();
 const { authenticateToken } = require("../middleware/auth");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const axios = require("axios");
 
 /**
  * POST /api/itinerary/generate
- * Generate an itinerary using Google Gemini
+ * Generate an itinerary using Groq AI (free, no credit card needed!)
  */
 router.post("/generate", authenticateToken, async (req, res) => {
   try {
@@ -43,15 +43,13 @@ router.post("/generate", authenticateToken, async (req, res) => {
       ? Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1
       : null;
 
-    // Check if Gemini API key is available
-    const useAI = process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== '';
+    // Check if Groq API key is available
+    const useAI = process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== '';
 
     let itinerary;
 
     if (useAI) {
       try {
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
         let systemPrompt;
         let userMessage;
 
@@ -123,63 +121,66 @@ router.post("/generate", authenticateToken, async (req, res) => {
             `transportation info, accommodation, food recommendations, activities, and estimated costs in NPR.`;
         }
 
-        // Try models in order — continue on ANY error so a bad model name or
-        // a quota failure on one model doesn't kill the whole request.
-        const MODELS_TO_TRY = [
-          "gemini-2.0-flash-lite",
-          "gemini-2.0-flash",
-          "gemini-1.5-flash",
-          "gemini-1.5-flash-8b",
-        ];
-
-        let lastError = null;
-        for (const modelName of MODELS_TO_TRY) {
-          try {
-            const model = genAI.getGenerativeModel({
-              model: modelName,
-              systemInstruction: systemPrompt,
-              generationConfig: { temperature: 0.4, maxOutputTokens: 8192 },
-            });
-            const result = await model.generateContent(userMessage);
-            itinerary = result.response.text();
-            console.log(`Itinerary generated with model: ${modelName}`);
-            lastError = null;
-            break; // success — stop trying
-          } catch (modelErr) {
-            console.warn(`Model ${modelName} failed: ${modelErr.message}`);
-            lastError = modelErr;
-            continue; // always try the next model
-          }
-        }
-
-        if (lastError) {
-          console.error("All models failed. Last error:", lastError.message);
-          const isQuota = lastError.message && (
-            lastError.message.includes("429") ||
-            lastError.message.includes("quota") ||
-            lastError.message.includes("RESOURCE_EXHAUSTED")
+        // Call Groq API
+        try {
+          const response = await axios.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            {
+              model: process.env.GROQ_MODEL || "llama-3.1-70b-versatile",
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userMessage }
+              ],
+              temperature: 0.7,
+              max_tokens: 2000,
+            },
+            {
+              headers: {
+                "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+            }
           );
-          return res.status(isQuota ? 429 : 500).json({
-            error: isQuota
-              ? "All Gemini AI models have exceeded their free-tier quota. Please create a new API key at https://aistudio.google.com/app/apikey and update GEMINI_API_KEY in backend/.env."
-              : "AI generation failed: " + lastError.message,
+
+          if (response.data.choices && response.data.choices[0].message) {
+            itinerary = response.data.choices[0].message.content;
+            console.log(`✅ Itinerary generated with Groq: ${process.env.GROQ_MODEL}`);
+          } else {
+            throw new Error("Invalid response format from Groq API");
+          }
+        } catch (apiError) {
+          console.error("❌ Groq API Error:", {
+            status: apiError.response?.status,
+            message: apiError.message,
+            data: apiError.response?.data
           });
+          let statusCode = 500;
+          let errorMessage = "AI generation failed";
+
+          if (apiError.response?.status === 429) {
+            statusCode = 429;
+            errorMessage = "API rate limit exceeded. Please try again later.";
+          } else if (apiError.response?.status === 401 || apiError.response?.status === 403) {
+            statusCode = 401;
+            errorMessage = "Groq API authentication failed. Please verify your GROQ_API_KEY in backend/.env";
+          } else if (apiError.response?.data?.error?.message) {
+            errorMessage = apiError.response.data.error.message;
+          } else {
+            errorMessage = apiError.message;
+          }
+
+          return res.status(statusCode).json({ error: errorMessage });
         }
       } catch (aiError) {
-        console.error("Gemini AI Error:", aiError.message);
-        if (aiError.message && (aiError.message.includes("429") || aiError.message.includes("quota"))) {
-          return res.status(429).json({
-            error: "AI service quota exceeded. Please try again later or refresh your API key.",
-          });
-        }
+        console.error("Itinerary generation error:", aiError.message);
         return res.status(500).json({
-          error: "AI generation failed: " + aiError.message,
+          error: "Failed to generate itinerary: " + aiError.message,
         });
       }
     } else {
       // Generate demo itinerary when API key is not available
       if (customPrompt) {
-        itinerary = `[DEMO MODE — No GEMINI_API_KEY configured]\n\nYour prompt:\n${customPrompt}\n\nAdd a valid GEMINI_API_KEY to backend/.env to get real AI-generated itineraries.`;
+        itinerary = `[DEMO MODE — No GROQ_API_KEY configured]\n\nYour prompt:\n${customPrompt}\n\nAdd a valid GROQ_API_KEY to backend/.env to get real AI-generated itineraries.`;
       } else {
         itinerary = generateDemoItinerary(destination, days, budget, travelStyle, interests);
       }

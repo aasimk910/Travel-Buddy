@@ -266,10 +266,10 @@ const ItineraryGenerator: React.FC = () => {
       </div>
 
       {/* Main grid */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-5 min-h-0">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-5 min-h-0 overflow-hidden">
 
         {/* ── LEFT — Form (mode-conditional) ──────────────── */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin' }}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 overflow-y-auto pr-1 min-h-0" style={{ scrollbarWidth: 'thin' }}>
 
         {activeTab === 'custom' ? (
           /* ─── Custom Prompt panel ─────────────────────── */
@@ -479,7 +479,7 @@ const ItineraryGenerator: React.FC = () => {
         </form>
 
         {/* ── RIGHT — Output ───────────────────────────────── */}
-        <div className="glass-card rounded-xl flex flex-col min-h-0 overflow-hidden">
+        <div className="glass-card rounded-xl flex flex-col h-full overflow-hidden">
 
           {/* Output header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0">
@@ -509,12 +509,12 @@ const ItineraryGenerator: React.FC = () => {
                 </div>
                 <div className="text-center">
                   <p className="text-white font-medium mb-1">Planning your trip...</p>
-                  <p className="text-white/55 text-sm">Gemini AI is crafting your itinerary</p>
+                  <p className="text-white/55 text-sm">Groq AI is crafting your itinerary</p>
                 </div>
                 <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
               </div>
             ) : generatedItinerary ? (
-              <div className="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed">
+              <div className="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed pr-2">
                 {generatedItinerary}
               </div>
             ) : (
