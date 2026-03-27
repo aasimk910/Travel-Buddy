@@ -94,7 +94,7 @@ export default function BookingConfirmation() {
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300">Total Amount:</span>
                   <span className="text-white font-semibold">
-                    {bookingData.currency} {bookingData.totalPrice}
+                    NPR {bookingData.totalPrice?.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">

@@ -501,7 +501,7 @@ const ItineraryGenerator: React.FC = () => {
           </div>
 
           {/* Output body */}
-          <div className="flex-1 overflow-y-auto px-5 py-4" style={{ scrollbarWidth: 'thin' }}>
+          <div className="h-0 flex-1 overflow-y-auto px-5 py-4" style={{ scrollbarWidth: 'thin' }}>
             {isLoading ? (
               <div className="flex flex-col items-center justify-center h-full gap-4">
                 <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center">

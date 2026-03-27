@@ -5,6 +5,8 @@ const User = require("../models/User");
 const Hike = require("../models/Hike");
 const Hotel = require("../models/Hotel");
 const HotelPackage = require("../models/HotelPackage");
+const HotelBooking = require("../models/HotelBooking");
+const Product = require("../models/Product");
 const { authenticateToken, adminOnly } = require("../middleware/auth");
 
 const router = express.Router();
@@ -367,17 +369,338 @@ router.post("/clear-hikes", async (req, res) => {
   }
 });
 
+// ─── Hotels (Admin CRUD) ──────────────────────────────────────────────────────
+
+// GET /api/admin/hotels - List all hotels with package count
+router.get("/hotels", async (req, res) => {
+  try {
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const query = search
+      ? { $or: [{ name: { $regex: search, $options: "i" } }, { location: { $regex: search, $options: "i" } }] }
+      : {};
+    const [hotels, total] = await Promise.all([
+      Hotel.find(query).sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit)),
+      Hotel.countDocuments(query),
+    ]);
+    res.json({ hotels, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) } });
+  } catch (err) {
+    console.error("Admin list hotels error:", err);
+    res.status(500).json({ message: "Unable to fetch hotels." });
+  }
+});
+
+// GET /api/admin/hotels/:id - Single hotel with packages
+router.get("/hotels/:id", async (req, res) => {
+  try {
+    const hotel = await Hotel.findById(req.params.id).populate("packages");
+    if (!hotel) return res.status(404).json({ message: "Hotel not found." });
+    res.json(hotel);
+  } catch (err) {
+    console.error("Admin get hotel error:", err);
+    res.status(500).json({ message: "Unable to fetch hotel." });
+  }
+});
+
+// POST /api/admin/hotels - Create hotel
+router.post("/hotels", async (req, res) => {
+  try {
+    const { name, location, description, contactPhone, email, website, imageUrl, rating, amenities, coordinates } = req.body;
+    if (!name || !location) return res.status(400).json({ message: "Name and location are required." });
+    const hotel = await Hotel.create({
+      name: name.trim(),
+      location: location.trim(),
+      description: description?.trim(),
+      contactPhone: contactPhone?.trim(),
+      email: email?.trim(),
+      website: website?.trim(),
+      imageUrl: imageUrl?.trim(),
+      rating: rating ? Number(rating) : 4.0,
+      amenities: amenities || [],
+      coordinates: coordinates?.lat && coordinates?.lng ? { lat: Number(coordinates.lat), lng: Number(coordinates.lng) } : undefined,
+    });
+    res.status(201).json({ message: "Hotel created.", hotel });
+  } catch (err) {
+    console.error("Admin create hotel error:", err);
+    res.status(500).json({ message: "Unable to create hotel." });
+  }
+});
+
+// PUT /api/admin/hotels/:id - Update hotel
+router.put("/hotels/:id", async (req, res) => {
+  try {
+    const { name, location, description, contactPhone, email, website, imageUrl, rating, amenities, coordinates } = req.body;
+    if (!name || !location) return res.status(400).json({ message: "Name and location are required." });
+    const update = {
+      name: name.trim(),
+      location: location.trim(),
+      description: description?.trim(),
+      contactPhone: contactPhone?.trim(),
+      email: email?.trim(),
+      website: website?.trim(),
+      imageUrl: imageUrl?.trim(),
+      rating: rating ? Number(rating) : undefined,
+      amenities: amenities || [],
+    };
+    if (coordinates?.lat && coordinates?.lng) {
+      update.coordinates = { lat: Number(coordinates.lat), lng: Number(coordinates.lng) };
+    }
+    const hotel = await Hotel.findByIdAndUpdate(req.params.id, update, { new: true });
+    if (!hotel) return res.status(404).json({ message: "Hotel not found." });
+    res.json({ message: "Hotel updated.", hotel });
+  } catch (err) {
+    console.error("Admin update hotel error:", err);
+    res.status(500).json({ message: "Unable to update hotel." });
+  }
+});
+
+// DELETE /api/admin/hotels/:id - Delete hotel and its packages
+router.delete("/hotels/:id", async (req, res) => {
+  try {
+    const hotel = await Hotel.findByIdAndDelete(req.params.id);
+    if (!hotel) return res.status(404).json({ message: "Hotel not found." });
+    await HotelPackage.deleteMany({ hotelId: req.params.id });
+    res.json({ message: "Hotel and its packages deleted." });
+  } catch (err) {
+    console.error("Admin delete hotel error:", err);
+    res.status(500).json({ message: "Unable to delete hotel." });
+  }
+});
+
+// GET /api/admin/packages - List all packages across all hotels
+router.get("/packages", async (req, res) => {
+  try {
+    const { page = 1, limit = 15, search = "", hotelId = "" } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const query = {};
+    if (hotelId) query.hotelId = hotelId;
+    if (search) query.name = { $regex: search, $options: "i" };
+    const [packages, total] = await Promise.all([
+      HotelPackage.find(query)
+        .populate("hotelId", "name location")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit)),
+      HotelPackage.countDocuments(query),
+    ]);
+    res.json({ packages, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) } });
+  } catch (err) {
+    console.error("Admin list packages error:", err);
+    res.status(500).json({ message: "Unable to fetch packages." });
+  }
+});
+
+// POST /api/admin/hotels/:id/packages - Add package to hotel
+router.post("/hotels/:id/packages", async (req, res) => {
+  try {
+    const hotel = await Hotel.findById(req.params.id);
+    if (!hotel) return res.status(404).json({ message: "Hotel not found." });
+    const { name, roomType, pricePerNight, capacity, amenities, availableRooms, minStayNights, maxStayNights, cancellationPolicy } = req.body;
+    if (!name || !roomType || !pricePerNight) return res.status(400).json({ message: "Name, roomType and pricePerNight are required." });
+    const pkg = await HotelPackage.create({
+      hotelId: hotel._id,
+      name: name.trim(),
+      roomType,
+      pricePerNight: Number(pricePerNight),
+      capacity: Number(capacity) || 2,
+      amenities: amenities || [],
+      availableRooms: Number(availableRooms) || 5,
+      minStayNights: Number(minStayNights) || 1,
+      maxStayNights: maxStayNights ? Number(maxStayNights) : undefined,
+      cancellationPolicy: cancellationPolicy || "free",
+    });
+    hotel.packages.push(pkg._id);
+    await hotel.save();
+    res.status(201).json({ message: "Package added.", package: pkg });
+  } catch (err) {
+    console.error("Admin add package error:", err);
+    res.status(500).json({ message: "Unable to add package." });
+  }
+});
+
+// PUT /api/admin/packages/:id - Update package
+router.put("/packages/:id", async (req, res) => {
+  try {
+    const { name, roomType, pricePerNight, capacity, amenities, availableRooms, minStayNights, maxStayNights, cancellationPolicy } = req.body;
+    if (!name || !roomType || !pricePerNight) return res.status(400).json({ message: "Name, roomType and pricePerNight are required." });
+    const pkg = await HotelPackage.findByIdAndUpdate(req.params.id, {
+      name: name.trim(), roomType, pricePerNight: Number(pricePerNight),
+      capacity: Number(capacity) || 2, amenities: amenities || [],
+      availableRooms: Number(availableRooms) || 5,
+      minStayNights: Number(minStayNights) || 1,
+      maxStayNights: maxStayNights ? Number(maxStayNights) : undefined,
+      cancellationPolicy: cancellationPolicy || "free",
+    }, { new: true });
+    if (!pkg) return res.status(404).json({ message: "Package not found." });
+    res.json({ message: "Package updated.", package: pkg });
+  } catch (err) {
+    console.error("Admin update package error:", err);
+    res.status(500).json({ message: "Unable to update package." });
+  }
+});
+
+// DELETE /api/admin/packages/:id - Delete package
+router.delete("/packages/:id", async (req, res) => {
+  try {
+    const pkg = await HotelPackage.findByIdAndDelete(req.params.id);
+    if (!pkg) return res.status(404).json({ message: "Package not found." });
+    // Remove from hotel's packages array
+    await Hotel.updateOne({ packages: pkg._id }, { $pull: { packages: pkg._id } });
+    res.json({ message: "Package deleted." });
+  } catch (err) {
+    console.error("Admin delete package error:", err);
+    res.status(500).json({ message: "Unable to delete package." });
+  }
+});
+
+// ─── Bookings (Admin) ──────────────────────────────────────────────────────────
+
+// GET /api/admin/bookings - List all bookings
+router.get("/bookings", async (req, res) => {
+  try {
+    const { page = 1, limit = 10, search = "", status = "" } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const query = {};
+    if (status && status !== "all") query.status = status;
+    if (search) {
+      query.$or = [
+        { bookingReference: { $regex: search, $options: "i" } },
+        { guestName: { $regex: search, $options: "i" } },
+        { guestEmail: { $regex: search, $options: "i" } },
+      ];
+    }
+    const [bookings, total] = await Promise.all([
+      HotelBooking.find(query)
+        .populate("userId", "name email")
+        .populate("hotelId", "name location")
+        .populate("packageId", "name roomType pricePerNight")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit)),
+      HotelBooking.countDocuments(query),
+    ]);
+    res.json({ bookings, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) } });
+  } catch (err) {
+    console.error("Admin list bookings error:", err);
+    res.status(500).json({ message: "Unable to fetch bookings." });
+  }
+});
+
+// PATCH /api/admin/bookings/:id/status - Update booking status
+router.patch("/bookings/:id/status", async (req, res) => {
+  try {
+    const { status, paymentStatus } = req.body;
+    const update = {};
+    if (status && ["pending", "confirmed", "cancelled"].includes(status)) update.status = status;
+    if (paymentStatus && ["unpaid", "partial", "paid"].includes(paymentStatus)) update.paymentStatus = paymentStatus;
+    if (!Object.keys(update).length) return res.status(400).json({ message: "Provide status or paymentStatus." });
+    const booking = await HotelBooking.findByIdAndUpdate(req.params.id, update, { new: true })
+      .populate("userId", "name email")
+      .populate("hotelId", "name location")
+      .populate("packageId", "name roomType pricePerNight");
+    if (!booking) return res.status(404).json({ message: "Booking not found." });
+    res.json({ message: "Booking updated.", booking });
+  } catch (err) {
+    console.error("Admin update booking error:", err);
+    res.status(500).json({ message: "Unable to update booking." });
+  }
+});
+
+// DELETE /api/admin/bookings/:id - Delete booking
+router.delete("/bookings/:id", async (req, res) => {
+  try {
+    const booking = await HotelBooking.findByIdAndDelete(req.params.id);
+    if (!booking) return res.status(404).json({ message: "Booking not found." });
+    res.json({ message: "Booking deleted." });
+  } catch (err) {
+    console.error("Admin delete booking error:", err);
+    res.status(500).json({ message: "Unable to delete booking." });
+  }
+});
+
+// ─── Products ──────────────────────────────────────────────────────────────────
+
+// GET /api/admin/products - List all products
+router.get("/products", async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search = "", category = "" } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const query = {};
+    if (search) query.name = { $regex: search, $options: "i" };
+    if (category) query.category = category;
+    const [products, total] = await Promise.all([
+      Product.find(query).sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit)),
+      Product.countDocuments(query),
+    ]);
+    res.json({ products, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) } });
+  } catch (err) {
+    console.error("Admin list products error:", err);
+    res.status(500).json({ message: "Unable to fetch products." });
+  }
+});
+
+// POST /api/admin/products - Create a product
+router.post("/products", async (req, res) => {
+  try {
+    const { name, category, price, description, badge, img, images, inStock, featured } = req.body;
+    if (!name || !category || price === undefined) {
+      return res.status(400).json({ message: "Name, category, and price are required." });
+    }
+    const product = await Product.create({ name, category, price, description, badge: badge || null, img, images: images || [], inStock, featured });
+    res.status(201).json({ message: "Product created.", product });
+  } catch (err) {
+    console.error("Admin create product error:", err);
+    res.status(500).json({ message: "Unable to create product." });
+  }
+});
+
+// PUT /api/admin/products/:id - Update a product
+router.put("/products/:id", async (req, res) => {
+  try {
+    const { name, category, price, description, badge, img, images, inStock, featured } = req.body;
+    if (!name || !category || price === undefined) {
+      return res.status(400).json({ message: "Name, category, and price are required." });
+    }
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { name, category, price, description, badge: badge || null, img, images: images || [], inStock, featured },
+      { new: true, runValidators: true }
+    );
+    if (!product) return res.status(404).json({ message: "Product not found." });
+    res.json({ message: "Product updated.", product });
+  } catch (err) {
+    console.error("Admin update product error:", err);
+    res.status(500).json({ message: "Unable to update product." });
+  }
+});
+
+// DELETE /api/admin/products/:id - Delete a product
+router.delete("/products/:id", async (req, res) => {
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found." });
+    res.json({ message: "Product deleted." });
+  } catch (err) {
+    console.error("Admin delete product error:", err);
+    res.status(500).json({ message: "Unable to delete product." });
+  }
+});
+
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
 // GET /api/admin/stats - Dashboard stats
 router.get("/stats", async (req, res) => {
   try {
-    const [totalUsers, totalAdmins, totalHikes] = await Promise.all([
+    const [totalUsers, totalAdmins, totalHikes, totalHotels, totalBookings, pendingBookings, totalProducts] = await Promise.all([
       User.countDocuments({ role: { $ne: "admin" } }),
       User.countDocuments({ role: "admin" }),
       Hike.countDocuments(),
+      Hotel.countDocuments(),
+      HotelBooking.countDocuments(),
+      HotelBooking.countDocuments({ status: "pending" }),
+      Product.countDocuments(),
     ]);
-    res.json({ totalUsers, totalAdmins, totalHikes });
+    res.json({ totalUsers, totalAdmins, totalHikes, totalHotels, totalBookings, pendingBookings, totalProducts });
   } catch (err) {
     console.error("Admin stats error:", err);
     res.status(500).json({ message: "Unable to fetch stats." });

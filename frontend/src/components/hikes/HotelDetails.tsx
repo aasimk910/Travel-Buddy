@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronDown, MapPin, Phone, Mail, Globe, Star, Users, DollarSign, Wifi, UtensilsCrossed, BookOpen } from "lucide-react";
+import { ChevronDown, MapPin, Phone, Mail, Globe, Star, Users, Wifi, UtensilsCrossed, BookOpen } from "lucide-react";
 import { Hotel, HotelPackage } from "../../services/hikes";
 import BookingModal from "./BookingModal";
 
@@ -199,8 +199,7 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ hotels, hikeId, hikeDate })
                         <div className="flex items-center gap-2">
                           <div className="text-right">
                             <p className="text-base font-bold text-emerald-400 flex items-center gap-1">
-                              <DollarSign className="w-4 h-4" />
-                              {pkg.pricePerNight} {pkg.currency}
+                              NPR {pkg.pricePerNight.toLocaleString()}
                             </p>
                             <p className="text-xs text-gray-200">/night</p>
                           </div>

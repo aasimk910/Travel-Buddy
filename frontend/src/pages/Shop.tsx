@@ -59,18 +59,18 @@ const CATEGORIES = [
 const PRODUCTS: Product[] = [
   // ── Backpacks ──────────────────────────────────────────────────────────────
   {
-    id: 1, name: 'Osprey Atmos AG 65L', category: 'Backpacks', price: 18500, rating: 4.9, reviews: 312, badge: 'Best Seller',
-    img: 'https://images.pexels.com/photos/1271620/pexels-photo-1271620.jpeg?auto=compress&w=400',
+    id: 1, name: 'Osprey Atmos AG 65L', category: 'Backpacks', price: 24500, rating: 4.9, reviews: 512, badge: 'Best Seller',
+    img: 'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=400',
     images: [
-      'https://images.pexels.com/photos/1271620/pexels-photo-1271620.jpeg?auto=compress&w=800',
-      'https://images.pexels.com/photos/2166456/pexels-photo-2166456.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/2166456/pexels-photo-2166456.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=800',
+      'https://images.pexels.com/photos/1271620/pexels-photo-1271620.jpeg?auto=compress&w=800',
     ],
-    description: 'Industry-leading Anti-Gravity suspension distributes weight across hips and back. Includes integrated rain cover, sleeping bag compartment, and 65 L of organised storage. Ideal for Annapurna Circuit and EBC treks.',
+    description: 'Award-winning 65 L Anti-Gravity suspension pack weighing 2.07 kg. The mesh trampoline back panel floats the load off your spine and channels air through the entire back. Ideal for multi-day Himalayan treks with heavy food carries.',
   },
   {
-    id: 2, name: 'Deuter Speed Lite 32L', category: 'Backpacks', price: 9800, rating: 4.7, reviews: 184, badge: null,
+    id: 2, name: 'Deuter Futura Pro 36L', category: 'Backpacks', price: 11200, rating: 4.7, reviews: 223, badge: null,
     img: 'https://images.pexels.com/photos/2385210/pexels-photo-2385210.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/2385210/pexels-photo-2385210.jpeg?auto=compress&w=800',
@@ -78,10 +78,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1271620/pexels-photo-1271620.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/2166456/pexels-photo-2166456.jpeg?auto=compress&w=800',
     ],
-    description: 'Ultralight 32 L pack weighing just 780 g. Ventilated Aircomfort back system, hip belt pockets, and hydration sleeve. The go-to pack for single-day summit attempts.',
+    description: 'Spacious 36 L trekking pack with Aircomfort Vari-Flex back system that self-adjusts to your stride. Generous 26 cm height adjustment range, twin hip-belt pockets, and a separate lower compartment for wet gear.',
   },
   {
-    id: 3, name: 'Gregory Baltoro 75L', category: 'Backpacks', price: 22000, rating: 4.8, reviews: 97, badge: 'Top Rated',
+    id: 3, name: 'Gregory Baltoro 75L', category: 'Backpacks', price: 23500, rating: 4.8, reviews: 115, badge: 'Top Rated',
     img: 'https://images.pexels.com/photos/2166456/pexels-photo-2166456.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/2166456/pexels-photo-2166456.jpeg?auto=compress&w=800',
@@ -89,10 +89,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/2385210/pexels-photo-2385210.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=800',
     ],
-    description: 'The benchmark for load-hauling comfort on extended expeditions. Response A3 hip-belt auto-adjusts with every step. Dual ice-axe loops and a floating lid make it fully mountaineering-ready.',
+    description: 'Industry benchmark for load-hauling comfort on extended expeditions. Response A3 hip-belt auto-adjusts with every step. Dual ice-axe loops, a rain cover, and a floating top lid make it fully expedition-ready.',
   },
   {
-    id: 4, name: 'Black Diamond Bullet 16L', category: 'Backpacks', price: 5600, rating: 4.5, reviews: 148, badge: 'New',
+    id: 4, name: 'Tortuga Setout 45L Travel Pack', category: 'Backpacks', price: 6800, rating: 4.6, reviews: 176, badge: 'New',
     img: 'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=800',
@@ -100,11 +100,11 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1153369/pexels-photo-1153369.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
     ],
-    description: 'Minimalist 16 L climbing pack with a clean top-loading design and removable frame sheet. Durable Dyneema face fabric keeps it under 450 g — perfect for via ferrata and sport climbing days.',
+    description: 'Carry-on compliant 45 L travel pack with a clamshell opening, lockable zippers, and padded laptop sleeve. Hip-belt stows away when not needed. Durable 420D nylon handles monsoon conditions on the trail to Lukla.',
   },
   // ── Camping ────────────────────────────────────────────────────────────────
   {
-    id: 5, name: 'MSR Hubba Hubba NX 2P', category: 'Camping', price: 28500, rating: 4.9, reviews: 203, badge: 'Best Seller',
+    id: 5, name: 'Big Agnes Copper Spur HV UL 2P', category: 'Camping', price: 32000, rating: 4.9, reviews: 241, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=800',
@@ -112,10 +112,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
     ],
-    description: 'Ultralight freestanding 3-season tent, 1.72 kg. Dual-door design with full-coverage fly, 3000 mm hydrostatic rating, and Easton Syclone poles that snap together in under 3 minutes.',
+    description: 'Featherlight freestanding 2-person tent at just 1.06 kg. Hub-and-pole architecture erects in 3 minutes. Dual vestibules provide 1.1 m² of gear storage each. 1500 mm rated fly handles Himalayan rain squalls with ease.',
   },
   {
-    id: 6, name: 'Sea to Summit Reactor Sleeping Bag', category: 'Camping', price: 14200, rating: 4.7, reviews: 156, badge: null,
+    id: 6, name: 'Western Mountaineering Alpinlite 35°F Bag', category: 'Camping', price: 18500, rating: 4.8, reviews: 178, badge: null,
     img: 'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=800',
@@ -123,10 +123,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
     ],
-    description: '850-fill ethically sourced down rated to -12 °C.  Thermal Comfort mapping adds insulation at feet and core. Side-block baffles prevent down shifting — no more cold spots at night in high camp.',
+    description: '850-fill power goose down in an ultralight 11 oz body. Comfort rating 2 °C, lower limit -4 °C. Full-length draft collar and anti-snag YKK zipper. The preferred high-altitude sleeping bag on Everest expedition teams.',
   },
   {
-    id: 7, name: 'MSR PocketRocket Deluxe Stove', category: 'Camping', price: 6500, rating: 4.8, reviews: 289, badge: 'Top Rated',
+    id: 7, name: 'Jetboil Flash Cooking System', category: 'Camping', price: 7800, rating: 4.9, reviews: 334, badge: 'Top Rated',
     img: 'https://images.pexels.com/photos/6271625/pexels-photo-6271625.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/6271625/pexels-photo-6271625.jpeg?auto=compress&w=800',
@@ -134,10 +134,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
     ],
-    description: 'Weighs just 73 g and boils 1 L of water in 3.5 minutes. Precision flame control from full simmer to roaring boil. Wind-resistant burner and integrated pressure regulator performs at altitude.',
+    description: 'All-in-one stove-and-pot system that boils 500 ml in just 100 seconds. Push-button igniter, insulating cozy, and colour-change heat indicator. FluxRing technology is 50 % more fuel efficient than conventional stoves at altitude.',
   },
   {
-    id: 8, name: 'Therm-a-Rest NeoAir XLite', category: 'Camping', price: 11800, rating: 4.6, reviews: 134, badge: null,
+    id: 8, name: 'Therm-a-Rest NeoAir XTherm NXT', category: 'Camping', price: 13500, rating: 4.7, reviews: 156, badge: null,
     img: 'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
@@ -145,11 +145,11 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=800',
     ],
-    description: 'R-value of 4.2 in a 350 g ultralight inflatable pad. Triangular Core Matrix construction and heat-reflective film keep you off the cold ground. WingLock valve inflates in under 60 seconds.',
+    description: 'R-value of 7.3 in a 430 g inflatable pad — the highest warmth-to-weight ratio available. Triangular Core Matrix baffles maximise insulation without bulk. WingLock valve inflates fully in 10 breaths and seals airtight.',
   },
   // ── Footwear ───────────────────────────────────────────────────────────────
   {
-    id: 9, name: 'Salomon X Ultra 4 GTX', category: 'Footwear', price: 12500, rating: 4.8, reviews: 347, badge: 'Best Seller',
+    id: 9, name: 'Salomon X Ultra 4 Mid GTX', category: 'Footwear', price: 13800, rating: 4.8, reviews: 389, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&w=800',
@@ -157,10 +157,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1619535/pexels-photo-1619535.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/3682215/pexels-photo-3682215.jpeg?auto=compress&w=800',
     ],
-    description: 'Waterproof Gore-Tex membrane with suede and textile upper. Contagrip MA outsole locks in on wet rocks and muddy switchbacks. Sensifit cradle wraps the foot for a precision, glove-like hold.',
+    description: 'Mid-cut waterproof Gore-Tex membrane boot with reinforced ankle collar. Contagrip MA outsole locks in on wet rocks and muddy switchbacks across Nepal trails. Sensifit cradle wraps the foot for a precision hold on long descent days.',
   },
   {
-    id: 10, name: 'La Sportiva Trango TRK GTX', category: 'Footwear', price: 18900, rating: 4.9, reviews: 92, badge: 'Top Rated',
+    id: 10, name: 'Scarpa Zodiac Plus GTX', category: 'Footwear', price: 21500, rating: 4.9, reviews: 108, badge: 'Top Rated',
     img: 'https://images.pexels.com/photos/1464625/pexels-photo-1464625.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1464625/pexels-photo-1464625.jpeg?auto=compress&w=800',
@@ -168,10 +168,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/3682215/pexels-photo-3682215.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1619535/pexels-photo-1619535.jpeg?auto=compress&w=800',
     ],
-    description: 'Backpacking boot with a Nubuck leather upper and Gore-Tex lining rated to 3-season use. FriXion AT outsole with self-cleaning lugs designed specifically for Himalayan approach terrain.',
+    description: 'Technical approach boot with full-grain leather upper and Gore-Tex lining. Vibram Drumlin outsole with Climbing Zone heel provides precise edging on boulder approaches to base camps. Crampon-compatible welt for lightweight glacier travel.',
   },
   {
-    id: 11, name: 'Black Diamond Distance Carbon Z Poles', category: 'Footwear', price: 7200, rating: 4.7, reviews: 218, badge: null,
+    id: 11, name: 'Black Diamond Distance Carbon Z Poles', category: 'Footwear', price: 7800, rating: 4.7, reviews: 245, badge: null,
     img: 'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
@@ -179,10 +179,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1464625/pexels-photo-1464625.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
     ],
-    description: 'Carbon fibre Z-style folding poles that pack to 38 cm. Non-flick FlickLock Pro collar adjusts in seconds with gloves. Carbide tech tips and interchangeable baskets for all terrain.',
+    description: 'Carbon fibre Z-style folding poles collapsing to just 38 cm. Non-flick FlickLock Pro collar adjusts in seconds even with gloves. Carbide tech tips, EVA cork grip, and interchangeable baskets for all terrain types.',
   },
   {
-    id: 12, name: 'Darn Tough Hiker Boot Sock', category: 'Footwear', price: 1850, rating: 4.6, reviews: 504, badge: 'New',
+    id: 12, name: 'Smartwool PhD Outdoor Heavy Crew Sock', category: 'Footwear', price: 2200, rating: 4.7, reviews: 631, badge: 'New',
     img: 'https://images.pexels.com/photos/1619535/pexels-photo-1619535.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1619535/pexels-photo-1619535.jpeg?auto=compress&w=800',
@@ -190,11 +190,11 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/3682215/pexels-photo-3682215.jpeg?auto=compress&w=800',
     ],
-    description: '61 % fine merino wool construction with targeted cushioning under heel and ball. Machine-washable and backed by the brand\'s unconditional lifetime guarantee against holes and wear.',
+    description: '56 % fine Merino wool blend with indestructible Cordura nylon reinforcement at heel and toe. Targeted cushioning zones under ball and arch. Machine-washable with a lifetime guarantee — no questions asked.',
   },
   // ── Photography ────────────────────────────────────────────────────────────
   {
-    id: 13, name: 'GoPro HERO 12 Black', category: 'Photography', price: 38000, rating: 4.8, reviews: 276, badge: 'Best Seller',
+    id: 13, name: 'DJI Action 5 Pro', category: 'Photography', price: 44000, rating: 4.9, reviews: 312, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=800',
@@ -202,10 +202,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/821652/pexels-photo-821652.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&w=800',
     ],
-    description: '5.3K60 video and 27 MP photos in a waterproof body rated to 10 m. HyperSmooth 6.0 eliminates trail-induced shake. Enduro battery adds 38 % more run time in cold mountain conditions.',
+    description: '4K120 slow-motion video and 50 MP stills in a ruggedised body waterproof to 20 m without a case. 10-bit D-Log M colour profile for stunning sunset footage over Annapurna. Magnetic quick-release mount and 3-hour battery life.',
   },
   {
-    id: 14, name: 'Joby GorillaPod 3K Kit', category: 'Photography', price: 8900, rating: 4.6, reviews: 163, badge: null,
+    id: 14, name: 'Joby GorillaPod 5K Kit', category: 'Photography', price: 9800, rating: 4.6, reviews: 189, badge: null,
     img: 'https://images.pexels.com/photos/243757/pexels-photo-243757.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/243757/pexels-photo-243757.jpeg?auto=compress&w=800',
@@ -213,10 +213,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/821652/pexels-photo-821652.jpeg?auto=compress&w=800',
     ],
-    description: 'Flexible tripod holds up to 3 kg and wraps around branches, railings, or uneven rock. Includes quick-release plate and ball head. Folds to 26 cm and weighs just 485 g.',
+    description: 'Flexible tripod supports up to 5 kg and wraps around branches, railings, or uneven rock. Includes quick-release plate, ball head, and GorillaPod phone mount. Folds to 28 cm and weighs just 520 g.',
   },
   {
-    id: 15, name: 'Peak Design Capture Clip V3', category: 'Photography', price: 11200, rating: 4.9, reviews: 88, badge: 'Top Rated',
+    id: 15, name: 'Peak Design Capture Clip V3', category: 'Photography', price: 11500, rating: 4.9, reviews: 103, badge: 'Top Rated',
     img: 'https://images.pexels.com/photos/821652/pexels-photo-821652.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/821652/pexels-photo-821652.jpeg?auto=compress&w=800',
@@ -224,10 +224,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&w=800',
     ],
-    description: 'Stainless steel camera clip that mounts to any backpack strap or belt. One-handed capture and re-attachment in under a second. Arca-Swiss compatible and rated to 45 kg pull strength.',
+    description: 'Aluminium and stainless steel camera clip mounts to any backpack strap or belt in seconds. One-handed capture and re-attachment in under a second. Arca-Swiss compatible and tested to 45 kg pull strength — trail-proof.',
   },
   {
-    id: 16, name: 'Anker 737 Power Bank 26800mAh', category: 'Photography', price: 9500, rating: 4.7, reviews: 412, badge: null,
+    id: 16, name: 'Anker 747 Power Bank 26000mAh', category: 'Photography', price: 10500, rating: 4.8, reviews: 467, badge: null,
     img: 'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&w=800',
@@ -235,11 +235,11 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/243757/pexels-photo-243757.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=800',
     ],
-    description: '26800 mAh, 140 W bi-directional charging charges a MacBook from 0–80 % in 45 min. Charges 3 devices simultaneously. Temperature-optimised for cold ridgeline conditions down to -10 °C.',
+    description: '26000 mAh, 150 W bi-directional GaN charging. Charges a MacBook Pro from 0–80 % in 43 minutes and an iPhone 15 three full times. Three simultaneous outputs. Low-temperature rated to -20 °C for high-altitude use.',
   },
   // ── Navigation ─────────────────────────────────────────────────────────────
   {
-    id: 17, name: 'Garmin inReach Mini 2', category: 'Navigation', price: 42000, rating: 4.9, reviews: 134, badge: 'Top Rated',
+    id: 17, name: 'Garmin inReach Mini 2', category: 'Navigation', price: 45000, rating: 4.9, reviews: 158, badge: 'Top Rated',
     img: 'https://images.pexels.com/photos/3608311/pexels-photo-3608311.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/3608311/pexels-photo-3608311.jpeg?auto=compress&w=800',
@@ -247,10 +247,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
     ],
-    description: '100 % global satellite coverage for two-way messaging and SOS even where no mobile signal exists. Tracks your route by GPS, syncs with Garmin Explore app, and the 90 g body clips to any strap.',
+    description: '100 % global Iridium satellite coverage for two-way messaging and triggered SOS even beyond every mobile network. 90 g body pairs with Garmin Explore app for live track-sharing with family at base.',
   },
   {
-    id: 18, name: 'Suunto 9 Baro Titanium', category: 'Navigation', price: 56000, rating: 4.8, reviews: 67, badge: 'New',
+    id: 18, name: 'Garmin Fenix 8 Solar', category: 'Navigation', price: 72000, rating: 4.9, reviews: 89, badge: 'New',
     img: 'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&w=800',
@@ -258,10 +258,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
     ],
-    description: 'GPS multisport watch with barometric altimeter and storm-alert function. 170-hour battery in Tour mode. Titanium bezel, sapphire glass, and 100 m water resistance built for serious expedition use.',
+    description: 'Multi-band GPS smartwatch with solar charging, sapphire lens, and titanium bezel. Barometric altimeter, storm alarm, and preloaded TopoActive Nepal maps. Up to 428 hours GPS battery life — outlasts the longest EBC itineraries.',
   },
   {
-    id: 19, name: 'Suunto A-10 Field Compass', category: 'Navigation', price: 2400, rating: 4.5, reviews: 298, badge: null,
+    id: 19, name: 'Suunto A-30 Field Compass', category: 'Navigation', price: 2800, rating: 4.5, reviews: 342, badge: null,
     img: 'https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg?auto=compress&w=800',
@@ -269,10 +269,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
     ],
-    description: 'Liquid-filled baseplate compass with a clinometer and 1:25000 scale. Luminous bezel markings for night navigation. A reliable backup for any electronic device in the field.',
+    description: 'Liquid-filled baseplate compass with a built-in clinometer and 1:25000 map scale. Global needle works across all latitudes without tilting. Luminous bezel markings for night navigation — essential backup for any trek.',
   },
   {
-    id: 20, name: 'Garmin GPSMAP 67i', category: 'Navigation', price: 68000, rating: 4.9, reviews: 49, badge: 'Best Seller',
+    id: 20, name: 'Garmin GPSMAP 67i', category: 'Navigation', price: 71000, rating: 4.9, reviews: 63, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
@@ -280,11 +280,11 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&w=800',
     ],
-    description: 'Handheld GPS with built-in inReach satellite communication, 2.7-inch sunlight-readable display, and 36-hour Li-ion battery. Preloaded TopoActive maps cover all of Nepal at 1:24000 resolution.',
+    description: 'Rugged handheld GPS with built-in inReach satellite messaging and SOS, 2.7-inch sunlight-readable display, and 36-hour battery. Preloaded TopoActive Nepal maps at 1:24000 resolution with hill shading.',
   },
   // ── Safety ─────────────────────────────────────────────────────────────────
   {
-    id: 21, name: 'Adventure Medical Kits Mountain', category: 'Safety', price: 5800, rating: 4.8, reviews: 231, badge: 'Best Seller',
+    id: 21, name: 'Adventure Medical Kits Mountain Series 2.0', category: 'Safety', price: 6500, rating: 4.8, reviews: 267, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/3735747/pexels-photo-3735747.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/3735747/pexels-photo-3735747.jpeg?auto=compress&w=800',
@@ -292,10 +292,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
     ],
-    description: '200+ medical supplies for up to 4 people over 10 days. Includes SAM splint, blister kit, QuikClot gauze, and a comprehensive first-aid guide. Waterproof roll-top bag weighs 620 g.',
+    description: '250+ medical supplies for 4 people over 14 days. Includes SAM splint, blister prevention kit, QuikClot haemostatic gauze, altitude sickness guide, and hypothermia protocol cards. Roll-top waterproof bag, 690 g.',
   },
   {
-    id: 22, name: 'Black Diamond Spot 400 Headlamp', category: 'Safety', price: 3200, rating: 4.7, reviews: 489, badge: null,
+    id: 22, name: 'Petzl Actik Core 600lm Headlamp', category: 'Safety', price: 3800, rating: 4.8, reviews: 534, badge: null,
     img: 'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=800',
@@ -303,10 +303,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=800',
     ],
-    description: '400-lumen waterproof headlamp with strobe, dimming, and red mode. Proximity and distance beams in a single light. PowerTap technology shifts instantly from full to dimmed with a single tap.',
+    description: '600-lumen rechargeable headlamp with white and red lighting modes. REACTIVE LIGHTING technology automatically adjusts brightness to ambient light. IPX4 rated and accepts AAA batteries as backup when the core is depleted.',
   },
   {
-    id: 23, name: 'SOL Escape Bivvy', category: 'Safety', price: 2600, rating: 4.5, reviews: 307, badge: null,
+    id: 23, name: 'SOL Escape Pro Bivvy', category: 'Safety', price: 3100, rating: 4.6, reviews: 358, badge: null,
     img: 'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
@@ -314,10 +314,10 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/3735747/pexels-photo-3735747.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
     ],
-    description: 'Breathable aluminised shell reflects 70 % of radiated body heat. Fits one adult with room for a sleeping bag. Stuffs to fist size at 241 g — the lightest survival shelter in its class.',
+    description: 'Breathable aluminised shell reflects 80 % of radiated body heat while allowing moisture vapour to escape. Fits one adult with full sleeping bag clearance. Stuffs to fist size at 260 g with a built-in hood drawcord.',
   },
   {
-    id: 24, name: 'Fox Whistle + Signal Mirror Combo', category: 'Safety', price: 950, rating: 4.4, reviews: 622, badge: 'New',
+    id: 24, name: 'UST Blaze & Reflect Combo Kit', category: 'Safety', price: 1150, rating: 4.5, reviews: 714, badge: 'New',
     img: 'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
@@ -325,7 +325,7 @@ const PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
     ],
-    description: '120 dB pealess whistle audible up to 2 km combined with an acrylic signal mirror visible to aircraft beyond 15 km. Both attach to a single carabiner — 18 g of emergency signalling capability.',
+    description: '120 dB pealess whistle audible over 2.5 km, paired with a military-spec acrylic signal mirror visible to search aircraft beyond 16 km. Combo clips to a locking carabiner — just 22 g of life-saving emergency signalling.',
   },
 ];
 

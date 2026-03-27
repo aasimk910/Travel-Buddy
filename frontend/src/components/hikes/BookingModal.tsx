@@ -154,7 +154,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
             <h4 className="text-xl font-bold text-white mb-2">{hotel.name}</h4>
             <p className="text-base text-gray-200 mb-1">Package: {pkg.name}</p>
             <p className="text-lg text-emerald-400 font-semibold">
-              ${pkg.pricePerNight} {pkg.currency}/night
+              NPR {pkg.pricePerNight.toLocaleString()}/night
             </p>
           </div>
 
@@ -245,7 +245,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
               </div>
               <div className="flex justify-between text-base">
                 <span className="text-gray-300">Price per Night:</span>
-                <span className="text-white font-semibold">${pkg.pricePerNight}</span>
+                <span className="text-white font-semibold">NPR {pkg.pricePerNight.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-base">
                 <span className="text-gray-300">Number of Rooms:</span>
@@ -253,7 +253,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
               </div>
               <div className="border-t border-white/10 pt-3 flex justify-between">
                 <span className="text-white font-bold text-lg">Total Price:</span>
-                <span className="text-emerald-400 font-bold text-xl">${calculatedPrice.toFixed(2)}</span>
+                <span className="text-emerald-400 font-bold text-xl">NPR {calculatedPrice.toLocaleString()}</span>
               </div>
             </div>
           )}
