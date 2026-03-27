@@ -197,6 +197,7 @@ const Profile: React.FC = () => {
 
       if (data.user) {
         loginWithProfile({
+          id: data.user.id,
           name: data.user.name,
           email: data.user.email,
           country: data.user.country,
@@ -206,6 +207,8 @@ const Profile: React.FC = () => {
           avatarUrl: data.user.avatarUrl,
           provider: data.user.provider || user?.provider || "password",
           role: data.user.role || user?.role || "user",
+          onboardingCompleted: data.user.onboardingCompleted,
+          hikingProfile: data.user.hikingProfile,
         });
       }
       showSuccess("Profile updated successfully!");

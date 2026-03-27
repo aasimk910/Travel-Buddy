@@ -7,7 +7,7 @@ type PrivateRouteProps = {
 };
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin, user } = useAuth();
   const location = useLocation();
 
   if (!isAuthenticated) {
@@ -18,6 +18,23 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
         state={{ from: location.pathname + location.search }}
       />
     );
+  }
+
+  const isOnboardingPath = location.pathname === "/onboarding";
+  const needsOnboarding = !isAdmin && !user?.onboardingCompleted;
+
+  if (needsOnboarding && !isOnboardingPath) {
+    return (
+      <Navigate
+        to="/onboarding"
+        replace
+        state={{ from: location.pathname + location.search }}
+      />
+    );
+  }
+
+  if (!needsOnboarding && isOnboardingPath) {
+    return <Navigate to="/homepage" replace />;
   }
 
   return children;

@@ -1,11 +1,11 @@
 import React from "react";
-import { Map, LayoutDashboard, LogOut } from "lucide-react";
+import { Map, LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 const TopNav: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const location = useLocation();
 
   const getLinkClass = (path: string) => {
@@ -69,6 +69,16 @@ const TopNav: React.FC = () => {
                 <LayoutDashboard className="w-3.5 h-3.5" />
                 Dashboard
               </Link>
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full glass-button-dark px-4 py-1.5 text-sm font-medium text-amber-300 shadow-sm hover:text-amber-200 transition-colors"
+                  title="Admin Panel"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Admin
+                </Link>
+              )}
               <button
                 onClick={() => { logout?.(); navigate("/"); }}
                 className="hidden sm:inline-flex items-center justify-center rounded-full glass-button px-3 py-1.5 text-sm text-gray-200 hover:text-white transition-colors gap-1"

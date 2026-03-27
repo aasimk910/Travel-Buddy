@@ -6,6 +6,7 @@ import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
+import Onboarding from "./pages/Onboarding";
 import Landing from "./pages/Landing";
 import Homepage from "./pages/Homepage";
 import Hikes from "./pages/Hikes";
@@ -30,6 +31,16 @@ const App = () => {
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route
+            path="/onboarding"
+            element={
+              <PrivateRoute>
+                <MainLayout>
+                  <Onboarding />
+                </MainLayout>
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/homepage"
             element={

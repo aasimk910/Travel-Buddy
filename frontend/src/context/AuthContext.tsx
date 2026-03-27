@@ -21,6 +21,21 @@ export type AuthUser = {
   avatarUrl?: string;
   provider?: "password" | "google";
   role?: "user" | "admin";
+  onboardingCompleted?: boolean;
+  hikingProfile?: {
+    experienceLevel?: "beginner" | "intermediate" | "advanced";
+    fitnessLevel?: "low" | "medium" | "high";
+    preferredDifficulty?: number;
+    preferredRegion?: string;
+    preferredSeason?: "spring" | "summer" | "autumn" | "winter";
+    tripGoal?: "scenic" | "challenge" | "social" | "photography";
+    hikeDuration?: "half-day" | "full-day" | "multi-day";
+    groupPreference?: "solo" | "small-group" | "large-group";
+    maxBudgetPerDay?: number;
+    accommodationPreference?: "basic" | "comfortable" | "luxury";
+    wantsGuide?: boolean;
+    medicalConsiderations?: string;
+  } | null;
 };
 
 interface AuthContextType {

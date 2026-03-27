@@ -82,6 +82,25 @@ export const getHikes = async (): Promise<Hike[]> => {
   return data.hikes || data;
 };
 
+export const getRecommendedHikes = async (token: string): Promise<Hike[]> => {
+  const res = await fetch(`${API_BASE_URL}/api/hikes/recommended`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await res.json();
+  console.log("[Hikes Service] getRecommendedHikes response status:", res.status);
+  console.log("[Hikes Service] getRecommendedHikes response data:", data);
+
+  if (!res.ok) {
+    throw new Error(data?.message || "Unable to fetch recommended hikes.");
+  }
+
+  console.log("[Hikes Service] Returning", data.hikes?.length, "recommended hikes");
+  return data.hikes || [];
+};
+
 export const getHike = async (id: string): Promise<Hike> => {
   const res = await fetch(`${API_BASE_URL}/api/hikes/${id}`);
   const data = await res.json();

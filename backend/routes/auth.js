@@ -41,6 +41,8 @@ const buildUserResponse = (user) => ({
   avatarUrl: user.avatarUrl,
   provider: user.provider,
   role: user.role || "user",
+  onboardingCompleted: Boolean(user.onboardingCompleted),
+  hikingProfile: user.hikingProfile || null,
 });
 
 // POST /api/auth/signup (email/password)

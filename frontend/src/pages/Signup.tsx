@@ -120,6 +120,7 @@ const Signup: React.FC = () => {
 
       if (data.user) {
         loginWithProfile({
+          id: data.user.id,
           name: data.user.name,
           email: data.user.email,
           country: data.user.country,
@@ -128,6 +129,9 @@ const Signup: React.FC = () => {
           interests: data.user.interests,
           avatarUrl: data.user.avatarUrl,
           provider: data.user.provider || "google",
+          role: data.user.role || "user",
+          onboardingCompleted: data.user.onboardingCompleted,
+          hikingProfile: data.user.hikingProfile,
         });
       }
 

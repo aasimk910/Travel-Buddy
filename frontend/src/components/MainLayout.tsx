@@ -1,6 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import TopNav from './homepage/TopNav';
 import Footer from './SiteFooter';
+import { useAuth } from '../context/AuthContext';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -8,6 +10,23 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [scrollY, setScrollY] = useState(0);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated, isAdmin, user } = useAuth();
+
+  useEffect(() => {
+    if (
+      isAuthenticated &&
+      !isAdmin &&
+      !user?.onboardingCompleted &&
+      location.pathname !== '/onboarding'
+    ) {
+      navigate('/onboarding', {
+        replace: true,
+        state: { from: location.pathname + location.search },
+      });
+    }
+  }, [isAuthenticated, isAdmin, user?.onboardingCompleted, location.pathname, location.search, navigate]);
 
   useEffect(() => {
     const onScroll = () => setScrollY(window.scrollY);

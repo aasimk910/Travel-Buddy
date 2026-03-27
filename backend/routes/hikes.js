@@ -1,9 +1,18 @@
 const express = require("express");
 const Hike = require("../models/Hike");
+const OnboardingProfile = require("../models/OnboardingProfile");
 const { authenticateToken } = require("../middleware/auth");
 const { createContentLimiter } = require("../middleware/rateLimiter");
 
 const router = express.Router();
+
+function getSeasonFromDate(dateValue) {
+  const month = new Date(dateValue).getMonth() + 1;
+  if (month >= 3 && month <= 5) return "spring";
+  if (month >= 6 && month <= 8) return "summer";
+  if (month >= 9 && month <= 11) return "autumn";
+  return "winter";
+}
 
 // GET /api/hikes - Get all hikes with pagination
 router.get("/", async (req, res) => {
@@ -32,6 +41,186 @@ router.get("/", async (req, res) => {
   } catch (err) {
     console.error("Fetch hikes error:", err);
     res.status(500).json({ message: "Unable to fetch hikes." });
+  }
+});
+
+// GET /api/hikes/recommended - Personalized recommendations from onboarding answers
+router.get("/recommended", authenticateToken, async (req, res) => {
+  try {
+    const onboardingProfile = await OnboardingProfile.findOne({ userId: req.user._id }).lean();
+
+    console.log("[Recommendations] User:", req.user?.email, "Onboarding completed:", req.user?.onboardingCompleted, "Profile:", onboardingProfile || req.user?.hikingProfile);
+
+    const profile = onboardingProfile || req.user?.hikingProfile;
+
+    if (!req.user?.onboardingCompleted || !profile) {
+      console.log("[Recommendations] Onboarding not completed. Returning error.");
+      return res.status(400).json({
+        message: "Complete onboarding to get personalized hike recommendations.",
+        hikes: [],
+      });
+    }
+
+    console.log("[Recommendations] Using profile:", JSON.stringify(profile, null, 2));
+
+    const {
+      experienceLevel,
+      fitnessLevel,
+      preferredDifficulty,
+      preferredRegion,
+      preferredSeason,
+      tripGoal,
+      hikeDuration,
+      groupPreference,
+      maxBudgetPerDay,
+      accommodationPreference,
+      wantsGuide,
+      medicalConsiderations,
+    } = profile;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const allUpcoming = await Hike.find({ date: { $gte: today } })
+      .populate("hotels")
+      .sort({ date: 1 })
+      .limit(100);
+
+    const normalizedRegion = (preferredRegion || "").toLowerCase();
+    const hasMedicalNotes = Boolean((medicalConsiderations || "").trim());
+
+    const scored = allUpcoming
+      .map((hike) => {
+        let score = 0;
+        const locationText = (hike.location || "").toLowerCase();
+        const titleText = (hike.title || "").toLowerCase();
+        const descriptionText = (hike.description || "").toLowerCase();
+        const combinedText = `${titleText} ${descriptionText}`;
+        const hikeSeason = getSeasonFromDate(hike.date);
+        const hasHotels = (hike.hotels || []).length > 0;
+
+        // Rough budget estimate: harder trails and hotel-heavy routes usually cost more.
+        const estimatedDailyCost = 1000 + hike.difficulty * 900 + (hasHotels ? 1200 : 0);
+        
+        const scores_breakdown = {};
+
+        if (typeof preferredDifficulty === "number") {
+          const diffDelta = Math.abs(hike.difficulty - preferredDifficulty);
+          const pts = Math.max(0, 5 - diffDelta);
+          score += pts;
+          scores_breakdown.difficulty = pts;
+        }
+
+        if (experienceLevel === "beginner" && hike.difficulty <= 2) score += 2;
+        if (experienceLevel === "intermediate" && hike.difficulty >= 2 && hike.difficulty <= 4) score += 2;
+        if (experienceLevel === "advanced" && hike.difficulty >= 4) score += 2;
+
+        if (fitnessLevel === "low" && hike.difficulty <= 2) score += 2;
+        if (fitnessLevel === "medium" && hike.difficulty >= 2 && hike.difficulty <= 4) score += 2;
+        if (fitnessLevel === "high" && hike.difficulty >= 4) score += 2;
+
+        if (normalizedRegion && normalizedRegion.trim() && locationText.includes(normalizedRegion)) {
+          score += 4;
+          scores_breakdown.region = 4;
+        }
+
+        if (preferredSeason && hikeSeason === preferredSeason) {
+          score += 2;
+        }
+
+        if (tripGoal === "challenge" && hike.difficulty >= 4) {
+          score += 2;
+        }
+        if (tripGoal === "scenic" && (titleText.includes("lake") || descriptionText.includes("view"))) {
+          score += 2;
+        }
+        if (tripGoal === "social" && hike.spotsLeft >= 5) {
+          score += 2;
+        }
+        if (tripGoal === "photography" && (titleText.includes("sunrise") || descriptionText.includes("photo"))) {
+          score += 2;
+        }
+
+        if (hikeDuration === "half-day" && hike.difficulty <= 2) {
+          score += 1;
+        }
+        if (hikeDuration === "full-day" && hike.difficulty >= 2 && hike.difficulty <= 4) {
+          score += 1;
+        }
+        if (hikeDuration === "multi-day" && hike.difficulty >= 4) {
+          score += 1;
+        }
+
+        if (groupPreference === "solo" && hike.spotsLeft <= 5) {
+          score += 1;
+        }
+        if (groupPreference === "small-group" && hike.spotsLeft >= 3 && hike.spotsLeft <= 10) {
+          score += 1;
+        }
+        if (groupPreference === "large-group" && hike.spotsLeft >= 8) {
+          score += 1;
+        }
+
+        if (typeof maxBudgetPerDay === "number") {
+          if (estimatedDailyCost <= maxBudgetPerDay) {
+            score += 2;
+          } else {
+            // Mild penalty for going above budget, capped so options still appear.
+            score -= Math.min(2, Math.ceil((estimatedDailyCost - maxBudgetPerDay) / 2000));
+          }
+        }
+
+        if (accommodationPreference === "luxury" && hasHotels) {
+          score += 1;
+        }
+        if (accommodationPreference === "comfortable" && hasHotels) {
+          score += 1;
+        }
+        if (accommodationPreference === "basic" && !hasHotels) {
+          score += 1;
+        }
+
+        if (wantsGuide === true && (combinedText.includes("guide") || combinedText.includes("guided"))) {
+          score += 1;
+        }
+        if (wantsGuide === false && !combinedText.includes("guide") && !combinedText.includes("guided")) {
+          score += 1;
+        }
+
+        // When users mention medical/altitude concerns, favor moderate/easier trails.
+        if (hasMedicalNotes && hike.difficulty <= 3) {
+          score += 2;
+        }
+
+        if (hike._id.toString() === allUpcoming[0]?._id?.toString()) {
+          console.log("[Recommendations] Sample hike:", hike.title, "Score breakdown:", scores_breakdown, "Total:", score);
+        }
+        
+        return { hike, score };
+      })
+      .sort((a, b) => b.score - a.score);
+    
+    console.log("[Recommendations] All scores:", scored.map(s => ({ title: s.hike.title, score: s.score })));
+
+    const topScore = scored[0]?.score ?? 0;
+    const minScoreThreshold = Math.max(6, Math.ceil(topScore * 0.45));
+
+    const recommendedEntries = scored
+      .filter((entry) => entry.score >= minScoreThreshold)
+      .slice(0, 4);
+
+    // Fallback: when all scores are weak, still return a small set of top options.
+    const finalEntries = recommendedEntries.length > 0 ? recommendedEntries : scored.slice(0, 3);
+    const recommended = finalEntries.map((entry) => entry.hike);
+
+    console.log("[Recommendations] Threshold:", minScoreThreshold, "Top score:", topScore);
+    console.log("[Recommendations] Returning", recommended.length, "hikes");
+    console.log("[Recommendations] Top recommended hike IDs:", recommended.map(h => h._id));
+
+    return res.json({ hikes: recommended });
+  } catch (err) {
+    console.error("Recommended hikes error:", err);
+    return res.status(500).json({ message: "Unable to fetch recommended hikes." });
   }
 });
 
