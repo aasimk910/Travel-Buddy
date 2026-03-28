@@ -45,6 +45,14 @@ router.post("/", authenticateToken, async (req, res) => {
     const checkIn = new Date(checkInDate);
     const checkOut = new Date(checkOutDate);
 
+    // Validate check-in is on or before hike date
+    if (hikeId) {
+      const hike = await Hike.findById(hikeId).select("date");
+      if (hike && hike.date && checkIn > new Date(hike.date)) {
+        return res.status(400).json({ message: "Check-in date must be on or before the hike date" });
+      }
+    }
+
     if (checkIn >= checkOut) {
       return res.status(400).json({ message: "Check-in date must be before check-out date" });
     }
@@ -85,7 +93,7 @@ router.post("/", authenticateToken, async (req, res) => {
       numberOfNights: nightsValue,
       pricePerNight: pkg.pricePerNight,
       totalPrice,
-      currency: pkg.currency || "USD",
+      currency: pkg.currency || "NPR",
       guestName: user.name,
       guestEmail: user.email,
       guestPhone: user.phone || undefined,
@@ -93,6 +101,11 @@ router.post("/", authenticateToken, async (req, res) => {
     });
 
     await booking.save();
+
+    // Decrement available rooms to prevent overbooking
+    await HotelPackage.findByIdAndUpdate(packageId, {
+      $inc: { availableRooms: -numberOfRooms },
+    });
 
     // Populate references for response
     await booking.populate([
@@ -151,7 +164,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
         path: "hotelId",
         select: "name location description contactPhone email website imageUrl amenities",
       },
-      { path: "packageId", select: "-" },
+      { path: "packageId", select: "-__v" },
       { path: "hikeId", select: "title location date" },
     ]);
 
@@ -184,15 +197,20 @@ router.patch("/:id", authenticateToken, async (req, res) => {
     }
 
     // Check ownership
-    if (booking.userId.toString() !== userId) {
+    if (booking.userId.toString() !== userId.toString()) {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
-    // Only allow certain status transitions
+    // Enforce valid status transitions
     if (status) {
-      const validStatuses = ["pending", "confirmed", "cancelled"];
-      if (!validStatuses.includes(status)) {
-        return res.status(400).json({ message: "Invalid status" });
+      const current = booking.status;
+      const allowed =
+        (current === "pending" && (status === "confirmed" || status === "cancelled")) ||
+        (current === "confirmed" && status === "cancelled");
+      if (!allowed) {
+        return res.status(400).json({
+          message: `Cannot transition booking from '${current}' to '${status}'.`,
+        });
       }
       booking.status = status;
     }
@@ -236,7 +254,7 @@ router.delete("/:id", authenticateToken, async (req, res) => {
     }
 
     // Check ownership
-    if (booking.userId.toString() !== userId) {
+    if (booking.userId.toString() !== userId.toString()) {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
@@ -247,6 +265,11 @@ router.delete("/:id", authenticateToken, async (req, res) => {
 
     booking.status = "cancelled";
     await booking.save();
+
+    // Restore available rooms
+    await HotelPackage.findByIdAndUpdate(booking.packageId, {
+      $inc: { availableRooms: booking.numberOfRooms },
+    });
 
     res.json({
       message: "Booking cancelled successfully",

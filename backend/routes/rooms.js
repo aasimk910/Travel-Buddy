@@ -55,6 +55,16 @@ router.post("/:hikeId/keys", authenticateToken, async (req, res) => {
       return res.status(400).json({ message: "Invalid hike ID." });
     }
 
+    // Only hike participants can distribute room keys
+    const hike = await Hike.findById(hikeId).select("participants").lean();
+    if (!hike) {
+      return res.status(404).json({ message: "Hike not found." });
+    }
+    const participantIds = hike.participants.map((p) => p.toString());
+    if (!participantIds.includes(req.user._id.toString())) {
+      return res.status(403).json({ message: "You are not a participant of this hike." });
+    }
+
     const { keys } = req.body;
     if (!Array.isArray(keys) || keys.length === 0) {
       return res.status(400).json({ message: "keys array is required." });

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useScrollReveal } from "../hooks/useScrollReveal";
 import {
   Map,
   Users,
@@ -16,8 +17,8 @@ import { API_BASE_URL } from "../config/env";
 type SiteStats = {
   hikeCount: number;
   userCount: number;
-  trailCount: number;
-  reviewCount: number;
+  photoCount: number;
+  upcomingHikes: number;
 };
 
 // ─── Star renderer ────────────────────────────────────────────────
@@ -37,8 +38,9 @@ const FeatureCard: React.FC<{
   icon: React.ReactNode;
   title: string;
   desc: string;
-}> = ({ icon, title, desc }) => (
-  <div className="glass-card rounded-xl p-6 flex flex-col gap-3">
+  delay?: string;
+}> = ({ icon, title, desc, delay = "" }) => (
+  <div className={`glass-card rounded-xl p-6 flex flex-col gap-3 reveal reveal-up ${delay}`}>
     <div className="w-10 h-10 rounded-lg glass-button-dark flex items-center justify-center text-white flex-shrink-0">
       {icon}
     </div>
@@ -49,6 +51,7 @@ const FeatureCard: React.FC<{
 
 // ─── Main page ────────────────────────────────────────────────────
 const About: React.FC = () => {
+  const revealRef = useScrollReveal();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -74,17 +77,17 @@ const About: React.FC = () => {
       : null;
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-12 space-y-16">
+    <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-12 space-y-16" ref={revealRef}>
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section className="text-center max-w-3xl mx-auto space-y-5">
-        <div className="inline-flex items-center gap-2 rounded-full glass-strong px-4 py-1.5 text-xs font-medium text-black">
+        <div className="inline-flex items-center gap-2 rounded-full glass-strong px-4 py-1.5 text-xs font-medium text-black reveal reveal-fade">
           <span className="w-2 h-2 rounded-full bg-emerald-500" />
           About Travel Buddy
         </div>
-        <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight">
+        <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight reveal reveal-up delay-100">
           Your companion for Nepal's trails
         </h1>
-        <p className="text-gray-200 text-base sm:text-lg leading-relaxed">
+        <p className="text-gray-200 text-base sm:text-lg leading-relaxed reveal reveal-fade delay-200">
           Travel Buddy is a community platform built for hikers and outdoor
           enthusiasts in Nepal. Discover trails, connect with fellow adventurers,
           plan trips together, and share your journey — all in one place.
@@ -92,8 +95,8 @@ const About: React.FC = () => {
       </section>
 
       {/* ── Mission ──────────────────────────────────────────────── */}
-      <section className="glass-card rounded-2xl p-8 sm:p-12 grid md:grid-cols-2 gap-10 items-center">
-        <div className="space-y-4">
+      <section className="glass-card rounded-2xl p-8 sm:p-12 grid md:grid-cols-2 gap-10 items-center reveal reveal-up">
+        <div className="space-y-4 reveal reveal-left">
           <h2 className="text-2xl sm:text-3xl font-bold text-white">Our Mission</h2>
           <p className="text-gray-200 leading-relaxed">
             Nepal is home to some of the world's most breathtaking trails —
@@ -107,16 +110,16 @@ const About: React.FC = () => {
             every adventurer the tools to organise and join group hikes safely.
           </p>
         </div>
-        <div className="grid gap-4 grid-cols-2">
+        <div className="grid gap-4 grid-cols-2 reveal reveal-right delay-200">
           {[
-            { label: "Hikes Listed", value: stats ? stats.hikeCount.toString() : "…" },
-            { label: "Active Hikers", value: stats ? stats.userCount.toString() : "…" },
-            { label: "Trails Mapped", value: stats ? stats.trailCount.toString() : "…" },
-            { label: "Reviews", value: stats ? stats.reviewCount.toString() : "…" },
-          ].map(({ label, value }) => (
+            { label: "Hikes Listed", value: stats ? stats.hikeCount.toString() : "…", delay: "delay-100" },
+            { label: "Active Hikers", value: stats ? stats.userCount.toString() : "…", delay: "delay-200" },
+            { label: "Trip Photos", value: stats ? stats.photoCount.toString() : "…", delay: "delay-300" },
+            { label: "Upcoming Hikes", value: stats ? stats.upcomingHikes.toString() : "…", delay: "delay-400" },
+          ].map(({ label, value, delay }) => (
             <div
               key={label}
-              className="glass rounded-xl p-5 flex flex-col items-center justify-center text-center gap-1"
+              className={`glass rounded-xl p-5 flex flex-col items-center justify-center text-center gap-1 reveal reveal-scale ${delay}`}
             >
               <span className="text-3xl font-bold text-white">{value}</span>
               <span className="text-xs text-gray-300 uppercase tracking-wide">{label}</span>
@@ -127,7 +130,7 @@ const About: React.FC = () => {
 
       {/* ── Features ─────────────────────────────────────────────── */}
       <section className="space-y-6">
-        <h2 className="text-2xl sm:text-3xl font-bold text-white text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white text-center reveal reveal-up">
           Everything you need for your next hike
         </h2>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -135,48 +138,56 @@ const About: React.FC = () => {
             icon={<Map className="w-5 h-5" />}
             title="Interactive Trail Maps"
             desc="Explore hikes on a full-screen OpenStreetMap-powered map. View hike markers, click to see details, and get a real-time trail route drawn on the map."
+            delay="delay-100"
           />
           <FeatureCard
             icon={<Ruler className="w-5 h-5" />}
             title="Trail Distance Calculator"
             desc="Measure real walking distances along actual paths — not straight lines. Powered by OSRM foot-routing, so you know exactly how far you'll hike."
+            delay="delay-200"
           />
           <FeatureCard
             icon={<Users className="w-5 h-5" />}
             title="Group Hike Organiser"
             desc="Create a hike event with a title, description, difficulty, start and end points, and invite other hikers to join with a single click."
+            delay="delay-300"
           />
           <FeatureCard
             icon={<Navigation className="w-5 h-5" />}
             title="Start & End Point Routing"
             desc="Every hike has a marked trailhead and summit or viewpoint. Open any hike to see the full route polyline and trail distance in the details panel."
+            delay="delay-400"
           />
           <FeatureCard
             icon={<Camera className="w-5 h-5" />}
             title="Photo Feed"
             desc="Share your hiking photos with the community. Upload, browse, and celebrate the beauty of Nepal's landscapes with fellow adventurers."
+            delay="delay-500"
           />
           <FeatureCard
             icon={<MessageCircle className="w-5 h-5" />}
             title="Real-time Group Chat"
             desc="Each hike group has a built-in chat so participants can coordinate meetup points, share tips, and keep everyone in the loop before and during the hike."
+            delay="delay-600"
           />
           <FeatureCard
             icon={<Star className="w-5 h-5" />}
             title="Location Reviews"
             desc="Rate and review hiking destinations. Help other adventurers make informed decisions with honest community feedback."
+            delay="delay-100"
           />
           <FeatureCard
             icon={<ShieldCheck className="w-5 h-5" />}
             title="Expense Tracking"
             desc="Split costs fairly across your group. Log transport, food, and gear expenses, and see each member's share automatically calculated."
+            delay="delay-200"
           />
         </div>
       </section>
 
       {/* ── Community Reviews ─────────────────────────────────────── */}
       <section className="space-y-6">
-        <div className="flex items-end justify-between flex-wrap gap-4">
+        <div className="flex items-end justify-between flex-wrap gap-4 reveal reveal-up">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white">
               What hikers are saying
@@ -204,10 +215,10 @@ const About: React.FC = () => {
         ) : (
           <>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {reviews.slice(0, visibleCount).map((review) => (
+              {reviews.slice(0, visibleCount).map((review, idx) => (
                 <div
                   key={review._id}
-                  className="glass-card rounded-xl p-5 flex flex-col gap-3"
+                  className={`glass-card rounded-xl p-5 flex flex-col gap-3 reveal reveal-scale ${["delay-100","delay-200","delay-300","delay-400","delay-500","delay-600"][idx % 6]}`}
                 >
                   {/* Header */}
                   <div className="flex items-start justify-between gap-3">

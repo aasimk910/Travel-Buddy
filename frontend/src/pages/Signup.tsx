@@ -1,5 +1,6 @@
 // src/pages/Signup.tsx
 import React, { useEffect, useState, useRef } from "react";
+import { useScrollReveal } from "../hooks/useScrollReveal";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useFormik } from "formik";
@@ -28,6 +29,7 @@ type LocationState = {
 };
 
 const Signup: React.FC = () => {
+  const revealRef = useScrollReveal();
   const navigate = useNavigate();
   const location = useLocation();
   const redirectPath = location.state?.from || "/homepage";
@@ -69,7 +71,7 @@ const Signup: React.FC = () => {
         .email("Enter a valid email")
         .required("Email is required"),
       password: Yup.string()
-        .min(6, "Password must be at least 6 characters")
+        .min(8, "Password must be at least 8 characters")
         .required("Password is required"),
       confirmPassword: Yup.string()
         .oneOf([Yup.ref("password")], "Passwords must match")
@@ -97,8 +99,30 @@ const Signup: React.FC = () => {
           interests: formValues.interests || undefined,
         });
 
-        setStatus("Account created successfully! Please log in to continue.");
-        setTimeout(() => navigate("/login", { replace: true }), 1500);
+        // Auto-login: store token and set user state
+        if (data.token) {
+          storeToken(data.token);
+        }
+        if (data.user) {
+          loginWithProfile({
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            country: data.user.country,
+            travelStyle: data.user.travelStyle,
+            budgetRange: data.user.budgetRange,
+            interests: data.user.interests,
+            avatarUrl: data.user.avatarUrl,
+            provider: data.user.provider || "password",
+            role: data.user.role || "user",
+            onboardingCompleted: data.user.onboardingCompleted,
+            hikingProfile: data.user.hikingProfile,
+          });
+          navigate(redirectPath, { replace: true });
+        } else {
+          setStatus("Account created successfully! Please log in to continue.");
+          setTimeout(() => navigate("/login", { replace: true }), 1500);
+        }
       } catch (err: any) {
         console.error(err);
         setStatus(err?.message || "Signup failed. Please try again.");
@@ -146,14 +170,16 @@ const Signup: React.FC = () => {
 
   // ---------- UI ----------
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <AuthHeader
-        title="Create your account"
-        subtitle="Start planning smarter trips with people who match your vibe."
-      />
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8" ref={revealRef}>
+      <div className="reveal reveal-fade">
+        <AuthHeader
+          title="Create your account"
+          subtitle="Start planning smarter trips with people who match your vibe."
+        />
+      </div>
 
       {/* Card */}
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl reveal reveal-scale delay-100">
         <div className="glass-card py-8 px-6 shadow-sm rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit} noValidate>
             <StatusAlert message={status} />

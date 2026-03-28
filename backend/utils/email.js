@@ -71,7 +71,7 @@ const sendWelcomeEmail = async ({ name, email }) => {
       <li>📸 Share your trail reviews, photos, and favorite spots</li>
     </ul>
     <div style="text-align:center; margin:22px 0 18px;">
-      <a href="https://your-travel-buddy-url.com"
+      <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}"
          style="display:inline-block; padding:12px 22px; border-radius:999px; background:linear-gradient(135deg,#2563eb,#22c55e); color:#ffffff; font-weight:600; font-size:14px; text-decoration:none;">
         Open Travel Buddy 🚀
       </a>

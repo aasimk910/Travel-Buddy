@@ -17,15 +17,22 @@ router.post("/generate", authenticateToken, async (req, res) => {
       endDate,
       budget,
       travelStyle,
-      interests,
+      interests: interestsRaw,
       additionalNotes,
       customPrompt,   // free-form mode: user wrote their own request
     } = req.body;
+    // Normalise interests: accept array or comma-separated string
+    const interests = Array.isArray(interestsRaw)
+      ? interestsRaw.join(', ')
+      : (interestsRaw || '');
 
     // In custom-prompt mode only a non-empty prompt is required
     if (customPrompt) {
       if (typeof customPrompt !== 'string' || !customPrompt.trim()) {
         return res.status(400).json({ error: "Custom prompt must not be empty." });
+      }
+      if (customPrompt.length > 500) {
+        return res.status(400).json({ error: "Custom prompt must not exceed 500 characters." });
       }
     } else {
       // Guided-form mode: destination + dates are required

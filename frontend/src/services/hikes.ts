@@ -45,6 +45,7 @@ export type Hike = {
   spotsLeft: number;
   imageUrl?: string;
   description?: string;
+  participants?: string[];
   hotels?: Hotel[];
   createdAt?: string;
   updatedAt?: string;
@@ -80,6 +81,16 @@ export const getHikes = async (): Promise<Hike[]> => {
   const data = await res.json();
   if (!res.ok) throw new Error(data?.message || "Unable to fetch hikes.");
   return data.hikes || data;
+};
+
+export const getUpcomingHikes = async (limit = 3): Promise<Hike[]> => {
+  const res = await fetch(`${API_BASE_URL}/api/hikes?limit=${limit * 5}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.message || "Unable to fetch hikes.");
+  const now = new Date();
+  const upcoming = (data.hikes || []).filter((h: Hike) => new Date(h.date) >= now);
+  upcoming.sort((a: Hike, b: Hike) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  return upcoming.slice(0, limit);
 };
 
 export const getRecommendedHikes = async (token: string): Promise<Hike[]> => {
@@ -269,4 +280,16 @@ export const cancelBooking = async (bookingId: string, token: string): Promise<H
 
   const data = await res.json();
   return data.booking;
+};
+export type SiteStats = {
+  hikeCount: number;
+  userCount: number;
+  photoCount: number;
+  upcomingHikes: number;
+};
+
+export const getSiteStats = async (): Promise<SiteStats> => {
+  const res = await fetch(`${API_BASE_URL}/api/stats`);
+  if (!res.ok) throw new Error("Failed to fetch stats");
+  return res.json();
 };

@@ -7,6 +7,9 @@ const Hotel = require("../models/Hotel");
 const HotelPackage = require("../models/HotelPackage");
 const HotelBooking = require("../models/HotelBooking");
 const Product = require("../models/Product");
+const Message = require("../models/Message");
+const Expense = require("../models/Expense");
+const Photo = require("../models/Photo");
 const { authenticateToken, adminOnly } = require("../middleware/auth");
 
 const router = express.Router();
@@ -116,7 +119,7 @@ router.patch("/users/:id/role", async (req, res) => {
   }
 });
 
-// DELETE /api/admin/users/:id - Delete a user
+// DELETE /api/admin/users/:id - Delete a user and related content
 router.delete("/users/:id", async (req, res) => {
   try {
     if (req.params.id === req.user._id.toString()) {
@@ -124,7 +127,14 @@ router.delete("/users/:id", async (req, res) => {
     }
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found." });
-    res.json({ message: "User deleted successfully." });
+    // Cascade delete user's content
+    await Promise.all([
+      HotelBooking.deleteMany({ userId: req.params.id }),
+      Photo.deleteMany({ userId: req.params.id }),
+      // Remove user from hike participants
+      Hike.updateMany({ participants: req.params.id }, { $pull: { participants: req.params.id } }),
+    ]);
+    res.json({ message: "User and related data deleted successfully." });
   } catch (err) {
     console.error("Admin delete user error:", err);
     res.status(500).json({ message: "Unable to delete user." });
@@ -216,12 +226,19 @@ router.put("/hikes/:id", async (req, res) => {
   }
 });
 
-// DELETE /api/admin/hikes/:id - Delete any hike
+// DELETE /api/admin/hikes/:id - Delete any hike and cascade to related docs
 router.delete("/hikes/:id", async (req, res) => {
   try {
     const hike = await Hike.findByIdAndDelete(req.params.id);
     if (!hike) return res.status(404).json({ message: "Hike not found." });
-    res.json({ message: "Hike deleted successfully." });
+    // Cascade delete related documents
+    await Promise.all([
+      Message.deleteMany({ hikeId: req.params.id }),
+      Expense.deleteMany({ hikeId: req.params.id }),
+      HotelBooking.deleteMany({ hikeId: req.params.id }),
+      Photo.deleteMany({ hikeId: req.params.id }),
+    ]);
+    res.json({ message: "Hike and related data deleted successfully." });
   } catch (err) {
     console.error("Admin delete hike error:", err);
     res.status(500).json({ message: "Unable to delete hike." });
@@ -454,13 +471,16 @@ router.put("/hotels/:id", async (req, res) => {
   }
 });
 
-// DELETE /api/admin/hotels/:id - Delete hotel and its packages
+// DELETE /api/admin/hotels/:id - Delete hotel, its packages, and related bookings
 router.delete("/hotels/:id", async (req, res) => {
   try {
     const hotel = await Hotel.findByIdAndDelete(req.params.id);
     if (!hotel) return res.status(404).json({ message: "Hotel not found." });
-    await HotelPackage.deleteMany({ hotelId: req.params.id });
-    res.json({ message: "Hotel and its packages deleted." });
+    await Promise.all([
+      HotelPackage.deleteMany({ hotelId: req.params.id }),
+      HotelBooking.deleteMany({ hotelId: req.params.id }),
+    ]);
+    res.json({ message: "Hotel, packages, and related bookings deleted." });
   } catch (err) {
     console.error("Admin delete hotel error:", err);
     res.status(500).json({ message: "Unable to delete hotel." });
@@ -474,7 +494,10 @@ router.get("/packages", async (req, res) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const query = {};
     if (hotelId) query.hotelId = hotelId;
-    if (search) query.name = { $regex: search, $options: "i" };
+    if (search) query.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { roomType: { $regex: search, $options: "i" } },
+    ];
     const [packages, total] = await Promise.all([
       HotelPackage.find(query)
         .populate("hotelId", "name location")
@@ -590,16 +613,33 @@ router.get("/bookings", async (req, res) => {
 router.patch("/bookings/:id/status", async (req, res) => {
   try {
     const { status, paymentStatus } = req.body;
-    const update = {};
-    if (status && ["pending", "confirmed", "cancelled"].includes(status)) update.status = status;
-    if (paymentStatus && ["unpaid", "partial", "paid"].includes(paymentStatus)) update.paymentStatus = paymentStatus;
-    if (!Object.keys(update).length) return res.status(400).json({ message: "Provide status or paymentStatus." });
-    const booking = await HotelBooking.findByIdAndUpdate(req.params.id, update, { new: true })
+    if (!status && !paymentStatus) return res.status(400).json({ message: "Provide status or paymentStatus." });
+    if (status && !["pending", "confirmed", "cancelled"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status value." });
+    }
+    if (paymentStatus && !["unpaid", "partial", "paid"].includes(paymentStatus)) {
+      return res.status(400).json({ message: "Invalid paymentStatus value." });
+    }
+
+    const booking = await HotelBooking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ message: "Booking not found." });
+
+    // Restore available rooms when admin cancels a non-cancelled booking
+    if (status === "cancelled" && booking.status !== "cancelled") {
+      await HotelPackage.findByIdAndUpdate(booking.packageId, {
+        $inc: { availableRooms: booking.numberOfRooms },
+      });
+    }
+
+    if (status) booking.status = status;
+    if (paymentStatus) booking.paymentStatus = paymentStatus;
+    await booking.save();
+
+    const updatedBooking = await HotelBooking.findById(req.params.id)
       .populate("userId", "name email")
       .populate("hotelId", "name location")
       .populate("packageId", "name roomType pricePerNight");
-    if (!booking) return res.status(404).json({ message: "Booking not found." });
-    res.json({ message: "Booking updated.", booking });
+    res.json({ message: "Booking updated.", booking: updatedBooking });
   } catch (err) {
     console.error("Admin update booking error:", err);
     res.status(500).json({ message: "Unable to update booking." });

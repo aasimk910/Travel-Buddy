@@ -155,7 +155,7 @@ const ItineraryGenerator: React.FC = () => {
     try {
       const payload = activeTab === 'custom'
         ? { customPrompt: customPrompt.trim() }
-        : formData;
+        : { ...formData, interests: selectedInterests };
       const resp = await generateItinerary(payload, token);
       setGeneratedItinerary(resp.itinerary);
       showSuccess('Itinerary generated!');
@@ -329,8 +329,7 @@ const ItineraryGenerator: React.FC = () => {
                 {showSuggestions && filteredSuggestions.length > 0 && (
                   <div
                     ref={suggestionsRef}
-                    className="absolute z-30 w-full mt-1 rounded-xl border border-white/10 shadow-2xl max-h-52 overflow-y-auto"
-                    style={{ background: 'rgba(15,23,42,0.97)', backdropFilter: 'blur(20px)' }}
+                    className="glass-dark absolute z-30 w-full mt-1 rounded-xl border border-white/10 shadow-2xl max-h-52 overflow-y-auto"
                   >
                     {filteredSuggestions.map((s, i) => (
                       <button key={i} type="button" onClick={() => handleDestinationSelect(s)}

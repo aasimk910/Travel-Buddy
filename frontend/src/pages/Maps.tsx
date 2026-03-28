@@ -706,8 +706,7 @@ const Maps: React.FC = () => {
         {selectedHike && (
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 max-w-md w-full mx-4 z-10"
                style={{ filter: 'drop-shadow(0 8px 32px rgba(0,0,0,0.7))' }}>
-            <div className="rounded-xl p-6 shadow-2xl"
-                 style={{ background: 'rgba(10,15,30,0.92)', border: '1px solid rgba(255,255,255,0.18)', backdropFilter: 'blur(16px)' }}>
+            <div className="glass-dark rounded-xl p-6 shadow-2xl">
             <button
               onClick={() => setSelectedHike(null)}
               className="absolute top-4 right-4 p-1 rounded-full bg-white/10 hover:bg-white/25 transition"
@@ -758,7 +757,7 @@ const Maps: React.FC = () => {
                 </h4>
                 <div className="space-y-1.5 max-h-28 overflow-y-auto pr-1">
                   {selectedHikeHotels.map((hotel) => (
-                    <div key={hotel._id} className="flex items-start gap-2 rounded-lg px-2 py-1.5" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <div key={hotel._id} className="glass flex items-start gap-2 rounded-lg px-2 py-1.5">
                       <Hotel className="w-3.5 h-3.5 text-teal-400 mt-0.5 shrink-0" />
                       <div className="min-w-0">
                         <p className="text-xs text-white font-medium truncate">{hotel.name}</p>

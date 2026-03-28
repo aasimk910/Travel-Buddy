@@ -10,10 +10,14 @@ router.get("/:hikeId", authenticateToken, async (req, res) => {
   try {
     const { hikeId } = req.params;
     
-    // Verify user is part of the hike
+    // Verify hike exists and user is a participant
     const hike = await Hike.findById(hikeId);
     if (!hike) {
       return res.status(404).json({ message: "Hike not found." });
+    }
+    const participantIds = hike.participants.map((p) => p.toString());
+    if (!participantIds.includes(req.user._id.toString())) {
+      return res.status(403).json({ message: "You are not a participant of this hike." });
     }
 
     const expenses = await Expense.find({ hikeId }).sort({ createdAt: -1 });
@@ -45,10 +49,14 @@ router.post("/:hikeId", authenticateToken, async (req, res) => {
       });
     }
 
-    // Verify hike exists
+    // Verify hike exists and user is a participant
     const hike = await Hike.findById(hikeId);
     if (!hike) {
       return res.status(404).json({ message: "Hike not found." });
+    }
+    const participantIds = hike.participants.map((p) => p.toString());
+    if (!participantIds.includes(req.user._id.toString())) {
+      return res.status(403).json({ message: "You are not a participant of this hike." });
     }
 
     // Calculate split amounts based on split type

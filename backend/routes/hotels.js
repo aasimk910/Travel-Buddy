@@ -2,7 +2,7 @@ const express = require("express");
 const Hotel = require("../models/Hotel");
 const HotelPackage = require("../models/HotelPackage");
 const Hike = require("../models/Hike");
-const { authenticateToken } = require("../middleware/auth");
+const { authenticateToken, adminOnly } = require("../middleware/auth");
 const { createContentLimiter } = require("../middleware/rateLimiter");
 
 const router = express.Router();
@@ -39,7 +39,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST /api/hotels - Create new hotel (admin only)
-router.post("/", authenticateToken, createContentLimiter, async (req, res) => {
+router.post("/", authenticateToken, adminOnly, createContentLimiter, async (req, res) => {
   try {
     const { name, location, coordinates, description, contactPhone, email, website, imageUrl, amenities } = req.body;
 
@@ -68,7 +68,7 @@ router.post("/", authenticateToken, createContentLimiter, async (req, res) => {
 });
 
 // PUT /api/hotels/:id - Update hotel (admin only)
-router.put("/:id", authenticateToken, createContentLimiter, async (req, res) => {
+router.put("/:id", authenticateToken, adminOnly, createContentLimiter, async (req, res) => {
   try {
     const { name, location, coordinates, description, contactPhone, email, website, imageUrl, amenities, rating, reviewCount } = req.body;
 
@@ -102,7 +102,7 @@ router.put("/:id", authenticateToken, createContentLimiter, async (req, res) => 
 });
 
 // DELETE /api/hotels/:id - Delete hotel (admin only)
-router.delete("/:id", authenticateToken, async (req, res) => {
+router.delete("/:id", authenticateToken, adminOnly, async (req, res) => {
   try {
     const hotel = await Hotel.findByIdAndDelete(req.params.id);
 

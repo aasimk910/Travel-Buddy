@@ -3,13 +3,12 @@ import { Link } from "react-router-dom";
 import AuthHeader from "../components/AuthHeader";
 import StatusAlert from "../components/StatusAlert";
 import { forgotPassword } from "../services/auth";
-import { Info, CheckCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [isGoogleAccount, setIsGoogleAccount] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -18,12 +17,8 @@ const ForgotPassword: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      const res = await forgotPassword(email);
-      if (res.provider === "google") {
-        setIsGoogleAccount(true);
-      } else {
-        setSuccess(true);
-      }
+      await forgotPassword(email);
+      setSuccess(true);
     } catch (err: any) {
       setError(err?.message || "Something went wrong. Please try again.");
     } finally {
@@ -40,23 +35,7 @@ const ForgotPassword: React.FC = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="glass-card py-8 px-4 shadow rounded-lg sm:px-10">
-          {isGoogleAccount ? (
-            <div className="text-center space-y-4">
-              <div className="flex items-center justify-center w-14 h-14 mx-auto rounded-full bg-blue-500/20 border border-blue-400/30">
-                <Info className="w-7 h-7 text-blue-400" />
-              </div>
-              <h3 className="text-white font-semibold text-lg">Google account detected</h3>
-              <p className="text-gray-300 text-sm">
-                <strong>{email}</strong> is linked to Google Sign-In. You don't have a separate password — just use the <strong>Continue with Google</strong> button on the login page.
-              </p>
-              <Link
-                to="/login"
-                className="inline-block mt-2 px-5 py-2 rounded-full glass-button-dark text-sm font-medium text-white"
-              >
-                Back to Sign in
-              </Link>
-            </div>
-          ) : success ? (
+          {success ? (
             <div className="text-center space-y-4">
               <div className="flex items-center justify-center w-14 h-14 mx-auto rounded-full bg-green-500/20 border border-green-400/30">
                 <CheckCircle className="w-7 h-7 text-green-400" />

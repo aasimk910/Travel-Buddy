@@ -5,8 +5,8 @@ const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    // Hashed password
-    password: { type: String, required: true },
+    // Hashed password (not required for OAuth users)
+    password: { type: String, required: false },
 
     // Optional travel profile fields
     country: { type: String },

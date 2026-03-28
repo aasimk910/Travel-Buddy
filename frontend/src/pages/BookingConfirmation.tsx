@@ -26,26 +26,42 @@ export default function BookingConfirmation() {
 
       try {
         const token = localStorage.getItem("travelBuddyToken");
+        if (!token) {
+          setStatus("error");
+          setMessage("You must be logged in to view booking details.");
+          return;
+        }
 
-        // Same redirect-return flow as Shop: verify after Khalti redirects back.
+        // Verify Khalti payment server-side after redirect.
         if (khaltiStatus === "Completed" && pidx) {
-          await fetch(`${API_BASE_URL}/api/payments/khalti-verify`, {
+          const verifyRes = await fetch(`${API_BASE_URL}/api/payments/khalti-verify`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
               pidx,
               booking_id: bookingId,
             }),
           });
+          if (!verifyRes.ok) {
+            setStatus("error");
+            setMessage("Payment verification failed. Please contact support.");
+            return;
+          }
         }
 
-        const response = await fetch(`${API_BASE_URL}/api/payments/booking/${bookingId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        if (!response.ok) {
+          setStatus("error");
+          setMessage("Booking not found or you do not have access to it.");
+          return;
+        }
         const data = await response.json();
         setBookingData(data);
 

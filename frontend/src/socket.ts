@@ -5,4 +5,7 @@ export const socket = io(API_BASE_URL, {
   withCredentials: true,
   transports: ['websocket'],
   autoConnect: false,
+  auth: (cb) => {
+    cb({ token: localStorage.getItem("travelBuddyToken") || "" });
+  },
 });

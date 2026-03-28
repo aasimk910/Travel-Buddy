@@ -15,11 +15,12 @@ const ordersKey = (userId?: string) => userId ? `${LS_ORDERS_KEY}_${userId}` : L
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface Product {
-  id: number; name: string; category: string;
+  _id: string; name: string; category: string;
   price: number; rating: number; reviews: number;
   badge: string | null; img: string;
   images: string[];
   description: string;
+  inStock?: boolean;
 }
 interface CartItem { product: Product; qty: number; }
 interface CustomerInfo {
@@ -56,10 +57,12 @@ const CATEGORIES = [
   { label: 'Safety',      icon: <Shield    className="w-3.5 h-3.5" /> },
 ];
 
-const PRODUCTS: Product[] = [
+// Products are now loaded from the backend — this static list is kept only as a
+// loading fallback and will be replaced once the API responds.
+const STATIC_PRODUCTS: Product[] = [
   // ── Backpacks ──────────────────────────────────────────────────────────────
   {
-    id: 1, name: 'Osprey Atmos AG 65L', category: 'Backpacks', price: 24500, rating: 4.9, reviews: 512, badge: 'Best Seller',
+    _id: "1", name: 'Osprey Atmos AG 65L', category: 'Backpacks', price: 24500, rating: 4.9, reviews: 512, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
@@ -70,7 +73,7 @@ const PRODUCTS: Product[] = [
     description: 'Award-winning 65 L Anti-Gravity suspension pack weighing 2.07 kg. The mesh trampoline back panel floats the load off your spine and channels air through the entire back. Ideal for multi-day Himalayan treks with heavy food carries.',
   },
   {
-    id: 2, name: 'Deuter Futura Pro 36L', category: 'Backpacks', price: 11200, rating: 4.7, reviews: 223, badge: null,
+    _id: "2", name: 'Deuter Futura Pro 36L', category: 'Backpacks', price: 11200, rating: 4.7, reviews: 223, badge: null,
     img: 'https://images.pexels.com/photos/2385210/pexels-photo-2385210.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/2385210/pexels-photo-2385210.jpeg?auto=compress&w=800',
@@ -81,7 +84,7 @@ const PRODUCTS: Product[] = [
     description: 'Spacious 36 L trekking pack with Aircomfort Vari-Flex back system that self-adjusts to your stride. Generous 26 cm height adjustment range, twin hip-belt pockets, and a separate lower compartment for wet gear.',
   },
   {
-    id: 3, name: 'Gregory Baltoro 75L', category: 'Backpacks', price: 23500, rating: 4.8, reviews: 115, badge: 'Top Rated',
+    _id: "3", name: 'Gregory Baltoro 75L', category: 'Backpacks', price: 23500, rating: 4.8, reviews: 115, badge: 'Top Rated',
     img: 'https://images.pexels.com/photos/2166456/pexels-photo-2166456.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/2166456/pexels-photo-2166456.jpeg?auto=compress&w=800',
@@ -92,7 +95,7 @@ const PRODUCTS: Product[] = [
     description: 'Industry benchmark for load-hauling comfort on extended expeditions. Response A3 hip-belt auto-adjusts with every step. Dual ice-axe loops, a rain cover, and a floating top lid make it fully expedition-ready.',
   },
   {
-    id: 4, name: 'Tortuga Setout 45L Travel Pack', category: 'Backpacks', price: 6800, rating: 4.6, reviews: 176, badge: 'New',
+    _id: "4", name: 'Tortuga Setout 45L Travel Pack', category: 'Backpacks', price: 6800, rating: 4.6, reviews: 176, badge: 'New',
     img: 'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&w=800',
@@ -104,7 +107,7 @@ const PRODUCTS: Product[] = [
   },
   // ── Camping ────────────────────────────────────────────────────────────────
   {
-    id: 5, name: 'Big Agnes Copper Spur HV UL 2P', category: 'Camping', price: 32000, rating: 4.9, reviews: 241, badge: 'Best Seller',
+    _id: "5", name: 'Big Agnes Copper Spur HV UL 2P', category: 'Camping', price: 32000, rating: 4.9, reviews: 241, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=800',
@@ -115,7 +118,7 @@ const PRODUCTS: Product[] = [
     description: 'Featherlight freestanding 2-person tent at just 1.06 kg. Hub-and-pole architecture erects in 3 minutes. Dual vestibules provide 1.1 m² of gear storage each. 1500 mm rated fly handles Himalayan rain squalls with ease.',
   },
   {
-    id: 6, name: 'Western Mountaineering Alpinlite 35°F Bag', category: 'Camping', price: 18500, rating: 4.8, reviews: 178, badge: null,
+    _id: "6", name: 'Western Mountaineering Alpinlite 35°F Bag', category: 'Camping', price: 18500, rating: 4.8, reviews: 178, badge: null,
     img: 'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=800',
@@ -126,7 +129,7 @@ const PRODUCTS: Product[] = [
     description: '850-fill power goose down in an ultralight 11 oz body. Comfort rating 2 °C, lower limit -4 °C. Full-length draft collar and anti-snag YKK zipper. The preferred high-altitude sleeping bag on Everest expedition teams.',
   },
   {
-    id: 7, name: 'Jetboil Flash Cooking System', category: 'Camping', price: 7800, rating: 4.9, reviews: 334, badge: 'Top Rated',
+    _id: "7", name: 'Jetboil Flash Cooking System', category: 'Camping', price: 7800, rating: 4.9, reviews: 334, badge: 'Top Rated',
     img: 'https://images.pexels.com/photos/6271625/pexels-photo-6271625.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/6271625/pexels-photo-6271625.jpeg?auto=compress&w=800',
@@ -137,7 +140,7 @@ const PRODUCTS: Product[] = [
     description: 'All-in-one stove-and-pot system that boils 500 ml in just 100 seconds. Push-button igniter, insulating cozy, and colour-change heat indicator. FluxRing technology is 50 % more fuel efficient than conventional stoves at altitude.',
   },
   {
-    id: 8, name: 'Therm-a-Rest NeoAir XTherm NXT', category: 'Camping', price: 13500, rating: 4.7, reviews: 156, badge: null,
+    _id: "8", name: 'Therm-a-Rest NeoAir XTherm NXT', category: 'Camping', price: 13500, rating: 4.7, reviews: 156, badge: null,
     img: 'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
@@ -149,7 +152,7 @@ const PRODUCTS: Product[] = [
   },
   // ── Footwear ───────────────────────────────────────────────────────────────
   {
-    id: 9, name: 'Salomon X Ultra 4 Mid GTX', category: 'Footwear', price: 13800, rating: 4.8, reviews: 389, badge: 'Best Seller',
+    _id: "9", name: 'Salomon X Ultra 4 Mid GTX', category: 'Footwear', price: 13800, rating: 4.8, reviews: 389, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&w=800',
@@ -160,7 +163,7 @@ const PRODUCTS: Product[] = [
     description: 'Mid-cut waterproof Gore-Tex membrane boot with reinforced ankle collar. Contagrip MA outsole locks in on wet rocks and muddy switchbacks across Nepal trails. Sensifit cradle wraps the foot for a precision hold on long descent days.',
   },
   {
-    id: 10, name: 'Scarpa Zodiac Plus GTX', category: 'Footwear', price: 21500, rating: 4.9, reviews: 108, badge: 'Top Rated',
+    _id: "10", name: 'Scarpa Zodiac Plus GTX', category: 'Footwear', price: 21500, rating: 4.9, reviews: 108, badge: 'Top Rated',
     img: 'https://images.pexels.com/photos/1464625/pexels-photo-1464625.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1464625/pexels-photo-1464625.jpeg?auto=compress&w=800',
@@ -171,7 +174,7 @@ const PRODUCTS: Product[] = [
     description: 'Technical approach boot with full-grain leather upper and Gore-Tex lining. Vibram Drumlin outsole with Climbing Zone heel provides precise edging on boulder approaches to base camps. Crampon-compatible welt for lightweight glacier travel.',
   },
   {
-    id: 11, name: 'Black Diamond Distance Carbon Z Poles', category: 'Footwear', price: 7800, rating: 4.7, reviews: 245, badge: null,
+    _id: "11", name: 'Black Diamond Distance Carbon Z Poles', category: 'Footwear', price: 7800, rating: 4.7, reviews: 245, badge: null,
     img: 'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
@@ -182,7 +185,7 @@ const PRODUCTS: Product[] = [
     description: 'Carbon fibre Z-style folding poles collapsing to just 38 cm. Non-flick FlickLock Pro collar adjusts in seconds even with gloves. Carbide tech tips, EVA cork grip, and interchangeable baskets for all terrain types.',
   },
   {
-    id: 12, name: 'Smartwool PhD Outdoor Heavy Crew Sock', category: 'Footwear', price: 2200, rating: 4.7, reviews: 631, badge: 'New',
+    _id: "12", name: 'Smartwool PhD Outdoor Heavy Crew Sock', category: 'Footwear', price: 2200, rating: 4.7, reviews: 631, badge: 'New',
     img: 'https://images.pexels.com/photos/1619535/pexels-photo-1619535.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1619535/pexels-photo-1619535.jpeg?auto=compress&w=800',
@@ -194,7 +197,7 @@ const PRODUCTS: Product[] = [
   },
   // ── Photography ────────────────────────────────────────────────────────────
   {
-    id: 13, name: 'DJI Action 5 Pro', category: 'Photography', price: 44000, rating: 4.9, reviews: 312, badge: 'Best Seller',
+    _id: "13", name: 'DJI Action 5 Pro', category: 'Photography', price: 44000, rating: 4.9, reviews: 312, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=800',
@@ -205,7 +208,7 @@ const PRODUCTS: Product[] = [
     description: '4K120 slow-motion video and 50 MP stills in a ruggedised body waterproof to 20 m without a case. 10-bit D-Log M colour profile for stunning sunset footage over Annapurna. Magnetic quick-release mount and 3-hour battery life.',
   },
   {
-    id: 14, name: 'Joby GorillaPod 5K Kit', category: 'Photography', price: 9800, rating: 4.6, reviews: 189, badge: null,
+    _id: "14", name: 'Joby GorillaPod 5K Kit', category: 'Photography', price: 9800, rating: 4.6, reviews: 189, badge: null,
     img: 'https://images.pexels.com/photos/243757/pexels-photo-243757.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/243757/pexels-photo-243757.jpeg?auto=compress&w=800',
@@ -216,7 +219,7 @@ const PRODUCTS: Product[] = [
     description: 'Flexible tripod supports up to 5 kg and wraps around branches, railings, or uneven rock. Includes quick-release plate, ball head, and GorillaPod phone mount. Folds to 28 cm and weighs just 520 g.',
   },
   {
-    id: 15, name: 'Peak Design Capture Clip V3', category: 'Photography', price: 11500, rating: 4.9, reviews: 103, badge: 'Top Rated',
+    _id: "15", name: 'Peak Design Capture Clip V3', category: 'Photography', price: 11500, rating: 4.9, reviews: 103, badge: 'Top Rated',
     img: 'https://images.pexels.com/photos/821652/pexels-photo-821652.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/821652/pexels-photo-821652.jpeg?auto=compress&w=800',
@@ -227,7 +230,7 @@ const PRODUCTS: Product[] = [
     description: 'Aluminium and stainless steel camera clip mounts to any backpack strap or belt in seconds. One-handed capture and re-attachment in under a second. Arca-Swiss compatible and tested to 45 kg pull strength — trail-proof.',
   },
   {
-    id: 16, name: 'Anker 747 Power Bank 26000mAh', category: 'Photography', price: 10500, rating: 4.8, reviews: 467, badge: null,
+    _id: "16", name: 'Anker 747 Power Bank 26000mAh', category: 'Photography', price: 10500, rating: 4.8, reviews: 467, badge: null,
     img: 'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&w=800',
@@ -239,7 +242,7 @@ const PRODUCTS: Product[] = [
   },
   // ── Navigation ─────────────────────────────────────────────────────────────
   {
-    id: 17, name: 'Garmin inReach Mini 2', category: 'Navigation', price: 45000, rating: 4.9, reviews: 158, badge: 'Top Rated',
+    _id: "17", name: 'Garmin inReach Mini 2', category: 'Navigation', price: 45000, rating: 4.9, reviews: 158, badge: 'Top Rated',
     img: 'https://images.pexels.com/photos/3608311/pexels-photo-3608311.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/3608311/pexels-photo-3608311.jpeg?auto=compress&w=800',
@@ -250,7 +253,7 @@ const PRODUCTS: Product[] = [
     description: '100 % global Iridium satellite coverage for two-way messaging and triggered SOS even beyond every mobile network. 90 g body pairs with Garmin Explore app for live track-sharing with family at base.',
   },
   {
-    id: 18, name: 'Garmin Fenix 8 Solar', category: 'Navigation', price: 72000, rating: 4.9, reviews: 89, badge: 'New',
+    _id: "18", name: 'Garmin Fenix 8 Solar', category: 'Navigation', price: 72000, rating: 4.9, reviews: 89, badge: 'New',
     img: 'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&w=800',
@@ -261,7 +264,7 @@ const PRODUCTS: Product[] = [
     description: 'Multi-band GPS smartwatch with solar charging, sapphire lens, and titanium bezel. Barometric altimeter, storm alarm, and preloaded TopoActive Nepal maps. Up to 428 hours GPS battery life — outlasts the longest EBC itineraries.',
   },
   {
-    id: 19, name: 'Suunto A-30 Field Compass', category: 'Navigation', price: 2800, rating: 4.5, reviews: 342, badge: null,
+    _id: "19", name: 'Suunto A-30 Field Compass', category: 'Navigation', price: 2800, rating: 4.5, reviews: 342, badge: null,
     img: 'https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg?auto=compress&w=800',
@@ -272,7 +275,7 @@ const PRODUCTS: Product[] = [
     description: 'Liquid-filled baseplate compass with a built-in clinometer and 1:25000 map scale. Global needle works across all latitudes without tilting. Luminous bezel markings for night navigation — essential backup for any trek.',
   },
   {
-    id: 20, name: 'Garmin GPSMAP 67i', category: 'Navigation', price: 71000, rating: 4.9, reviews: 63, badge: 'Best Seller',
+    _id: "20", name: 'Garmin GPSMAP 67i', category: 'Navigation', price: 71000, rating: 4.9, reviews: 63, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
@@ -284,7 +287,7 @@ const PRODUCTS: Product[] = [
   },
   // ── Safety ─────────────────────────────────────────────────────────────────
   {
-    id: 21, name: 'Adventure Medical Kits Mountain Series 2.0', category: 'Safety', price: 6500, rating: 4.8, reviews: 267, badge: 'Best Seller',
+    _id: "21", name: 'Adventure Medical Kits Mountain Series 2.0', category: 'Safety', price: 6500, rating: 4.8, reviews: 267, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/3735747/pexels-photo-3735747.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/3735747/pexels-photo-3735747.jpeg?auto=compress&w=800',
@@ -295,7 +298,7 @@ const PRODUCTS: Product[] = [
     description: '250+ medical supplies for 4 people over 14 days. Includes SAM splint, blister prevention kit, QuikClot haemostatic gauze, altitude sickness guide, and hypothermia protocol cards. Roll-top waterproof bag, 690 g.',
   },
   {
-    id: 22, name: 'Petzl Actik Core 600lm Headlamp', category: 'Safety', price: 3800, rating: 4.8, reviews: 534, badge: null,
+    _id: "22", name: 'Petzl Actik Core 600lm Headlamp', category: 'Safety', price: 3800, rating: 4.8, reviews: 534, badge: null,
     img: 'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=800',
@@ -306,7 +309,7 @@ const PRODUCTS: Product[] = [
     description: '600-lumen rechargeable headlamp with white and red lighting modes. REACTIVE LIGHTING technology automatically adjusts brightness to ambient light. IPX4 rated and accepts AAA batteries as backup when the core is depleted.',
   },
   {
-    id: 23, name: 'SOL Escape Pro Bivvy', category: 'Safety', price: 3100, rating: 4.6, reviews: 358, badge: null,
+    _id: "23", name: 'SOL Escape Pro Bivvy', category: 'Safety', price: 3100, rating: 4.6, reviews: 358, badge: null,
     img: 'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
@@ -317,7 +320,7 @@ const PRODUCTS: Product[] = [
     description: 'Breathable aluminised shell reflects 80 % of radiated body heat while allowing moisture vapour to escape. Fits one adult with full sleeping bag clearance. Stuffs to fist size at 260 g with a built-in hood drawcord.',
   },
   {
-    id: 24, name: 'UST Blaze & Reflect Combo Kit', category: 'Safety', price: 1150, rating: 4.5, reviews: 714, badge: 'New',
+    _id: "24", name: 'UST Blaze & Reflect Combo Kit', category: 'Safety', price: 1150, rating: 4.5, reviews: 714, badge: 'New',
     img: 'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
@@ -340,6 +343,8 @@ const SHIPPING_FEE       = 350;
 
 // ── Component ────────────────────────────────────────────────────────────────
 const Shop: React.FC = () => {
+  const [products, setProducts]             = useState<Product[]>(STATIC_PRODUCTS);
+  const [productsLoading, setProductsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [search, setSearch]                 = useState('');
   const [cartItems, setCartItems]           = useState<CartItem[]>(() => {
@@ -376,6 +381,28 @@ const Shop: React.FC = () => {
   const { isAuthenticated, user }           = useAuth();
   const userOrdersKey                       = ordersKey(user?.id || user?.email);
 
+  // Fetch products from backend on mount
+  useEffect(() => {
+    let cancelled = false;
+    const fetchProducts = async () => {
+      try {
+        setProductsLoading(true);
+        const res = await fetch(`${API_BASE_URL}/api/admin/products?limit=100`);
+        if (!res.ok) throw new Error('Failed to fetch products');
+        const data = await res.json();
+        if (!cancelled && Array.isArray(data.products) && data.products.length > 0) {
+          setProducts(data.products);
+        }
+      } catch {
+        // Keep static fallback already set in initial state
+      } finally {
+        if (!cancelled) setProductsLoading(false);
+      }
+    };
+    fetchProducts();
+    return () => { cancelled = true; };
+  }, []);
+
   // Load orders scoped to the current user
   const [savedOrders, setSavedOrders]       = useState<OrderSnapshot[]>([]);
   useEffect(() => {
@@ -399,23 +426,23 @@ const Shop: React.FC = () => {
   // ── Cart helpers ───────────────────────────────────────────────────────────
   const addToCart = (product: Product) => {
     setCartItems(prev => {
-      const existing = prev.find(i => i.product.id === product.id);
-      if (existing) return prev.map(i => i.product.id === product.id ? { ...i, qty: i.qty + 1 } : i);
+      const existing = prev.find(i => i.product._id === product._id);
+      if (existing) return prev.map(i => i.product._id === product._id ? { ...i, qty: i.qty + 1 } : i);
       return [...prev, { product, qty: 1 }];
     });
   };
 
-  const changeQty = (id: number, delta: number) => {
+  const changeQty = (id: string, delta: number) => {
     setCartItems(prev =>
       prev.flatMap(i => {
-        if (i.product.id !== id) return [i];
+        if (i.product._id !== id) return [i];
         const next = i.qty + delta;
         return next <= 0 ? [] : [{ ...i, qty: next }];
       })
     );
   };
 
-  const removeItem = (id: number) => setCartItems(prev => prev.filter(i => i.product.id !== id));
+  const removeItem = (id: string) => setCartItems(prev => prev.filter(i => i.product._id !== id));
   const clearCart  = () => {
     setCartItems([]); setCheckedOut(false); setDetailsStep(false);
     setPaymentStep(false); setPaymentMethod(null); setOrderSnapshot(null);
@@ -479,27 +506,45 @@ const Shop: React.FC = () => {
     if (status === 'Completed' && pidx) {
       const raw = sessionStorage.getItem('khalti_pending');
       if (raw) {
-        const saved = JSON.parse(raw) as { cartItems: CartItem[]; customer: CustomerInfo; subtotal: number; shipping: number; total: number; orderId: string; paymentMethod: 'khalti' };
-        const snap: OrderSnapshot = {
-          orderId:       saved.orderId,
-          placedAt:      new Date(),
-          items:         saved.cartItems,
-          customer:      saved.customer,
-          subtotal:      saved.subtotal,
-          shipping:      saved.shipping,
-          total:         saved.total,
-          paymentMethod: 'khalti',
-          status:        'placed',
-        };
-        setCartItems(saved.cartItems);
-        setCustomer(saved.customer);
-        setPaymentMethod('khalti');
-        setOrderSnapshot(snap);
-        saveOrder(snap);
-        setCheckedOut(true);
-        setCartOpen(true);
-        sessionStorage.removeItem('khalti_pending');
-        setSearchParams({});
+        (async () => {
+          const saved = JSON.parse(raw) as { cartItems: CartItem[]; customer: CustomerInfo; subtotal: number; shipping: number; total: number; orderId: string; paymentMethod: 'khalti' };
+          // Verify payment server-side before accepting
+          const token = localStorage.getItem('travelBuddyToken');
+          const verifyRes = await fetch(`${API_BASE_URL}/api/khalti-payments/verify`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ pidx }),
+          });
+          if (!verifyRes.ok) {
+            alert('Payment verification failed. Please contact support if you were charged.');
+            sessionStorage.removeItem('khalti_pending');
+            setSearchParams({});
+            return;
+          }
+          const snap: OrderSnapshot = {
+            orderId:       saved.orderId,
+            placedAt:      new Date(),
+            items:         saved.cartItems,
+            customer:      saved.customer,
+            subtotal:      saved.subtotal,
+            shipping:      saved.shipping,
+            total:         saved.total,
+            paymentMethod: 'khalti',
+            status:        'placed',
+          };
+          setCartItems(saved.cartItems);
+          setCustomer(saved.customer);
+          setPaymentMethod('khalti');
+          setOrderSnapshot(snap);
+          saveOrder(snap);
+          setCheckedOut(true);
+          setCartOpen(true);
+          sessionStorage.removeItem('khalti_pending');
+          setSearchParams({});
+        })();
       }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -543,7 +588,7 @@ const Shop: React.FC = () => {
   const total        = subtotal + shipping;
 
   // ── Filtered products ──────────────────────────────────────────────────────
-  const filtered = PRODUCTS.filter(p => {
+  const filtered = products.filter(p => {
     const matchCat    = activeCategory === 'All' || p.category === activeCategory;
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
@@ -633,9 +678,9 @@ const Shop: React.FC = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
           {filtered.map(product => {
-            const inCart = cartItems.find(i => i.product.id === product.id);
+            const inCart = cartItems.find(i => i.product._id === product._id);
             return (
-              <div key={product.id}
+              <div key={product._id}
               onClick={() => setSelectedProduct(product)}
               className="glass-card rounded-2xl overflow-hidden flex flex-col group hover:border-white/30 transition-all duration-300 cursor-pointer">
                 <div className="relative h-48 overflow-hidden">
@@ -675,12 +720,12 @@ const Shop: React.FC = () => {
 
                     {inCart ? (
                       <div onClick={e => e.stopPropagation()} className="flex items-center gap-1 rounded-xl border border-indigo-400/40 bg-indigo-500/10 px-1 py-1">
-                        <button onClick={() => changeQty(product.id, -1)}
+                        <button onClick={() => changeQty(product._id, -1)}
                           className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 transition-all text-white/70">
                           <Minus className="w-3 h-3" />
                         </button>
                         <span className="text-white text-sm font-semibold w-5 text-center">{inCart.qty}</span>
-                        <button onClick={() => changeQty(product.id, 1)}
+                        <button onClick={() => changeQty(product._id, 1)}
                           className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 transition-all text-white/70">
                           <Plus className="w-3 h-3" />
                         </button>
@@ -809,17 +854,17 @@ const Shop: React.FC = () => {
                   {/* CTA */}
                   <div className="pt-2 mt-auto">
                     {(() => {
-                      const inCart = cartItems.find(i => i.product.id === selectedProduct.id);
+                      const inCart = cartItems.find(i => i.product._id === selectedProduct._id);
                       return inCart ? (
                         <div className="flex items-center justify-between rounded-2xl border border-indigo-400/40 bg-indigo-500/10 px-4 py-3">
                           <span className="text-white/60 text-sm">In cart</span>
                           <div className="flex items-center gap-3">
-                            <button onClick={() => changeQty(selectedProduct.id, -1)}
+                            <button onClick={() => changeQty(selectedProduct._id, -1)}
                               className="w-8 h-8 flex items-center justify-center rounded-xl glass-button transition-all text-white">
                               <Minus className="w-3.5 h-3.5" />
                             </button>
                             <span className="text-white font-bold w-6 text-center text-lg">{inCart.qty}</span>
-                            <button onClick={() => changeQty(selectedProduct.id, 1)}
+                            <button onClick={() => changeQty(selectedProduct._id, 1)}
                               className="w-8 h-8 flex items-center justify-center rounded-xl glass-button transition-all text-white">
                               <Plus className="w-3.5 h-3.5" />
                             </button>
@@ -847,8 +892,7 @@ const Shop: React.FC = () => {
 
       {/* ── Orders drawer ───────────────────────────────────────────────── */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-md z-50 flex flex-col transition-transform duration-300 ease-in-out ${ordersOpen ? 'translate-x-0' : 'translate-x-full'}`}
-        style={{ background: 'rgba(15,23,42,0.97)', backdropFilter: 'blur(20px)', borderLeft: '1px solid rgba(255,255,255,0.1)' }}
+        className={`glass-dark fixed top-0 right-0 h-full w-full max-w-md z-50 flex flex-col transition-transform duration-300 ease-in-out border-l border-white/10 ${ordersOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 shrink-0">
@@ -940,7 +984,7 @@ const Shop: React.FC = () => {
                       {/* Items */}
                       <div className="space-y-2.5">
                         {order.items.map(i => (
-                          <div key={i.product.id} className="flex items-center gap-3">
+                          <div key={i.product._id} className="flex items-center gap-3">
                             <img
                               src={i.product.img.replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
                               alt={i.product.name}
@@ -1069,8 +1113,7 @@ const Shop: React.FC = () => {
 
       {/* ── Cart drawer ─────────────────────────────────────────────────── */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-md z-50 flex flex-col transition-transform duration-300 ease-in-out ${cartOpen ? 'translate-x-0' : 'translate-x-full'}`}
-        style={{ background: 'rgba(15,23,42,0.97)', backdropFilter: 'blur(20px)', borderLeft: '1px solid rgba(255,255,255,0.1)' }}
+        className={`glass-dark fixed top-0 right-0 h-full w-full max-w-md z-50 flex flex-col transition-transform duration-300 ease-in-out border-l border-white/10 ${cartOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         {/* Drawer header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 shrink-0">
@@ -1126,7 +1169,7 @@ const Shop: React.FC = () => {
               <div className="glass-card rounded-xl p-4 space-y-3">
                 <p className="text-white/40 text-[10px] uppercase tracking-widest">Items Ordered</p>
                 {orderSnapshot.items.map(i => (
-                  <div key={i.product.id} className="flex items-center gap-3">
+                  <div key={i.product._id} className="flex items-center gap-3">
                     <img
                       src={i.product.img.replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
                       alt={i.product.name}
@@ -1396,7 +1439,7 @@ const Shop: React.FC = () => {
             /* ── Cart items list ── */
             <>
               {cartItems.map(({ product, qty }) => (
-                <div key={product.id} className="flex gap-3 glass-card rounded-xl p-3">
+                <div key={product._id} className="flex gap-3 glass-card rounded-xl p-3">
                   <img
                     src={product.img.replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
                     alt={product.name}
@@ -1408,17 +1451,17 @@ const Shop: React.FC = () => {
                     <p className="text-white/35 text-[11px]">NPR {product.price.toLocaleString()} each</p>
                   </div>
                   <div className="flex flex-col items-end justify-between shrink-0">
-                    <button onClick={() => removeItem(product.id)}
+                    <button onClick={() => removeItem(product._id)}
                       className="p-1 rounded hover:bg-red-500/20 text-white/40 hover:text-red-400 transition-all">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                     <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-1 py-0.5">
-                      <button onClick={() => changeQty(product.id, -1)}
+                      <button onClick={() => changeQty(product._id, -1)}
                         className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 text-white/60 transition-all">
                         <Minus className="w-2.5 h-2.5" />
                       </button>
                       <span className="text-white text-xs font-semibold w-4 text-center">{qty}</span>
-                      <button onClick={() => changeQty(product.id, 1)}
+                      <button onClick={() => changeQty(product._id, 1)}
                         className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 text-white/60 transition-all">
                         <Plus className="w-2.5 h-2.5" />
                       </button>
@@ -1514,3 +1557,4 @@ const Shop: React.FC = () => {
 };
 
 export default Shop;
+

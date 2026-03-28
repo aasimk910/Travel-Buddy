@@ -175,7 +175,7 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ hotels, hikeId, hikeDate })
                 <div className="space-y-3 pt-2">
                   <p className="text-sm font-semibold text-white">Available Packages</p>
                   {hotel.packages.map((pkg) => (
-                    <div key={pkg._id} className="bg-white/5 rounded-lg overflow-hidden border border-white/10">
+                    <div key={pkg._id} className="glass-card rounded-lg overflow-hidden">
                       {/* Package Header */}
                       <div className="px-4 py-3 flex items-center justify-between gap-3 hover:bg-white/10 transition-colors">
                         <div 

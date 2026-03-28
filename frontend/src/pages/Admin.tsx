@@ -339,7 +339,7 @@ const Admin: React.FC = () => {
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
-  useEffect(() => { fetchHikes(); }, [fetchHikes]);
+  useEffect(() => { if (activeTab === "hikes") fetchHikes(); }, [fetchHikes, activeTab]);
   useEffect(() => { if (activeTab === "hotels" || activeTab === "packages") fetchHotels(); }, [fetchHotels, activeTab]);
   useEffect(() => { if (activeTab === "packages") fetchAllPackages(); }, [fetchAllPackages, activeTab]);
   useEffect(() => { if (activeTab === "bookings") fetchBookings(); }, [fetchBookings, activeTab]);
@@ -596,7 +596,7 @@ const Admin: React.FC = () => {
       setPkgModal(false);
       if (viewHotel) openViewHotel(viewHotel);
       if (activeTab === "packages") fetchAllPackages();
-      fetchHotels();
+      if (activeTab === "hotels" || activeTab === "packages") fetchHotels();
     } catch (err: any) { showError(err.message || "Failed to save package."); }
     finally { setPkgSaving(false); }
   };
@@ -609,7 +609,7 @@ const Admin: React.FC = () => {
       showSuccess("Package deleted.");
       if (viewHotel) openViewHotel(viewHotel);
       if (activeTab === "packages") fetchAllPackages();
-      fetchHotels();
+      if (activeTab === "hotels" || activeTab === "packages") fetchHotels();
     } catch (err: any) { showError(err.message || "Failed to delete package."); }
   };
 

@@ -6,6 +6,9 @@ const { authenticateToken } = require("../middleware/auth");
 const router = express.Router();
 
 const KHALTI_SECRET_KEY = process.env.KHALTI_SANDBOX_SECRET;
+if (!KHALTI_SECRET_KEY) {
+  throw new Error("KHALTI_SANDBOX_SECRET is required but not set in environment.");
+}
 const KHALTI_API_URL = "https://dev.khalti.com/api/v2";
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
@@ -87,9 +90,10 @@ router.post("/hotel-booking", authenticateToken, async (req, res) => {
 });
 
 // POST /api/payments/khalti-verify - Verify Khalti payment
-router.post("/khalti-verify", async (req, res) => {
+router.post("/khalti-verify", authenticateToken, async (req, res) => {
   try {
     const { pidx, transaction_id, booking_id } = req.body;
+    const userId = req.user._id;
 
     if (!pidx || !booking_id) {
       return res.status(400).json({
@@ -101,6 +105,11 @@ router.post("/khalti-verify", async (req, res) => {
     const booking = await HotelBooking.findById(booking_id);
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // Ensure the requesting user owns this booking
+    if (booking.userId.toString() !== userId.toString()) {
+      return res.status(403).json({ message: "Unauthorized" });
     }
 
     // Verify payment with Khalti

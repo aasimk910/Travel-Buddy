@@ -39,6 +39,8 @@ if (!MONGO_URI) {
 console.log("🚀 Starting Travel Buddy backend...");
 
 // === Middlewares ===
+// Trust the first proxy (needed for rate limiting behind load balancers/nginx)
+app.set('trust proxy', 1);
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (e.g. same-origin, mobile, curl)
@@ -96,6 +98,7 @@ const Hike = require("./models/Hike");
 const Message = require("./models/Message");
 const User = require("./models/User");
 const Review = require("./models/Review");
+const Photo = require("./models/Photo");
 const { authenticateToken } = require("./middleware/auth");
 const { uploadBase64Image } = require("./utils/cloudinaryUpload");
 
@@ -117,13 +120,14 @@ app.use("/api/bookings", bookingRoutes);
 // GET /api/stats - Public site-wide statistics
 app.get("/api/stats", async (req, res) => {
   try {
-    const [hikeCount, userCount, trailCount, reviewCount] = await Promise.all([
+    const now = new Date();
+    const [hikeCount, userCount, photoCount, upcomingHikes] = await Promise.all([
       Hike.countDocuments(),
       User.countDocuments(),
-      Hike.countDocuments({ "startPoint.lat": { $exists: true } }),
-      Review.countDocuments(),
+      Photo.countDocuments(),
+      Hike.countDocuments({ date: { $gte: now } }),
     ]);
-    res.json({ hikeCount, userCount, trailCount, reviewCount });
+    res.json({ hikeCount, userCount, photoCount, upcomingHikes });
   } catch (err) {
     console.error("Stats error:", err);
     res.status(500).json({ message: "Unable to fetch stats." });
@@ -148,16 +152,33 @@ app.get("/api/user-trips", authenticateToken, async (req, res) => {
 });
 
 // GET /api/messages/:hikeId - Get messages for a hike chat room (authenticated)
+// Supports cursor-based pagination: pass ?before=<messageId>&limit=<n>
 app.get("/api/messages/:hikeId", authenticateToken, async (req, res) => {
   try {
     const { hikeId } = req.params;
-    const limit = parseInt(req.query.limit) || 100;
-    
-    const messages = await Message.find({ hikeId })
-      .sort({ createdAt: 1 })
+    const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+    const before = req.query.before; // message _id cursor — fetch messages older than this
+
+    if (before && !mongoose.Types.ObjectId.isValid(before)) {
+      return res.status(400).json({ message: "Invalid cursor value." });
+    }
+
+    const query = { hikeId };
+    if (before) {
+      query._id = { $lt: before };
+    }
+
+    const messages = await Message.find(query)
+      .sort({ _id: -1 })
       .limit(limit);
-    
-    res.json(messages);
+
+    // Return in ascending order so the client renders oldest-first
+    messages.reverse();
+
+    res.json({
+      messages,
+      hasMore: messages.length === limit,
+    });
   } catch (err) {
     console.error("Fetch messages error:", err);
     res.status(500).json({ message: "Unable to fetch messages." });
@@ -176,6 +197,29 @@ app.use((err, req, res, next) => {
 });
 
 // === Socket.IO ===
+const jwt = require('jsonwebtoken');
+const JWT_SECRET_SOCKET = process.env.JWT_SECRET;
+
+// Authenticate socket connections via JWT passed in handshake auth
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token;
+    if (!token) {
+      return next(new Error("Authentication required."));
+    }
+    const decoded = jwt.verify(token, JWT_SECRET_SOCKET);
+    const socketUser = await User.findById(decoded.userId).select('_id name').lean();
+    if (!socketUser) {
+      return next(new Error("User not found."));
+    }
+    socket.data.userId = socketUser._id.toString();
+    socket.data.userName = socketUser.name;
+    next();
+  } catch {
+    next(new Error("Invalid authentication token."));
+  }
+});
+
 io.on('connection', (socket) => {
   console.log('✅ a user connected');
 
@@ -219,10 +263,12 @@ io.on('connection', (socket) => {
         console.log("Received message, has attachment:", !!msg.attachment);
         
         // Save message to database (including attachment if present)
+        // Use server-verified identity from JWT; fall back to client-supplied values only
+        // if socket has no verified identity (e.g. anonymous/unauthenticated connections).
         const messageData = {
           hikeId: msg.roomId,
-          senderId: msg.senderId,
-          senderName: msg.senderId,
+          senderId: socket.data.userId || msg.senderId,
+          senderName: socket.data.userName || msg.senderName || msg.senderId,
           message: msg.message || "",
         };
 
@@ -246,12 +292,9 @@ io.on('connection', (socket) => {
             };
           } catch (uploadError) {
             console.error("Error uploading attachment to Cloudinary:", uploadError);
-            // If upload fails, store base64 as fallback (or skip attachment)
-            messageData.attachment = {
-              name: msg.attachment.name,
-              type: msg.attachment.type,
-              url: msg.attachment.data, // Fallback to base64
-            };
+            // Skip attachment entirely — storing raw base64 in MongoDB risks
+            // exceeding the 16 MB document limit and degrades DB performance.
+            socket.emit("attachment_error", { message: "Image upload failed. Message sent without attachment." });
           }
         }
 
@@ -261,7 +304,8 @@ io.on('connection', (socket) => {
         const messageToSend = {
           _id: savedMessage._id,
           roomId: msg.roomId,
-          senderId: msg.senderId,
+          senderId: savedMessage.senderId,
+          senderName: savedMessage.senderName,
           message: msg.message,
           attachment: savedMessage.attachment,
           createdAt: savedMessage.createdAt,
@@ -276,8 +320,7 @@ io.on('connection', (socket) => {
         io.to(msg.roomId).emit('receive_message', messageToSend);
       } catch (err) {
         console.error("Error saving message:", err);
-        // Still broadcast even if save fails
-        io.to(msg.roomId).emit('receive_message', msg);
+        socket.emit('message_error', { error: 'Failed to save message. Please try again.' });
       }
     }
   });
@@ -319,15 +362,6 @@ async function startServer() {
     process.exit(1);
   }
 }
-
-// === Global error handler ===
-app.use((err, req, res, next) => {
-  console.error('❌ Unhandled error:', err);
-  res.status(500).json({
-    error: 'Internal server error',
-    message: err.message || 'Unknown error occurred'
-  });
-});
 
 // === Handle unhandled promise rejections ===
 process.on('unhandledRejection', (reason, promise) => {

@@ -2,9 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { socket } from "../socket";
 import { useAuth } from "../context/AuthContext";
 import { API_BASE_URL } from "../config/env";
-import { useRoomKey } from "../hooks/useRoomKey";
-import { encryptMessage, decryptMessage, isEncrypted } from "../utils/e2e";
-import { Key, Lock, Paperclip, FileText, X, Send, Loader2 } from "lucide-react";
+import { Paperclip, FileText, X, Send, Loader2 } from "lucide-react";
 
 interface ChatProps {
   roomId?: string;
@@ -23,22 +21,29 @@ interface Message {
   roomId?: string;
   message: string;
   senderId: string;
+  senderName?: string;
   createdAt: string;
   attachment?: Attachment;
 }
 
 // Fetch previous messages from the API
-const fetchMessages = async (hikeId: string): Promise<Message[]> => {
+const fetchMessages = async (
+  hikeId: string,
+  before?: string
+): Promise<{ messages: Message[]; hasMore: boolean }> => {
   try {
     const token = localStorage.getItem("travelBuddyToken");
-    const res = await fetch(`${API_BASE_URL}/api/messages/${hikeId}`, {
+    const url = new URL(`${API_BASE_URL}/api/messages/${hikeId}`);
+    url.searchParams.set("limit", "50");
+    if (before) url.searchParams.set("before", before);
+    const res = await fetch(url.toString(), {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
-    if (!res.ok) return [];
+    if (!res.ok) return { messages: [], hasMore: false };
     return await res.json();
   } catch (error) {
     console.error("Failed to fetch messages:", error);
-    return [];
+    return { messages: [], hasMore: false };
   }
 };
 
@@ -55,11 +60,12 @@ const fileToBase64 = (file: File): Promise<string> => {
 const Chat = ({ roomId }: ChatProps) => {
   const { user } = useAuth();
   const userId = user?.id || user?.email || user?.name;
-  const { roomKey, isReady: keyReady, error: keyError } = useRoomKey(roomId);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [decryptedTexts, setDecryptedTexts] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -86,8 +92,10 @@ const Chat = ({ roomId }: ChatProps) => {
 
     // Load previous messages
     setIsLoading(true);
-    fetchMessages(roomId).then((prevMessages) => {
+    setHasMore(false);
+    fetchMessages(roomId).then(({ messages: prevMessages, hasMore: more }) => {
       setMessages(prevMessages);
+      setHasMore(more);
       setIsLoading(false);
     });
 
@@ -95,20 +103,7 @@ const Chat = ({ roomId }: ChatProps) => {
     socket.emit("join_room", { roomId });
 
     // Listen for incoming messages
-    const handleReceiveMessage = async (payload: Message) => {
-      console.log("Received message:", payload);
-      console.log("Has attachment:", !!payload.attachment);
-      if (payload.attachment) {
-        console.log("Attachment URL:", payload.attachment.url);
-      }
-
-      // Decrypt the message text if we have the room key
-      if (roomKey && isEncrypted(payload.message)) {
-        const plain = await decryptMessage(payload.message, roomKey);
-        const msgKey = payload._id || `recv-${Date.now()}`;
-        setDecryptedTexts((prev) => ({ ...prev, [msgKey]: plain }));
-      }
-
+    const handleReceiveMessage = (payload: Message) => {
       setMessages((prev) => {
         // Replace temp message with server message, or add new message
         if (payload._id) {
@@ -131,30 +126,18 @@ const Chat = ({ roomId }: ChatProps) => {
     };
     socket.on("receive_message", handleReceiveMessage);
 
+    const handleAttachmentError = ({ message: errMsg }: { message: string }) => {
+      setAttachmentError(errMsg);
+      setTimeout(() => setAttachmentError(null), 5000);
+    };
+    socket.on("attachment_error", handleAttachmentError);
+
     return () => {
+      socket.emit("leave_room", { roomId });
       socket.off("receive_message", handleReceiveMessage);
+      socket.off("attachment_error", handleAttachmentError);
     };
   }, [roomId]);
-
-  // Decrypt all messages whenever the room key becomes available
-  useEffect(() => {
-    if (!roomKey || messages.length === 0) return;
-    const decrypt = async () => {
-      const entries: Record<string, string> = {};
-      await Promise.all(
-        messages.map(async (m, idx) => {
-          const key = m._id || String(idx);
-          if (isEncrypted(m.message)) {
-            entries[key] = await decryptMessage(m.message, roomKey);
-          } else {
-            entries[key] = m.message;
-          }
-        })
-      );
-      setDecryptedTexts(entries);
-    };
-    decrypt();
-  }, [roomKey, messages]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -197,27 +180,22 @@ const Chat = ({ roomId }: ChatProps) => {
         };
       }
 
-      // Encrypt the text payload if the room key is ready
-      const plaintext = message.trim() || (selectedFile ? `Sent an image` : "");
-      const encryptedText = roomKey
-        ? await encryptMessage(plaintext, roomKey)
-        : plaintext;
+      const plaintext = message.trim() || (selectedFile ? "Sent an image" : "");
 
       const payload = {
         roomId,
-        message: encryptedText,
+        message: plaintext,
         senderId: userId,
+        senderName: user?.name,
         createdAt: new Date().toISOString(),
         attachment,
       };
 
-      console.log("Sending message with attachment:", attachment ? "yes" : "no");
-      
-      // Optimistically add message to UI (show plaintext to sender)
+      // Optimistically add message to UI
       const optimisticMessage: Message = {
         _id: `temp-${Date.now()}`,
         roomId,
-        message: encryptedText,
+        message: plaintext,
         senderId: userId,
         createdAt: payload.createdAt,
         attachment: attachment ? {
@@ -226,14 +204,9 @@ const Chat = ({ roomId }: ChatProps) => {
           data: attachment.data,
         } : undefined,
       };
-      
+
       setMessages((prev) => [...prev, optimisticMessage]);
-      // Show plaintext immediately for the sender
-      setDecryptedTexts((prev) => ({
-        ...prev,
-        [optimisticMessage._id!]: plaintext,
-      }));
-      
+
       // Send to server
       socket.emit("send_message", payload);
       setMessage("");
@@ -248,31 +221,43 @@ const Chat = ({ roomId }: ChatProps) => {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* E2E status bar */}
-      {keyError && (
-        <div className="px-4 py-1 text-xs text-yellow-300 bg-yellow-900/30 border-b border-yellow-700/30 flex items-center gap-1">
-          <Key className="w-3 h-3 flex-shrink-0" /> {keyError}
-        </div>
-      )}
-      {keyReady && (
-        <div className="px-4 py-1 text-xs text-green-400/70 bg-green-900/20 border-b border-green-700/20 flex items-center gap-1">
-          <Lock className="w-3 h-3 flex-shrink-0" /> End-to-end encrypted
-        </div>
-      )}
       <div className="flex-1 overflow-y-auto px-4 py-2 min-h-0 scrollbar-hide" ref={messagesContainerRef} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {attachmentError && (
+          <div className="mx-4 my-1 px-3 py-2 rounded-lg bg-red-900/40 border border-red-500/30 text-red-300 text-xs text-center">
+            {attachmentError}
+          </div>
+        )}
         {isLoading ? (
           <p className="text-center text-glass-dim">Loading messages...</p>
         ) : messages.length === 0 ? (
           <p className="text-center text-glass-dim">No messages yet. Start the conversation!</p>
         ) : (
           <>
+            {hasMore && (
+              <div className="text-center py-2">
+                <button
+                  onClick={async () => {
+                    if (!roomId || isLoadingMore) return;
+                    setIsLoadingMore(true);
+                    const oldestId = messages[0]?._id;
+                    const { messages: older, hasMore: more } = await fetchMessages(roomId, oldestId);
+                    setMessages((prev) => [...older, ...prev]);
+                    setHasMore(more);
+                    setIsLoadingMore(false);
+                  }}
+                  disabled={isLoadingMore}
+                  className="text-xs text-indigo-300 hover:text-indigo-100 disabled:opacity-50 transition-colors"
+                >
+                  {isLoadingMore ? "Loading…" : "Load older messages"}
+                </button>
+              </div>
+            )}
             {messages.map((m, idx) => {
               const msgKey = m._id || String(idx);
-              const displayText = decryptedTexts[msgKey] ?? (isEncrypted(m.message) ? "[decrypting…]" : m.message);
               return (
               <div key={msgKey} className={`flex mb-4 ${m.senderId === userId ? 'justify-end' : 'justify-start'}`}>
               <div className={`rounded-lg p-3 max-w-lg ${m.senderId === userId ? 'glass-dark text-glass' : 'glass-strong'}`}>
-                <div className="font-bold mb-1 text-white/80">{m.senderId === userId ? 'Me' : m.senderId}</div>
+                <div className="font-bold mb-1 text-white/80">{m.senderId === userId ? 'Me' : (m.senderName || m.senderId)}</div>
                 {m.attachment && (
                   <div className="mb-2">
                     {m.attachment.type.startsWith('image/') ? (
@@ -301,8 +286,8 @@ const Chat = ({ roomId }: ChatProps) => {
                     )}
                   </div>
                 )}
-                {displayText && displayText !== 'Sent an image' && (
-                  <p className={`${m.senderId === userId ? 'text-glass' : 'text-white/90'}`}>{displayText}</p>
+                {m.message && m.message !== 'Sent an image' && (
+                  <p className={`${m.senderId === userId ? 'text-glass' : 'text-white/90'}`}>{m.message}</p>
                 )}
                 <p className="text-xs text-white/40 mt-1">
                   {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -344,10 +329,10 @@ const Chat = ({ roomId }: ChatProps) => {
           <input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && !isUploading && keyReady && sendMessage()}
-            placeholder={roomId && !keyReady ? "Setting up encryption…" : "Type a message..."}
+            onKeyPress={(e) => e.key === 'Enter' && !isUploading && sendMessage()}
+            placeholder="Type a message..."
             className="flex-1 p-2 rounded-lg glass-input"
-            disabled={isUploading || (!!roomId && !keyReady)}
+            disabled={isUploading}
           />
           {/* Hidden file input */}
           <input
@@ -368,7 +353,7 @@ const Chat = ({ roomId }: ChatProps) => {
           <button 
             onClick={sendMessage} 
             className="ml-2 p-2 glass-button-dark disabled:opacity-50"
-            disabled={isUploading || (!message.trim() && !selectedFile) || (!!roomId && !keyReady)}
+            disabled={isUploading || (!message.trim() && !selectedFile)}
           >
             {isUploading ? (
               <Loader2 className="w-6 h-6 text-glass-light animate-spin" />

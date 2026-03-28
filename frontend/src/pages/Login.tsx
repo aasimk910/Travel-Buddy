@@ -1,5 +1,6 @@
 // src/pages/Login.tsx
 import React, { useEffect } from "react";
+import { useScrollReveal } from "../hooks/useScrollReveal";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useFormik } from "formik";
@@ -22,6 +23,7 @@ type LocationState = {
 };
 
 const Login: React.FC = () => {
+  const revealRef = useScrollReveal();
   const { loginWithProfile, isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -154,14 +156,16 @@ const Login: React.FC = () => {
 
   // ---------- UI ----------
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <AuthHeader
-        title="Sign in to your account"
-        subtitle="Access your trips, matches, and saved destinations."
-      />
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8" ref={revealRef}>
+      <div className="reveal reveal-fade">
+        <AuthHeader
+          title="Sign in to your account"
+          subtitle="Access your trips, matches, and saved destinations."
+        />
+      </div>
 
       {/* Card */}
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md reveal reveal-scale delay-100">
         <div className="glass-card py-8 px-4 shadow rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit} noValidate>
             <StatusAlert message={status} />

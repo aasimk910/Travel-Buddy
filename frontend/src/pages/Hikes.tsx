@@ -1,5 +1,6 @@
 // src/pages/Hikes.tsx
 import React, { useMemo, useState, useEffect } from "react";
+import { useScrollReveal } from "../hooks/useScrollReveal";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Map,
@@ -60,6 +61,7 @@ const extractPlace = (location: string): string => {
 const difficultyLabel = (value: number) => `Difficulty: ${value}/5`;
 
 const Hikes: React.FC = () => {
+  const revealRef = useScrollReveal();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const [search, setSearch] = useState("");
@@ -137,21 +139,21 @@ const Hikes: React.FC = () => {
   }, [hikes, search, difficulty, place, sortBy]);
 
   return (
-    <>
+    <div ref={revealRef}>
       {/* Main content */}
         {/* Hero + filters */}
         <section className="py-8 lg:py-10">
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
-                <p className="inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1 text-xs font-medium text-black mb-3">
+                <p className="inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1 text-xs font-medium text-black mb-3 reveal reveal-fade">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
                   <span>Hikes in Nepal • Find your next trail buddy</span>
                 </p>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-white mb-2">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-white mb-2 reveal reveal-up delay-100">
                   Join group hikes in the hills and mountains of Nepal
                 </h1>
-                <p className="text-sm sm:text-base text-gray-200 max-w-2xl">
+                <p className="text-sm sm:text-base text-gray-200 max-w-2xl reveal reveal-fade delay-200">
                   Explore classic day hikes around Kathmandu and Pokhara, or
                   join short treks in the Annapurna region. Filter by difficulty
                   and place to find hikes that fit you.
@@ -182,7 +184,7 @@ const Hikes: React.FC = () => {
             </div>
 
             {/* Search + filters row */}
-            <div className="mt-6 space-y-3">
+            <div className="mt-6 space-y-3 reveal reveal-up delay-300">
               {/* Search */}
               <div className="relative">
                 <Search className="w-4 h-4 text-gray-300 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -252,7 +254,7 @@ const Hikes: React.FC = () => {
         {/* Create Hike banner */}
         <section className="pt-6 pb-2">
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
-            <div className="glass-card rounded-xl shadow-sm p-6 flex items-center justify-between">
+            <div className="glass-card rounded-xl shadow-sm p-6 flex items-center justify-between reveal reveal-up">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 flex-shrink-0 flex items-center justify-center rounded-xl bg-emerald-500/20">
                   <Mountain className="w-8 h-8 text-emerald-400" />
@@ -302,7 +304,7 @@ const Hikes: React.FC = () => {
               </div>
             ) : (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-                {filteredHikes.map((hike) => (
+                {filteredHikes.map((hike, idx) => (
                   <article
                     key={hike._id}
                     className="glass-card rounded-xl shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow"
@@ -386,7 +388,7 @@ const Hikes: React.FC = () => {
           open={isCreateHikeModalOpen}
           onClose={() => setIsCreateHikeModalOpen(false)}
         />
-    </>
+    </div>
   );
 };
 

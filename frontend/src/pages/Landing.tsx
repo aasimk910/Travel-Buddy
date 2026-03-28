@@ -1,12 +1,43 @@
 // src/pages/Landing.tsx
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Map, Users, Compass, MessageCircle, Shield, LayoutDashboard, LogOut, ChevronRight } from "lucide-react";
+import { Map, Users, Compass, MessageCircle, Shield, LayoutDashboard, LogOut, ChevronRight, TrendingUp, Mountain, Camera } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { getSiteStats, getUpcomingHikes, type SiteStats, type Hike } from "../services/hikes";
+import { useScrollReveal } from "../hooks/useScrollReveal";
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
+  const revealRef = useScrollReveal();
+  const [siteStats, setSiteStats] = useState<SiteStats | null>(null);
+  const [upcomingHikes, setUpcomingHikes] = useState<Hike[]>([]);
+  const heroTextRef = useRef<HTMLDivElement>(null);
+  const heroCardRef = useRef<HTMLDivElement>(null);
+  const heroBlobsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    getSiteStats().then(setSiteStats).catch(() => {});
+    getUpcomingHikes(3).then(setUpcomingHikes).catch(() => {});
+  }, []);
+
+  // Parallax on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const y = window.scrollY;
+      if (heroTextRef.current) {
+        heroTextRef.current.style.transform = `translateY(${y * 0.18}px)`;
+      }
+      if (heroCardRef.current) {
+        heroCardRef.current.style.transform = `translateY(${y * 0.1}px)`;
+      }
+      if (heroBlobsRef.current) {
+        heroBlobsRef.current.style.transform = `translateY(${y * 0.28}px)`;
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -14,7 +45,7 @@ const Landing: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col" ref={revealRef}>
       {/* Top navigation */}
       <header className="glass-nav">
         <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 flex items-center justify-between h-16">
@@ -97,23 +128,27 @@ const Landing: React.FC = () => {
       {/* Main content */}
       <main className="flex-1">
         {/* Hero section */}
-        <section className="py-12 lg:py-20">
-          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 grid gap-10 lg:grid-cols-2 items-center">
-            {/* Left: text */}
-            <div className="max-w-xl">
-              {isAuthenticated ? (
-                <p className="inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1 text-xs font-medium text-black mb-4">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  Welcome back, {user?.name?.split(' ')[0] ?? 'traveler'}!
-                </p>
-              ) : (
-                <p className="inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1 text-xs font-medium text-black mb-4">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  Find people who travel like you
-                </p>
-              )}
+        <section className="py-12 lg:py-20 relative overflow-hidden">
+          {/* Floating decorative blobs — parallax layer */}
+          <div ref={heroBlobsRef} className="pointer-events-none absolute inset-0 overflow-hidden will-change-transform" aria-hidden>
+            <div className="float-slow absolute -top-10 left-[8%] w-48 h-48 rounded-full bg-indigo-500/10 blur-3xl" />
+            <div className="float-medium absolute top-20 right-[10%] w-40 h-40 rounded-full bg-purple-400/10 blur-3xl" style={{ animationDelay: '1.2s' }} />
+            <div className="drift absolute bottom-10 left-[40%] w-32 h-32 rounded-full bg-emerald-400/10 blur-2xl" />
+            <div className="float-fast absolute top-1/2 left-[60%] w-20 h-20 rounded-full bg-sky-400/15 blur-xl" style={{ animationDelay: '0.8s' }} />
+          </div>
 
-              <h1 className="text-3xl sm:text-4xl xl:text-5xl font-bold tracking-tight text-white mb-4">
+          <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 grid gap-10 lg:grid-cols-2 items-center">
+            {/* Left: text — parallax layer */}
+            <div ref={heroTextRef} className="max-w-xl will-change-transform">
+              <p className="reveal reveal-fade inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1 text-xs font-medium text-black mb-4">
+                {isAuthenticated ? (
+                  <><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />Welcome back, {user?.name?.split(' ')[0] ?? 'traveler'}!</>
+                ) : (
+                  <><span className="w-2 h-2 rounded-full bg-emerald-500" />Find people who travel like you</>
+                )}
+              </p>
+
+              <h1 className="reveal reveal-up delay-100 text-3xl sm:text-4xl xl:text-5xl font-bold tracking-tight text-white mb-4">
                 {isAuthenticated ? (
                   <>Your next adventure<br />
                     <span className="inline-block bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
@@ -130,13 +165,13 @@ const Landing: React.FC = () => {
                 )}
               </h1>
 
-              <p className="text-gray-200 text-sm sm:text-base leading-relaxed mb-6">
+              <p className="reveal reveal-up delay-200 text-gray-200 text-sm sm:text-base leading-relaxed mb-6">
                 {isAuthenticated
                   ? "Head to your dashboard to manage trips, connect with buddies, track expenses, and plan your next hike."
                   : "Travel Buddy connects you with travelers who share your style, budget, and destinations. Plan trips together, split costs, and turn solo ideas into shared adventures."}
               </p>
 
-              <div className="flex flex-wrap gap-3 mb-6">
+              <div className="reveal reveal-up delay-300 flex flex-wrap gap-3 mb-6">
                 {isAuthenticated ? (
                   <>
                     <Link
@@ -170,7 +205,7 @@ const Landing: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex flex-wrap items-center gap-4 text-xs text-gray-300">
+              <div className="reveal reveal-fade delay-400 flex flex-wrap items-center gap-4 text-xs text-gray-300">
                 <div className="flex items-center gap-1.5">
                   <Users className="w-4 h-4" />
                   <span>Trusted by small travel groups worldwide</span>
@@ -180,48 +215,61 @@ const Landing: React.FC = () => {
                   <span>Profile checks & safety tips built in</span>
                 </div>
               </div>
+
+              {/* Animated floating stat pills */}
+              <div className="reveal reveal-fade delay-500 mt-6 flex flex-wrap gap-3">
+                <div className="float-slow inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1.5 text-xs font-medium text-black shadow-sm">
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+                  {siteStats ? `${siteStats.hikeCount}+ hikes listed` : "hikes listed"}
+                </div>
+                <div className="float-medium inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1.5 text-xs font-medium text-black shadow-sm" style={{ animationDelay: '1s' }}>
+                  <Users className="w-3.5 h-3.5 text-indigo-600" />
+                  {siteStats ? `${siteStats.userCount}+ travelers` : "travelers"}
+                </div>
+                <div className="float-fast inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1.5 text-xs font-medium text-black shadow-sm" style={{ animationDelay: '0.5s' }}>
+                  <Mountain className="w-3.5 h-3.5 text-purple-600" />
+                  {siteStats ? `${siteStats.upcomingHikes} upcoming hikes` : "upcoming hikes"}
+                </div>
+                <div className="drift inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1.5 text-xs font-medium text-black shadow-sm" style={{ animationDelay: '1.8s' }}>
+                  <Camera className="w-3.5 h-3.5 text-rose-600" />
+                  {siteStats ? `${siteStats.photoCount}+ photos shared` : "photos shared"}
+                </div>
+              </div>
             </div>
 
-            {/* Right: preview card */}
-            <div className="lg:justify-self-end w-full max-w-md">
-              <div className="rounded-2xl glass-dark text-white p-5 sm:p-6 shadow-xl">
+            {/* Right: preview card — parallax layer */}
+            <div ref={heroCardRef} className="reveal reveal-right delay-200 lg:justify-self-end w-full max-w-md will-change-transform">
+              <div className="rounded-2xl glass-dark text-white p-5 sm:p-6 shadow-xl float-slow">
                 <p className="text-xs font-medium text-gray-300 mb-2">
                   Upcoming group hikes
                 </p>
                 <div className="space-y-3 text-sm">
-                  <div className="flex items-center justify-between rounded-xl bg-gray-800/70 px-3 py-2">
-                    <div>
-                      <p className="font-semibold">Sunrise ridge walk</p>
-                      <p className="text-[11px] text-gray-300">
-                        Banff • Easy • 4 people going
-                      </p>
-                    </div>
-                    <span className="text-[11px] rounded-full bg-emerald-500/20 text-emerald-300 px-2 py-0.5">
-                      2 spots left
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl bg-gray-800/70 px-3 py-2">
-                    <div>
-                      <p className="font-semibold">Alpine lake loop</p>
-                      <p className="text-[11px] text-gray-300">
-                        Switzerland • Moderate • 6 people going
-                      </p>
-                    </div>
-                    <span className="text-[11px] rounded-full glass-strong text-white px-2 py-0.5">
-                      New
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl bg-gray-800/70 px-3 py-2">
-                    <div>
-                      <p className="font-semibold">Weekend city foodie tour</p>
-                      <p className="text-[11px] text-gray-300">
-                        Lisbon • Budget • 3–5 travelers
-                      </p>
-                    </div>
-                    <span className="text-[11px] rounded-full bg-gray-700 px-2 py-0.5">
-                      City trip
-                    </span>
-                  </div>
+                  {upcomingHikes.length === 0 ? (
+                    <p className="text-[11px] text-gray-400">No upcoming hikes at the moment. Check back soon!</p>
+                  ) : (
+                    upcomingHikes.map((hike) => {
+                      const difficultyLabel = hike.difficulty <= 1 ? "Easy" : hike.difficulty <= 2 ? "Moderate" : hike.difficulty <= 3 ? "Challenging" : hike.difficulty <= 4 ? "Hard" : "Expert";
+                      const going = hike.participants?.length ?? 0;
+                      const isNew = (Date.now() - new Date(hike.createdAt || hike.date).getTime()) < 3 * 24 * 60 * 60 * 1000;
+                      return (
+                        <div key={hike._id} className="glass-dark flex items-center justify-between rounded-xl px-3 py-2">
+                          <div>
+                            <p className="font-semibold line-clamp-1">{hike.title}</p>
+                            <p className="text-[11px] text-gray-300">
+                              {hike.location} • {difficultyLabel} {going > 0 ? `• ${going} going` : ""}
+                            </p>
+                          </div>
+                          {isNew ? (
+                            <span className="text-[11px] rounded-full glass-strong text-white px-2 py-0.5">New</span>
+                          ) : hike.spotsLeft > 0 ? (
+                            <span className="text-[11px] rounded-full bg-emerald-500/20 text-emerald-300 px-2 py-0.5">{hike.spotsLeft} left</span>
+                          ) : (
+                            <span className="text-[11px] rounded-full bg-red-500/20 text-red-300 px-2 py-0.5">Full</span>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
                 <p className="mt-4 text-[11px] text-gray-300">
                   {isAuthenticated
@@ -233,11 +281,48 @@ const Landing: React.FC = () => {
           </div>
         </section>
 
+        {/* Moving ticker strip */}
+        <div className="overflow-hidden border-y border-white/10 bg-white/5 backdrop-blur-sm py-3 select-none">
+          <div className="ticker-track">
+            {[
+              { flag: "🏔️", label: "Everest Base Camp" },
+              { flag: "🗻", label: "Annapurna Circuit" },
+              { flag: "🌿", label: "Langtang Valley" },
+              { flag: "⛰️", label: "Manaslu Trek" },
+              { flag: "🏕️", label: "Gokyo Lakes" },
+              { flag: "🌄", label: "Poon Hill, Ghorepani" },
+              { flag: "🦅", label: "Upper Mustang" },
+              { flag: "💧", label: "Rara Lake" },
+              { flag: "🏞️", label: "Chitwan National Park" },
+              { flag: "🌸", label: "Pokhara, Lakeside" },
+              { flag: "🏔️", label: "Everest Base Camp" },
+              { flag: "🗻", label: "Annapurna Circuit" },
+              { flag: "🌿", label: "Langtang Valley" },
+              { flag: "⛰️", label: "Manaslu Trek" },
+              { flag: "🏕️", label: "Gokyo Lakes" },
+              { flag: "🌄", label: "Poon Hill, Ghorepani" },
+              { flag: "🦅", label: "Upper Mustang" },
+              { flag: "💧", label: "Rara Lake" },
+              { flag: "🏞️", label: "Chitwan National Park" },
+              { flag: "🌸", label: "Pokhara, Lakeside" },
+            ].map((item, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-2 px-6 text-sm text-gray-200 whitespace-nowrap"
+              >
+                <span className="text-base">{item.flag}</span>
+                {item.label}
+                <span className="ml-4 w-1 h-1 rounded-full bg-white/30 inline-block" />
+              </span>
+            ))}
+          </div>
+        </div>
+
         {/* Preview hikes section */}
         <section id="hikes" className="py-10 sm:py-14">
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
             <div className="flex items-center justify-between gap-3 mb-6">
-              <div>
+              <div className="reveal reveal-up">
                 <h2 className="text-xl sm:text-2xl font-semibold text-white">
                   Join group hikes near you
                 </h2>
@@ -254,7 +339,7 @@ const Landing: React.FC = () => {
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
-              <div className="glass-card rounded-xl shadow-sm overflow-hidden">
+              <div className="glass-card rounded-xl shadow-sm overflow-hidden reveal reveal-up delay-100">
                 <div className="h-28 bg-[url('https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
                 <div className="p-4">
                   <p className="text-xs text-gray-300 mb-1">
@@ -272,7 +357,7 @@ const Landing: React.FC = () => {
                 </div>
               </div>
 
-              <div className="glass-card rounded-xl shadow-sm overflow-hidden">
+              <div className="glass-card rounded-xl shadow-sm overflow-hidden reveal reveal-up delay-200">
                 <div className="h-28 bg-[url('https://images.pexels.com/photos/552785/pexels-photo-552785.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
                 <div className="p-4">
                   <p className="text-xs text-gray-300 mb-1">
@@ -290,7 +375,7 @@ const Landing: React.FC = () => {
                 </div>
               </div>
 
-              <div className="glass-card rounded-xl shadow-sm overflow-hidden">
+              <div className="glass-card rounded-xl shadow-sm overflow-hidden reveal reveal-up delay-300">
                 <div className="h-28 bg-[url('https://images.pexels.com/photos/1028225/pexels-photo-1028225.jpeg?auto=compress&cs=tinysrgb&w=800')] bg-cover bg-center" />
                 <div className="p-4">
                   <p className="text-xs text-gray-300 mb-1">
@@ -326,16 +411,16 @@ const Landing: React.FC = () => {
           className="py-10 sm:py-14"
         >
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
-            <h2 className="text-xl sm:text-2xl font-semibold text-white text-center mb-2">
+            <h2 className="reveal reveal-up text-xl sm:text-2xl font-semibold text-white text-center mb-2">
               How Travel Buddy works
             </h2>
-            <p className="text-sm text-gray-200 text-center max-w-xl mx-auto mb-8">
+            <p className="reveal reveal-fade delay-100 text-sm text-gray-200 text-center max-w-xl mx-auto mb-8">
               We keep things simple: share how you like to travel, match with
               compatible people, and build trips together that feel natural.
             </p>
 
             <div className="grid gap-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              <div className="glass-card rounded-xl shadow-sm p-5">
+              <div className="glass-card rounded-xl shadow-sm p-5 reveal reveal-up delay-200">
                 <div className="w-9 h-9 rounded-full glass-button-dark text-white flex items-center justify-center text-xs font-semibold mb-3">
                   1
                 </div>
@@ -349,7 +434,7 @@ const Landing: React.FC = () => {
                 </p>
               </div>
 
-              <div className="glass-card rounded-xl shadow-sm p-5">
+              <div className="glass-card rounded-xl shadow-sm p-5 reveal reveal-up delay-300">
                 <div className="w-9 h-9 rounded-full glass-button-dark text-white flex items-center justify-center text-xs font-semibold mb-3">
                   2
                 </div>
@@ -362,7 +447,7 @@ const Landing: React.FC = () => {
                 </p>
               </div>
 
-              <div className="glass-card rounded-xl shadow-sm p-5">
+              <div className="glass-card rounded-xl shadow-sm p-5 reveal reveal-up delay-400">
                 <div className="w-9 h-9 rounded-full glass-button-dark text-white flex items-center justify-center text-xs font-semibold mb-3">
                   3
                 </div>
@@ -381,12 +466,12 @@ const Landing: React.FC = () => {
         {/* Features */}
         <section id="features" className="py-10 sm:py-14">
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
-            <h2 className="text-xl sm:text-2xl font-semibold text-white mb-6">
+            <h2 className="reveal reveal-up text-xl sm:text-2xl font-semibold text-white mb-6">
               Built for real travelers, not just influencers
             </h2>
 
             <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              <div className="glass-card rounded-xl p-5">
+              <div className="glass-card rounded-xl p-5 reveal reveal-up delay-100">
                 <div className="w-8 h-8 rounded-lg glass-button-dark text-white flex items-center justify-center mb-3">
                   <Compass className="w-4 h-4" />
                 </div>
@@ -399,7 +484,7 @@ const Landing: React.FC = () => {
                 </p>
               </div>
 
-              <div className="glass-card rounded-xl p-5">
+              <div className="glass-card rounded-xl p-5 reveal reveal-up delay-200">
                 <div className="w-8 h-8 rounded-lg glass-button-dark text-white flex items-center justify-center mb-3">
                   <Users className="w-4 h-4" />
                 </div>
@@ -412,7 +497,7 @@ const Landing: React.FC = () => {
                 </p>
               </div>
 
-              <div className="glass-card rounded-xl p-5">
+              <div className="glass-card rounded-xl p-5 reveal reveal-up delay-300">
                 <div className="w-8 h-8 rounded-lg glass-button-dark text-white flex items-center justify-center mb-3">
                   <Shield className="w-4 h-4" />
                 </div>
@@ -432,7 +517,7 @@ const Landing: React.FC = () => {
         <section id="about" className="py-10 sm:py-14">
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16">
             <div className="grid gap-8 md:grid-cols-[1.3fr_minmax(0,1fr)] items-center">
-              <div>
+              <div className="reveal reveal-left">
                 <h2 className="text-xl sm:text-2xl font-semibold text-white mb-3">
                   A community of travelers who actually reply
                 </h2>
@@ -448,7 +533,7 @@ const Landing: React.FC = () => {
                 </ul>
               </div>
 
-              <div className="glass-card rounded-xl shadow-sm p-5">
+              <div className="glass-card rounded-xl shadow-sm p-5 reveal reveal-right delay-200">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-8 h-8 rounded-full glass-button-dark text-white flex items-center justify-center">
                     <MessageCircle className="w-4 h-4" />
@@ -470,7 +555,7 @@ const Landing: React.FC = () => {
         {/* CTA */}
         <section className="py-10 sm:py-14">
           <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
+            <div className="reveal reveal-left">
               {isAuthenticated ? (
                 <>
                   <h2 className="text-xl sm:text-2xl font-semibold text-white mb-2">
@@ -492,7 +577,7 @@ const Landing: React.FC = () => {
                 </>
               )}
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 reveal reveal-right delay-200">
               {isAuthenticated ? (
                 <>
                   <Link

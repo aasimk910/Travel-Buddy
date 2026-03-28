@@ -137,7 +137,7 @@ const Files = ({ roomId }: FilesProps) => {
             onClick={() => setLightboxIdx(null)}
           >
             <div
-              className="relative flex flex-col bg-white/10 border border-white/20 rounded-2xl shadow-2xl overflow-hidden"
+              className="glass-card relative flex flex-col rounded-2xl shadow-2xl overflow-hidden"
               style={{ maxWidth: '92vw', maxHeight: '92vh' }}
               onClick={e => e.stopPropagation()}
             >

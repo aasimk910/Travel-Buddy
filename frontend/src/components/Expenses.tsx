@@ -381,7 +381,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
             {summary.settlements.map((settlement) => (
               <div
                 key={settlement.userId}
-                className="flex justify-between items-center p-3 rounded-lg bg-white/10 backdrop-blur-md border border-white/10"
+                className="glass flex justify-between items-center p-3 rounded-lg"
               >
                 <span className="text-sm text-glass">{settlement.name}</span>
                 <div className="flex gap-4 text-sm">
@@ -429,7 +429,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
           expenses.map((expense) => (
             <div
               key={expense._id}
-              className="p-4 rounded-lg bg-white/10 hover:bg-white/15 transition-all border border-white/10 backdrop-blur-md"
+              className="glass-card p-4 rounded-lg hover:bg-white/20 transition-all"
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
@@ -515,7 +515,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
-                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-glass placeholder-glass-dim focus:outline-none focus:border-emerald-400 transition-colors backdrop-blur-sm"
+                    className="glass-input w-full px-3 py-2 rounded-lg text-glass placeholder-glass-dim focus:outline-none focus:border-emerald-400 transition-colors"
                     placeholder="e.g., Lunch at restaurant"
                   />
                 </div>
@@ -534,7 +534,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                       onChange={(e) =>
                         setFormData({ ...formData, amount: e.target.value })
                       }
-                      className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-glass placeholder-glass-dim focus:outline-none focus:border-emerald-400 transition-colors backdrop-blur-sm"
+                      className="glass-input w-full px-3 py-2 rounded-lg text-glass placeholder-glass-dim focus:outline-none focus:border-emerald-400 transition-colors"
                       placeholder="0.00"
                     />
                   </div>
@@ -548,7 +548,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                       onChange={(e) =>
                         setFormData({ ...formData, category: e.target.value })
                       }
-                      className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-glass focus:outline-none focus:border-emerald-400 transition-colors backdrop-blur-sm [color-scheme:dark]"
+                      className="glass-input w-full px-3 py-2 rounded-lg text-glass focus:outline-none focus:border-emerald-400 transition-colors [color-scheme:dark]"
                     >
                       {CATEGORIES.map((cat) => (
                         <option key={cat} value={cat} className="bg-gray-900 text-white">
@@ -569,7 +569,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                     onChange={(e) =>
                       setFormData({ ...formData, paidBy: e.target.value })
                     }
-                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-glass focus:outline-none focus:border-emerald-400 transition-colors backdrop-blur-sm [color-scheme:dark]"
+                    className="glass-input w-full px-3 py-2 rounded-lg text-glass focus:outline-none focus:border-emerald-400 transition-colors [color-scheme:dark]"
                   >
                     <option value="" className="bg-gray-900 text-white">Select who paid</option>
                     {participants.map((p) => (
@@ -612,7 +612,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                     <Users className="w-4 h-4 inline mr-1" />
                     Participants *
                   </label>
-                  <div className="space-y-2 max-h-48 overflow-y-auto p-3 rounded-lg bg-white/5 border border-white/10 backdrop-blur-sm">
+                  <div className="glass space-y-2 max-h-48 overflow-y-auto p-3 rounded-lg">
                     {participants.map((participant) => {
                       const selected = selectedParticipants.find(
                         (p) => p.userId === participant._id
@@ -677,7 +677,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                       setFormData({ ...formData, notes: e.target.value })
                     }
                     rows={2}
-                    className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-glass placeholder-glass-dim focus:outline-none focus:border-emerald-400 resize-none backdrop-blur-sm transition-colors"
+                    className="glass-input w-full px-3 py-2 rounded-lg text-glass placeholder-glass-dim focus:outline-none focus:border-emerald-400 resize-none transition-colors"
                     placeholder="Add any additional notes..."
                   />
                 </div>

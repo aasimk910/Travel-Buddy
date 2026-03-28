@@ -10,7 +10,7 @@ const HotelBookingSchema = new mongoose.Schema(
     hikeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Hike",
-      required: true,
+      required: false,
     },
     hotelId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -51,7 +51,7 @@ const HotelBookingSchema = new mongoose.Schema(
     },
     currency: {
       type: String,
-      default: "USD",
+      default: "NPR",
     },
     guestName: {
       type: String,
@@ -110,9 +110,10 @@ const HotelBookingSchema = new mongoose.Schema(
 // Generate booking reference before saving
 HotelBookingSchema.pre("save", async function (next) {
   if (!this.bookingReference) {
+    const crypto = require("crypto");
     const prefix = "HB";
     const timestamp = Date.now().toString().slice(-6);
-    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const random = crypto.randomBytes(4).toString("hex").toUpperCase();
     this.bookingReference = `${prefix}-${timestamp}-${random}`;
   }
   next();

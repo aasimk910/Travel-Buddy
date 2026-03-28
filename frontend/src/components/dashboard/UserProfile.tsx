@@ -17,7 +17,7 @@ const UserProfile: React.FC = () => {
                       </div>
       <div className="flex justify-around mt-4">
         <button onClick={() => navigate('/profile')} className="glass-button-dark px-4 py-2 rounded-lg">View Profile</button>
-        <button onClick={() => navigate('/profile')} className="glass-button px-4 py-2 rounded-lg">Edit Profile</button>
+        <button onClick={() => navigate('/profile', { state: { editMode: true } })} className="glass-button px-4 py-2 rounded-lg">Edit Profile</button>
       </div>
     </div>
   );

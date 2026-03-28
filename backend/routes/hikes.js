@@ -203,14 +203,15 @@ router.get("/recommended", authenticateToken, async (req, res) => {
     console.log("[Recommendations] All scores:", scored.map(s => ({ title: s.hike.title, score: s.score })));
 
     const topScore = scored[0]?.score ?? 0;
-    const minScoreThreshold = Math.max(6, Math.ceil(topScore * 0.45));
+    // Use a low relative threshold so results always appear; fallback to top 4 regardless.
+    const minScoreThreshold = topScore > 0 ? Math.ceil(topScore * 0.3) : 0;
 
     const recommendedEntries = scored
       .filter((entry) => entry.score >= minScoreThreshold)
       .slice(0, 4);
 
-    // Fallback: when all scores are weak, still return a small set of top options.
-    const finalEntries = recommendedEntries.length > 0 ? recommendedEntries : scored.slice(0, 3);
+    // Fallback: always return at least 3 hikes even if scores are zero.
+    const finalEntries = recommendedEntries.length > 0 ? recommendedEntries : scored.slice(0, 4);
     const recommended = finalEntries.map((entry) => entry.hike);
 
     console.log("[Recommendations] Threshold:", minScoreThreshold, "Top score:", topScore);

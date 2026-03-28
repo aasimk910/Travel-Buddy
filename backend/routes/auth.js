@@ -63,8 +63,9 @@ router.post("/signup", authLimiter, async (req, res) => {
       return res.status(400).json({ message: "reCAPTCHA is required." });
     }
 
-    // Allow test tokens to bypass recaptcha in development
-    if (recaptchaToken !== "test" && recaptchaToken !== "dev_token") {
+    // Allow test tokens to bypass recaptcha in non-production environments only
+    const isTestToken = recaptchaToken === "test" || recaptchaToken === "dev_token";
+    if (!isTestToken || process.env.NODE_ENV === "production") {
       try {
         const recaptchaResponse = await axios.post(
           `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`
@@ -81,8 +82,11 @@ router.post("/signup", authLimiter, async (req, res) => {
           .status(500)
           .json({ message: "Error verifying reCAPTCHA." });
       }
-    } else {
+} else if (process.env.NODE_ENV !== "production") {
       console.log("⚠️ Test reCAPTCHA token accepted (dev mode)");
+    } else {
+      // This branch is unreachable in production (isTestToken is false when NODE_ENV=production)
+      return res.status(400).json({ message: "reCAPTCHA verification failed." });
     }
 
     if (!name || !email || !password) {
@@ -208,10 +212,10 @@ router.post("/google", authLimiter, async (req, res) => {
       // Create a new user for first-time Google login.
       // We still need some password value to satisfy the schema,
       // but it will never be used for login.
-      const dummyPassword = await bcrypt.hash(
-        credential + JWT_SECRET,
-        10
-      );
+      // Generate a random irreversible password placeholder for Google users.
+      // Never derived from any sensitive material — this field is never used for login.
+      const crypto = require("crypto");
+      const dummyPassword = await bcrypt.hash(crypto.randomBytes(32).toString("hex"), 10);
 
       user = await User.create({
         name,
@@ -262,11 +266,7 @@ router.post("/forgot-password", authLimiter, async (req, res) => {
       console.log(`[forgot-password] No account found for ${email}`);
     } else if (user.provider !== "password") {
       console.log(`[forgot-password] Account ${email} uses ${user.provider} login — password reset not applicable`);
-      // Tell the client this account uses social login (safe — email already known to user)
-      return res.json({
-        message: "This account was created with Google. Please sign in using the Google button instead.",
-        provider: "google",
-      });
+      // Do not reveal the provider type to prevent account enumeration.
     } else {
       const rawToken = crypto.randomBytes(32).toString("hex");
       const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
@@ -292,11 +292,11 @@ router.post("/forgot-password", authLimiter, async (req, res) => {
 });
 
 // POST /api/auth/reset-password/:token
-router.post("/reset-password/:token", async (req, res) => {
+router.post("/reset-password/:token", authLimiter, async (req, res) => {
   try {
     const { password } = req.body;
-    if (!password || password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters." });
+    if (!password || password.length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters." });
     }
 
     const hashedToken = crypto.createHash("sha256").update(req.params.token).digest("hex");

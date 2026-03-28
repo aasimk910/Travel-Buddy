@@ -6,8 +6,6 @@ import React, {
   useEffect,
 } from "react";
 import { socket } from '../socket';
-import { getOrCreateKeyPair } from '../utils/e2e';
-import { uploadPublicKey } from '../services/rooms';
 
 export type AuthUser = {
   id?: string;
@@ -71,12 +69,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         socket.connect();
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-      // Initialise E2E key pair and upload public key to server
-      getOrCreateKeyPair().then((pubJwk) => {
-        uploadPublicKey(pubJwk).catch((err) =>
-          console.warn("E2E public key upload failed:", err)
-        );
-      });
     } else {
       if (socket.connected) {
         socket.disconnect();
@@ -95,14 +87,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // Simple email/password login (no backend yet)
-  const login = (email: string, _password: string) => {
-    const defaultName = email.split("@")[0];
-    saveUser({
-      name: defaultName,
-      email,
-      provider: "password",
-    });
+  // Email/password login — delegates to the caller (Login.tsx uses loginWithProfile directly)
+  // This stub is kept for interface compatibility; real login flow is in Login.tsx via loginRequest()
+  const login = (email: string, password: string) => {
+    console.warn("login() called directly — use loginRequest() from services/auth.ts instead");
   };
 
   // Used by Google login
