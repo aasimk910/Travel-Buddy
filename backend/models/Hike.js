@@ -67,5 +67,10 @@ const HikeSchema = new mongoose.Schema(
   }
 );
 
+// Common query patterns
+HikeSchema.index({ date: 1 });            // getHikes sorts/filters by date
+HikeSchema.index({ participants: 1 });    // getUserTrips & joinHike queries
+HikeSchema.index({ userId: 1 });          // filter hikes by creator
+
 module.exports = mongoose.model("Hike", HikeSchema);
 

@@ -5,7 +5,7 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import { socket } from '../socket';
+import { socket } from '../utils/socket';
 
 export type AuthUser = {
   id?: string;

@@ -19,7 +19,9 @@ const authenticateToken = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.userId).select("-password");
+    // .lean() returns a plain JS object instead of a Mongoose document,
+    // which is ~2-3x faster and avoids hydration overhead on every request.
+    const user = await User.findById(decoded.userId).select("-password").lean();
 
     if (!user) {
       return res.status(401).json({ message: "User not found." });

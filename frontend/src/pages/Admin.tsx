@@ -7,6 +7,7 @@ import {
   Search, RefreshCw, Plus, Pencil, X, LogOut, MapPin, CalendarDays,
   Navigation, Eye, CheckCircle2, Flag, Hotel, BookOpen, Package,
   Star, Phone, Mail, Globe, ChevronDown, ChevronUp, ShoppingBag, Tag, ToggleLeft, ToggleRight,
+  ClipboardList, Truck, CheckCheck,
 } from "lucide-react";
 import { API_BASE_URL } from "../config/env";
 import { useAuth } from "../context/AuthContext";
@@ -123,8 +124,25 @@ interface AdminProduct {
   createdAt: string;
 }
 
-interface Stats { totalUsers: number; totalAdmins: number; totalHikes: number; totalHotels: number; totalBookings: number; pendingBookings: number; totalProducts: number; }
-type Tab = "users" | "hikes" | "hotels" | "packages" | "bookings" | "shop";
+interface Stats { totalUsers: number; totalAdmins: number; totalHikes: number; totalHotels: number; totalBookings: number; pendingBookings: number; totalProducts: number; totalOrders: number; pendingOrders: number; }
+type Tab = "users" | "hikes" | "hotels" | "packages" | "bookings" | "shop" | "orders";
+
+interface AdminOrderItem { productId: string; name: string; category: string; price: number; qty: number; img: string; }
+interface AdminOrderCustomer { name: string; phone: string; email: string; address: string; city: string; }
+interface AdminOrder {
+  _id: string;
+  orderId: string;
+  userId?: string | null;
+  items: AdminOrderItem[];
+  customer: AdminOrderCustomer;
+  subtotal: number;
+  shipping: number;
+  total: number;
+  paymentMethod: 'cod' | 'khalti';
+  paymentStatus: 'unpaid' | 'paid';
+  status: 'placed' | 'processing' | 'out_for_delivery' | 'delivered' | 'cancelled';
+  createdAt: string;
+}
 
 interface AdminPackageFull extends AdminHotelPackage {
   hotelId: { _id: string; name: string; location: string } | null;
@@ -226,6 +244,17 @@ const Admin: React.FC = () => {
   const [bookingTotal, setBookingTotal] = useState(0);
   const [bookingsLoading, setBookingsLoading] = useState(false);
 
+  // Orders state
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [orderSearch, setOrderSearch] = useState("");
+  const [orderStatusFilter, setOrderStatusFilter] = useState("all");
+  const [orderPaymentFilter, setOrderPaymentFilter] = useState("all");
+  const [orderPage, setOrderPage] = useState(1);
+  const [orderPages, setOrderPages] = useState(1);
+  const [orderTotal, setOrderTotal] = useState(0);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+
   // Shop / Products state
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [productSearch, setProductSearch] = useState("");
@@ -325,6 +354,22 @@ const Admin: React.FC = () => {
     finally { setProductsLoading(false); }
   }, [productPage, productSearch, productCategory, handleAuthError]);
 
+  const fetchOrders = useCallback(async () => {
+    setOrdersLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: String(orderPage), limit: "15", search: orderSearch,
+        ...(orderStatusFilter !== "all" ? { status: orderStatusFilter } : {}),
+        ...(orderPaymentFilter !== "all" ? { paymentMethod: orderPaymentFilter } : {}),
+      });
+      const res = await fetch(`${API_BASE_URL}/api/admin/orders?${params}`, { headers: authHeader() });
+      await throwIfNotOk(res);
+      const data = await res.json();
+      setOrders(data.orders); setOrderPages(data.pagination.pages); setOrderTotal(data.pagination.total);
+    } catch (err: any) { handleAuthError(err); }
+    finally { setOrdersLoading(false); }
+  }, [orderPage, orderSearch, orderStatusFilter, orderPaymentFilter, handleAuthError]);
+
   const fetchAllPackages = useCallback(async () => {
     setPkgTabLoading(true);
     try {
@@ -344,6 +389,7 @@ const Admin: React.FC = () => {
   useEffect(() => { if (activeTab === "packages") fetchAllPackages(); }, [fetchAllPackages, activeTab]);
   useEffect(() => { if (activeTab === "bookings") fetchBookings(); }, [fetchBookings, activeTab]);
   useEffect(() => { if (activeTab === "shop") fetchProducts(); }, [fetchProducts, activeTab]);
+  useEffect(() => { if (activeTab === "orders") fetchOrders(); }, [fetchOrders, activeTab]);
 
   // ─── User CRUD ─────────────────────────────────────────────────────────────
 
@@ -704,6 +750,41 @@ const Admin: React.FC = () => {
     } catch (err: any) { showError(err.message || "Failed to delete product."); }
   };
 
+  // ─── Order management ──────────────────────────────────────────────────────
+
+  const handleOrderStatusChange = async (orderId: string, status: string) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/admin/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: { ...authHeader(), "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      await throwIfNotOk(res);
+      showSuccess("Order status updated."); fetchOrders(); fetchStats();
+    } catch (err: any) { showError(err.message || "Failed to update order."); }
+  };
+
+  const handleOrderPaymentChange = async (orderId: string, paymentStatus: string) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/admin/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: { ...authHeader(), "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentStatus }),
+      });
+      await throwIfNotOk(res);
+      showSuccess("Payment status updated."); fetchOrders();
+    } catch (err: any) { showError(err.message || "Failed to update payment status."); }
+  };
+
+  const handleDeleteOrder = async (orderId: string, ref: string) => {
+    if (!confirm(`Delete order ${ref}? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/admin/orders/${orderId}`, { method: "DELETE", headers: authHeader() });
+      await throwIfNotOk(res);
+      showSuccess("Order deleted."); fetchOrders(); fetchStats();
+    } catch (err: any) { showError(err.message || "Failed to delete order."); }
+  };
+
   const toggleProductField = async (p: AdminProduct, field: "inStock" | "featured") => {
     try {
       const body = {
@@ -747,6 +828,8 @@ const Admin: React.FC = () => {
             { label: "Bookings", value: stats.totalBookings, icon: <BookOpen className="w-5 h-5" /> },
             { label: "Pending", value: stats.pendingBookings, icon: <Package className="w-5 h-5" />, accent: stats.pendingBookings > 0 },
             { label: "Products", value: stats.totalProducts, icon: <ShoppingBag className="w-5 h-5" /> },
+            { label: "Orders", value: stats.totalOrders, icon: <ClipboardList className="w-5 h-5" /> },
+            { label: "Pending Orders", value: stats.pendingOrders, icon: <Truck className="w-5 h-5" />, accent: stats.pendingOrders > 0 },
           ].map((s) => (
             <div key={s.label} className={`glass-card rounded-xl p-4 flex items-center gap-3 ${(s as any).accent ? "border border-amber-500/30" : ""}`}>
               <div className={`${(s as any).accent ? "text-amber-400" : "text-emerald-400"}`}>{s.icon}</div>
@@ -768,6 +851,7 @@ const Admin: React.FC = () => {
           { key: "packages", label: "Packages", icon: <Package className="w-3.5 h-3.5" /> },
           { key: "bookings", label: "Bookings", icon: <BookOpen className="w-3.5 h-3.5" /> },
           { key: "shop", label: "Shop", icon: <ShoppingBag className="w-3.5 h-3.5" /> },
+          { key: "orders", label: "Orders", icon: <ClipboardList className="w-3.5 h-3.5" /> },
         ] as { key: Tab; label: string; icon: React.ReactNode }[]).map(({ key, label, icon }) => (
           <button key={key} onClick={() => setActiveTab(key)}
             className={`flex items-center gap-1.5 px-5 py-2 rounded-lg font-medium transition-all ${
@@ -1228,6 +1312,183 @@ const Admin: React.FC = () => {
               <button onClick={() => setProductPage(p => Math.max(1, p - 1))} disabled={productPage === 1} className="glass-button p-1.5 rounded-lg disabled:opacity-40"><ChevronLeft className="w-4 h-4" /></button>
               <span className="text-sm text-glass-dim">{productPage} / {productPages}</span>
               <button onClick={() => setProductPage(p => Math.min(productPages, p + 1))} disabled={productPage === productPages} className="glass-button p-1.5 rounded-lg disabled:opacity-40"><ChevronRight className="w-4 h-4" /></button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Orders Tab ── */}
+      {activeTab === "orders" && (
+        <div className="glass-card rounded-2xl p-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div>
+              <h2 className="text-lg font-semibold text-glass">Orders</h2>
+              <p className="text-xs text-glass-dim mt-0.5">{orderTotal} order{orderTotal !== 1 ? "s" : ""} total</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <input
+                value={orderSearch}
+                onChange={e => { setOrderSearch(e.target.value); setOrderPage(1); }}
+                placeholder="Search order ID / customer…"
+                className="glass-input text-sm rounded-lg px-3 py-1.5 w-52"
+              />
+              <select
+                value={orderStatusFilter}
+                onChange={e => { setOrderStatusFilter(e.target.value); setOrderPage(1); }}
+                className="glass-input text-sm rounded-lg px-3 py-1.5"
+              >
+                <option value="all">All Statuses</option>
+                <option value="placed">Placed</option>
+                <option value="processing">Processing</option>
+                <option value="out_for_delivery">Out for Delivery</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+              <select
+                value={orderPaymentFilter}
+                onChange={e => { setOrderPaymentFilter(e.target.value); setOrderPage(1); }}
+                className="glass-input text-sm rounded-lg px-3 py-1.5"
+              >
+                <option value="all">All Payments</option>
+                <option value="unpaid">Unpaid</option>
+                <option value="paid">Paid</option>
+              </select>
+              <button onClick={fetchOrders} className="glass-button px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5">
+                <RefreshCw className="w-3.5 h-3.5" /> Refresh
+              </button>
+            </div>
+          </div>
+
+          {/* Table */}
+          {ordersLoading ? (
+            <div className="text-center py-12 text-glass-dim text-sm">Loading orders…</div>
+          ) : orders.length === 0 ? (
+            <div className="text-center py-12">
+              <ClipboardList className="w-10 h-10 text-glass-dim mx-auto mb-3 opacity-50" />
+              <p className="text-glass-dim text-sm">No orders found.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-glass-dim text-xs border-b border-white/10">
+                    <th className="text-left pb-2 pr-3">Order ID</th>
+                    <th className="text-left pb-2 pr-3">Customer</th>
+                    <th className="text-left pb-2 pr-3">Items</th>
+                    <th className="text-right pb-2 pr-3">Total</th>
+                    <th className="text-left pb-2 pr-3">Payment</th>
+                    <th className="text-left pb-2 pr-3">Status</th>
+                    <th className="text-left pb-2 pr-3">Date</th>
+                    <th className="text-right pb-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {orders.map(order => (
+                    <>
+                      <tr key={order._id} className="hover:bg-white/5 transition-colors">
+                        <td className="py-2.5 pr-3">
+                          <button
+                            onClick={() => setExpandedOrder(expandedOrder === order._id ? null : order._id)}
+                            className="font-mono text-xs text-emerald-400 hover:underline"
+                          >
+                            {order.orderId}
+                          </button>
+                        </td>
+                        <td className="py-2.5 pr-3">
+                          <div className="text-glass text-xs font-medium">{order.customer.name}</div>
+                          <div className="text-glass-dim text-xs">{order.customer.phone}</div>
+                        </td>
+                        <td className="py-2.5 pr-3 text-glass-dim text-xs">{order.items.length} item{order.items.length !== 1 ? "s" : ""}</td>
+                        <td className="py-2.5 pr-3 text-right text-glass font-semibold text-xs">Rs {order.total.toLocaleString()}</td>
+                        <td className="py-2.5 pr-3">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${order.paymentMethod === "khalti" ? "bg-purple-500/20 text-purple-300" : "bg-amber-500/20 text-amber-300"}`}>
+                            {order.paymentMethod === "khalti" ? "Khalti" : "COD"}
+                          </span>
+                          <span className={`ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs ${order.paymentStatus === "paid" ? "bg-emerald-500/20 text-emerald-300" : "bg-red-500/20 text-red-300"}`}>
+                            {order.paymentStatus}
+                          </span>
+                        </td>
+                        <td className="py-2.5 pr-3">
+                          <select
+                            value={order.status}
+                            onChange={e => handleOrderStatusChange(order._id, e.target.value)}
+                            className="glass-input text-xs rounded px-2 py-1"
+                          >
+                            <option value="placed">Placed</option>
+                            <option value="processing">Processing</option>
+                            <option value="out_for_delivery">Out for Delivery</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
+                        </td>
+                        <td className="py-2.5 pr-3 text-glass-dim text-xs">{new Date(order.createdAt).toLocaleDateString()}</td>
+                        <td className="py-2.5 text-right">
+                          <button
+                            onClick={() => handleDeleteOrder(order._id, order.orderId)}
+                            className="glass-button p-1.5 rounded-lg text-red-400 hover:text-red-300"
+                            title="Delete order"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                      {expandedOrder === order._id && (
+                        <tr key={`${order._id}-detail`}>
+                          <td colSpan={8} className="pb-3 pt-0 px-2">
+                            <div className="bg-white/5 rounded-xl p-4">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3 text-xs">
+                                <div>
+                                  <p className="text-glass-dim mb-1 font-medium">Delivery Address</p>
+                                  <p className="text-glass">{order.customer.address}, {order.customer.city}</p>
+                                  <p className="text-glass-dim">{order.customer.email}</p>
+                                </div>
+                                <div>
+                                  <p className="text-glass-dim mb-1 font-medium">Order Summary</p>
+                                  <p className="text-glass">Subtotal: Rs {order.subtotal.toLocaleString()}</p>
+                                  <p className="text-glass">Shipping: Rs {order.shipping.toLocaleString()}</p>
+                                  <p className="text-glass font-semibold">Total: Rs {order.total.toLocaleString()}</p>
+                                </div>
+                              </div>
+                              <table className="w-full text-xs">
+                                <thead>
+                                  <tr className="text-glass-dim border-b border-white/10">
+                                    <th className="text-left pb-1.5">Product</th>
+                                    <th className="text-left pb-1.5">Category</th>
+                                    <th className="text-right pb-1.5">Price</th>
+                                    <th className="text-right pb-1.5">Qty</th>
+                                    <th className="text-right pb-1.5">Subtotal</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/5">
+                                  {order.items.map((item, idx) => (
+                                    <tr key={idx}>
+                                      <td className="py-1.5 text-glass">{item.name}</td>
+                                      <td className="py-1.5 text-glass-dim capitalize">{item.category}</td>
+                                      <td className="py-1.5 text-right text-glass">Rs {item.price.toLocaleString()}</td>
+                                      <td className="py-1.5 text-right text-glass">{item.qty}</td>
+                                      <td className="py-1.5 text-right text-glass font-medium">Rs {(item.price * item.qty).toLocaleString()}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {orderPages > 1 && (
+            <div className="flex items-center justify-end gap-2 mt-4">
+              <button onClick={() => setOrderPage(p => Math.max(1, p - 1))} disabled={orderPage === 1} className="glass-button p-1.5 rounded-lg disabled:opacity-40"><ChevronLeft className="w-4 h-4" /></button>
+              <span className="text-sm text-glass-dim">{orderPage} / {orderPages}</span>
+              <button onClick={() => setOrderPage(p => Math.min(orderPages, p + 1))} disabled={orderPage === orderPages} className="glass-button p-1.5 rounded-lg disabled:opacity-40"><ChevronRight className="w-4 h-4" /></button>
             </div>
           )}
         </div>

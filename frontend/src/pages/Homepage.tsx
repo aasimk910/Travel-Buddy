@@ -89,11 +89,11 @@ const Homepage: React.FC = () => {
           <ProfileSummaryCard />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2 mb-8">
-          <div className="reveal reveal-left">
+        <div className="grid gap-6 lg:grid-cols-2 mb-8 items-stretch">
+          <div className="reveal reveal-left flex flex-col [&>*]:flex-1">
             <ReviewCard />
           </div>
-          <div className="reveal reveal-right delay-200">
+          <div className="reveal reveal-right delay-200 flex flex-col [&>*]:flex-1">
             <PhotoUploadCard onUploaded={fetchLatestPhotos} />
           </div>
         </div>

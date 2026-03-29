@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { socket } from "../socket";
+import { socket } from "../utils/socket";
 import { useAuth } from "../context/AuthContext";
 import { API_BASE_URL } from "../config/env";
 import { Paperclip, FileText, X, Send, Loader2 } from "lucide-react";

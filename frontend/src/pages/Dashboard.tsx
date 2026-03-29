@@ -11,6 +11,7 @@ import UpcomingTrips from '../components/dashboard/UpcomingTrips';
 import MyTrips from '../components/dashboard/MyTrips';
 import ItineraryGenerator from '../components/dashboard/ItineraryGenerator';
 import HikeHotelsPanel from '../components/dashboard/HikeHotelsPanel';
+import MyBookings from '../components/dashboard/MyBookings';
 
 const Dashboard: React.FC = () => {
   const { hikeId } = useParams<{ hikeId: string }>();
@@ -47,6 +48,7 @@ const Dashboard: React.FC = () => {
           )}
           {activeView === 'my-trips' && <MyTrips />}
           {activeView === 'itinerary-generator' && <ItineraryGenerator />}
+          {activeView === 'my-bookings' && <MyBookings />}
         </div>
       </div>
     </div>

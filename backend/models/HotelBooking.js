@@ -119,4 +119,9 @@ HotelBookingSchema.pre("save", async function (next) {
   next();
 });
 
+// Common query patterns
+HotelBookingSchema.index({ userId: 1, createdAt: -1 });
+HotelBookingSchema.index({ hotelId: 1, checkInDate: 1 });
+HotelBookingSchema.index({ hikeId: 1 });
+
 module.exports = mongoose.model("HotelBooking", HotelBookingSchema);

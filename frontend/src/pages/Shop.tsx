@@ -387,7 +387,7 @@ const Shop: React.FC = () => {
     const fetchProducts = async () => {
       try {
         setProductsLoading(true);
-        const res = await fetch(`${API_BASE_URL}/api/admin/products?limit=100`);
+        const res = await fetch(`${API_BASE_URL}/api/products?limit=100`);
         if (!res.ok) throw new Error('Failed to fetch products');
         const data = await res.json();
         if (!cancelled && Array.isArray(data.products) && data.products.length > 0) {
@@ -416,6 +416,31 @@ const Shop: React.FC = () => {
       );
     } catch { setSavedOrders([]); }
   }, [userOrdersKey]);
+
+  // Sync order statuses from backend whenever the orders panel opens
+  useEffect(() => {
+    if (!ordersOpen) return;
+    const token = localStorage.getItem('travelBuddyToken');
+    if (!token) return;
+    fetch(`${API_BASE_URL}/api/orders/mine`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then((data: { orders: Array<{ orderId: string; status: string; paymentStatus: string }> } | null) => {
+        if (!data?.orders?.length) return;
+        const statusMap = new Map(data.orders.map(o => [o.orderId, o.status]));
+        setSavedOrders(prev => {
+          const updated = prev.map(o =>
+            statusMap.has(o.orderId)
+              ? { ...o, status: statusMap.get(o.orderId) as OrderSnapshot['status'] }
+              : o
+          );
+          localStorage.setItem(userOrdersKey, JSON.stringify(updated));
+          return updated;
+        });
+      })
+      .catch(() => {/* silent — localStorage copy is still shown */});
+  }, [ordersOpen, userOrdersKey]);
 
 
   // Reset active image whenever a new product is opened
@@ -457,6 +482,31 @@ const Shop: React.FC = () => {
       localStorage.setItem(userOrdersKey, JSON.stringify(updated));
       return updated;
     });
+    // Persist to backend (fire-and-forget; localStorage is source of truth for UI)
+    const token = localStorage.getItem('travelBuddyToken');
+    fetch(`${API_BASE_URL}/api/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        orderId: snapshot.orderId,
+        items: snapshot.items.map(i => ({
+          productId: i.product._id,
+          name: i.product.name,
+          category: i.product.category,
+          price: i.product.price,
+          qty: i.qty,
+          img: i.product.img,
+        })),
+        customer: snapshot.customer,
+        subtotal: snapshot.subtotal,
+        shipping: snapshot.shipping,
+        total: snapshot.total,
+        paymentMethod: snapshot.paymentMethod,
+      }),
+    }).catch(err => console.warn('Order sync failed:', err));
   };
 
   // ── Khalti payment initiation ─────────────────────────────────────────────
@@ -510,7 +560,7 @@ const Shop: React.FC = () => {
           const saved = JSON.parse(raw) as { cartItems: CartItem[]; customer: CustomerInfo; subtotal: number; shipping: number; total: number; orderId: string; paymentMethod: 'khalti' };
           // Verify payment server-side before accepting
           const token = localStorage.getItem('travelBuddyToken');
-          const verifyRes = await fetch(`${API_BASE_URL}/api/khalti-payments/verify`, {
+          const verifyRes = await fetch(`${API_BASE_URL}/api/payment/khalti/verify`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

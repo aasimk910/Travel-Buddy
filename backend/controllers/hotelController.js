@@ -1,0 +1,227 @@
+// backend/controllers/hotelController.js
+const Hotel = require("../models/Hotel");
+const HotelPackage = require("../models/HotelPackage");
+const Hike = require("../models/Hike");
+
+const getHotels = async (req, res) => {
+  try {
+    const hotels = await Hotel.find().populate("packages").sort({ createdAt: -1 });
+    res.json(hotels);
+  } catch (err) {
+    console.error("Fetch hotels error:", err);
+    res.status(500).json({ message: "Unable to fetch hotels." });
+  }
+};
+
+const getHotelById = async (req, res) => {
+  try {
+    const hotel = await Hotel.findById(req.params.id).populate("packages");
+    if (!hotel) return res.status(404).json({ message: "Hotel not found." });
+    res.json(hotel);
+  } catch (err) {
+    console.error("Fetch hotel error:", err);
+    res.status(500).json({ message: "Unable to fetch hotel." });
+  }
+};
+
+const createHotel = async (req, res) => {
+  try {
+    const { name, location, coordinates, description, contactPhone, email, website, imageUrl, amenities } = req.body;
+
+    if (!name || !location) {
+      return res.status(400).json({ message: "Name and location are required." });
+    }
+
+    const hotel = new Hotel({ name, location, coordinates, description, contactPhone, email, website, imageUrl, amenities: amenities || [] });
+    await hotel.save();
+    res.status(201).json(hotel);
+  } catch (err) {
+    console.error("Create hotel error:", err);
+    res.status(500).json({ message: "Unable to create hotel." });
+  }
+};
+
+const updateHotel = async (req, res) => {
+  try {
+    const { name, location, coordinates, description, contactPhone, email, website, imageUrl, amenities, rating, reviewCount } = req.body;
+
+    const hotel = await Hotel.findByIdAndUpdate(
+      req.params.id,
+      {
+        ...(name && { name }),
+        ...(location && { location }),
+        ...(coordinates && { coordinates }),
+        ...(description && { description }),
+        ...(contactPhone && { contactPhone }),
+        ...(email && { email }),
+        ...(website && { website }),
+        ...(imageUrl && { imageUrl }),
+        ...(amenities && { amenities }),
+        ...(rating && { rating }),
+        ...(reviewCount !== undefined && { reviewCount }),
+      },
+      { new: true }
+    ).populate("packages");
+
+    if (!hotel) return res.status(404).json({ message: "Hotel not found." });
+    res.json(hotel);
+  } catch (err) {
+    console.error("Update hotel error:", err);
+    res.status(500).json({ message: "Unable to update hotel." });
+  }
+};
+
+const deleteHotel = async (req, res) => {
+  try {
+    const hotel = await Hotel.findByIdAndDelete(req.params.id);
+    if (!hotel) return res.status(404).json({ message: "Hotel not found." });
+
+    await HotelPackage.deleteMany({ hotelId: req.params.id });
+    await Hike.updateMany({}, { $pull: { hotels: req.params.id } });
+
+    res.json({ message: "Hotel deleted successfully." });
+  } catch (err) {
+    console.error("Delete hotel error:", err);
+    res.status(500).json({ message: "Unable to delete hotel." });
+  }
+};
+
+const createHotelPackage = async (req, res) => {
+  try {
+    const { name, description, roomType, pricePerNight, currency, capacity, amenities, image, availableRooms, maxStayNights, minStayNights, cancellationPolicy } = req.body;
+
+    if (!name || !roomType || pricePerNight === undefined) {
+      return res.status(400).json({ message: "Name, room type, and price are required." });
+    }
+
+    const hotel = await Hotel.findById(req.params.id);
+    if (!hotel) return res.status(404).json({ message: "Hotel not found." });
+
+    const pkg = new HotelPackage({
+      hotelId: req.params.id,
+      name,
+      description,
+      roomType,
+      pricePerNight,
+      currency: currency || "NPR",
+      capacity: capacity || 2,
+      amenities: amenities || [],
+      image,
+      availableRooms: availableRooms || 5,
+      maxStayNights,
+      minStayNights: minStayNights || 1,
+      cancellationPolicy: cancellationPolicy || "free",
+    });
+
+    await pkg.save();
+    hotel.packages.push(pkg._id);
+    await hotel.save();
+
+    res.status(201).json(pkg);
+  } catch (err) {
+    console.error("Create hotel package error:", err);
+    res.status(500).json({ message: "Unable to create package." });
+  }
+};
+
+const getHotelPackages = async (req, res) => {
+  try {
+    const packages = await HotelPackage.find({ hotelId: req.params.id });
+    res.json(packages);
+  } catch (err) {
+    console.error("Fetch packages error:", err);
+    res.status(500).json({ message: "Unable to fetch packages." });
+  }
+};
+
+const updateHotelPackage = async (req, res) => {
+  try {
+    const { name, description, roomType, pricePerNight, currency, capacity, amenities, image, availableRooms, maxStayNights, minStayNights, cancellationPolicy } = req.body;
+
+    const pkg = await HotelPackage.findByIdAndUpdate(
+      req.params.packageId,
+      {
+        ...(name && { name }),
+        ...(description && { description }),
+        ...(roomType && { roomType }),
+        ...(pricePerNight !== undefined && { pricePerNight }),
+        ...(currency && { currency }),
+        ...(capacity && { capacity }),
+        ...(amenities && { amenities }),
+        ...(image && { image }),
+        ...(availableRooms !== undefined && { availableRooms }),
+        ...(maxStayNights && { maxStayNights }),
+        ...(minStayNights && { minStayNights }),
+        ...(cancellationPolicy && { cancellationPolicy }),
+      },
+      { new: true }
+    );
+
+    if (!pkg) return res.status(404).json({ message: "Package not found." });
+    res.json(pkg);
+  } catch (err) {
+    console.error("Update package error:", err);
+    res.status(500).json({ message: "Unable to update package." });
+  }
+};
+
+const deleteHotelPackage = async (req, res) => {
+  try {
+    const pkg = await HotelPackage.findByIdAndDelete(req.params.packageId);
+    if (!pkg) return res.status(404).json({ message: "Package not found." });
+
+    await Hotel.findByIdAndUpdate(pkg.hotelId, { $pull: { packages: req.params.packageId } });
+    res.json({ message: "Package deleted successfully." });
+  } catch (err) {
+    console.error("Delete package error:", err);
+    res.status(500).json({ message: "Unable to delete package." });
+  }
+};
+
+const addHotelToHike = async (req, res) => {
+  try {
+    const { hikeId, hotelId } = req.params;
+    const hike = await Hike.findByIdAndUpdate(
+      hikeId,
+      { $addToSet: { hotels: hotelId } },
+      { new: true }
+    ).populate("hotels");
+
+    if (!hike) return res.status(404).json({ message: "Hike not found." });
+    res.json(hike);
+  } catch (err) {
+    console.error("Add hotel to hike error:", err);
+    res.status(500).json({ message: "Unable to add hotel to hike." });
+  }
+};
+
+const removeHotelFromHike = async (req, res) => {
+  try {
+    const { hikeId, hotelId } = req.params;
+    const hike = await Hike.findByIdAndUpdate(
+      hikeId,
+      { $pull: { hotels: hotelId } },
+      { new: true }
+    ).populate("hotels");
+
+    if (!hike) return res.status(404).json({ message: "Hike not found." });
+    res.json(hike);
+  } catch (err) {
+    console.error("Remove hotel from hike error:", err);
+    res.status(500).json({ message: "Unable to remove hotel from hike." });
+  }
+};
+
+module.exports = {
+  getHotels,
+  getHotelById,
+  createHotel,
+  updateHotel,
+  deleteHotel,
+  createHotelPackage,
+  getHotelPackages,
+  updateHotelPackage,
+  deleteHotelPackage,
+  addHotelToHike,
+  removeHotelFromHike,
+};

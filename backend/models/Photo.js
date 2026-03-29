@@ -31,5 +31,9 @@ const PhotoSchema = new mongoose.Schema(
   }
 );
 
+// Common query patterns
+PhotoSchema.index({ createdAt: -1 });     // getLatestPhotos sorts by createdAt
+PhotoSchema.index({ userName: 1 });       // getPhotos filters by userName
+
 module.exports = mongoose.model("Photo", PhotoSchema);
 
