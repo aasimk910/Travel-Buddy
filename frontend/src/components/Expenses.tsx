@@ -27,6 +27,7 @@ import {
   ExpenseSummary,
 } from "../services/expenses";
 import { API_BASE_URL } from "../config/env";
+import { getToken } from "../services/auth";
 
 interface ExpensesProps {
   roomId?: string;
@@ -93,7 +94,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
   const fetchParticipants = async () => {
     if (!roomId) return;
     try {
-      const token = localStorage.getItem("travelBuddyToken");
+      const token = getToken();
       const res = await fetch(`${API_BASE_URL}/api/hikes/${roomId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -455,7 +456,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                     {expense.description}
                   </h4>
                   <p className="text-sm text-glass-dim">
-                    {new Date(expense.date).toLocaleDateString()} •{" "}
+                    {new Date(expense.date).toLocaleDateString()} â€”{" "}
                     {expense.category}
                   </p>
                 </div>
@@ -480,7 +481,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
               <div className="text-sm">
                 <p className="text-glass-dim mb-1">
                   Paid by <span className="text-glass font-medium">{expense.paidBy.name}</span>
-                  {" • "}
+                  {" â€” "}
                   <span className="capitalize">{expense.splitType} split</span>
                 </p>
                 <div className="flex flex-wrap gap-2 mt-2">

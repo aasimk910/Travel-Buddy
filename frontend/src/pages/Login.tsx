@@ -62,7 +62,8 @@ const Login: React.FC = () => {
           password: values.password,
         });
 
-        storeToken(data.token);
+        // Store token in localStorage (persist) or sessionStorage (session-only) based on remember-me
+        storeToken(data.token, values.remember);
 
         if (data.user) {
           loginWithProfile({
@@ -117,7 +118,8 @@ const Login: React.FC = () => {
 
       const data = await googleAuth(credential);
 
-      storeToken(data.token);
+      // Respect the current remember-me checkbox for Google login too
+      storeToken(data.token, values.remember);
 
       if (data.user) {
         loginWithProfile({

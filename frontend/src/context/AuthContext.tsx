@@ -11,6 +11,7 @@ import React, {
   useEffect,
 } from "react";
 import { socket } from '../utils/socket';
+import { clearToken } from '../services/auth';
 
 export type AuthUser = {
   id?: string;
@@ -58,38 +59,57 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  // Check both storages so "Remember me" preference is respected
   const [user, setUser] = useState<AuthUser | null>(() => {
     if (typeof window === "undefined") return null;
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored =
+        localStorage.getItem(STORAGE_KEY) ||
+        sessionStorage.getItem(STORAGE_KEY);
       return stored ? (JSON.parse(stored) as AuthUser) : null;
     } catch {
       return null;
     }
   });
 
+  // Determine which storage to use based on the remember-me preference
+  const getStorage = (): Storage => {
+    return localStorage.getItem("travelBuddyRemember") === "true"
+      ? localStorage
+      : sessionStorage;
+  };
+
   useEffect(() => {
+    const storage = getStorage();
     if (user) {
       if (!socket.connected) {
         socket.connect();
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      storage.setItem(STORAGE_KEY, JSON.stringify(user));
+      // Clean the other storage to avoid stale data
+      if (storage === localStorage) {
+        sessionStorage.removeItem(STORAGE_KEY);
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
     } else {
       if (socket.connected) {
         socket.disconnect();
       }
       localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(STORAGE_KEY);
     }
 
     // Don't disconnect in cleanup - let the socket persist across re-renders
     // Only disconnect when user logs out (handled above when user becomes null)
   }, [user]);
 
-  // Handles saveUser logic.
+  // Persist user to the correct storage
   const saveUser = (u: AuthUser) => {
     setUser(u);
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+      const storage = getStorage();
+      storage.setItem(STORAGE_KEY, JSON.stringify(u));
     }
   };
 
@@ -115,10 +135,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
-  // Handles logout logic.
+  // Handles logout logic — clears user and token from both storages.
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("travelBuddyToken");
+    clearToken();
+    localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("travelBuddyRemember");
+    localStorage.removeItem("travelBuddyRememberEmail");
     window.location.href = "/";
   };
 

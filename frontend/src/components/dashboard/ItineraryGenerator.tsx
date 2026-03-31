@@ -7,12 +7,13 @@ import { useNavigate } from 'react-router-dom';
 import { generateItinerary } from '../../services/itinerary';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { getToken } from "../../services/auth";
 import {
-// #endregion Imports
   Loader2, MapPin, Calendar, Sparkles, Download, RotateCcw,
   Mountain, Utensils, Camera, Tent, Palmtree, Landmark, Wallet,
   Clock, Navigation, FileText, PenLine, LayoutList,
 } from 'lucide-react';
+// #endregion Imports
 
 const EXAMPLE_PROMPTS = [
   "Plan a 5-day budget trek to Poon Hill starting from Kathmandu. I love photography and local food. Total budget Rs 25,000.",
@@ -149,7 +150,7 @@ const ItineraryGenerator: React.FC = () => {
   // Handles handleSubmit logic.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('travelBuddyToken');
+    const token = getToken();
     if (!token) { showError('Please log in first'); return; }
 
     if (activeTab === 'custom') {
@@ -166,7 +167,7 @@ const ItineraryGenerator: React.FC = () => {
     try {
       const payload = activeTab === 'custom'
         ? { customPrompt: customPrompt.trim() }
-        : { ...formData, interests: selectedInterests };
+        : { ...formData, interests: selectedInterests.join(', ') };
       const resp = await generateItinerary(payload, token);
       setGeneratedItinerary(resp.itinerary);
       showSuccess('Itinerary generated!');
@@ -213,7 +214,7 @@ const ItineraryGenerator: React.FC = () => {
         const isDay   = /^Day \d+:/i.test(line);
         const isSub   = /^(Morning|Afternoon|Evening|Practical tips?|Transportation|Food):/i.test(line);
         const isCost  = /^(Estimated cost|Total cost)/i.test(line);
-        const isBullet= /^[•\-]\s/.test(line.trim());
+        const isBullet= /^[â€¢\-]\s/.test(line.trim());
         np(isDay ? 28 : isSub ? 18 : 10);
         if (isDay)       { y+=6; doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(20,80,200); }
         else if (isSub)  { y+=4; doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(30,100,200); }
@@ -252,7 +253,7 @@ const ItineraryGenerator: React.FC = () => {
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">AI Itinerary Generator</h2>
-            <p className="text-xs text-white/50">Powered by Gemini AI — plan your perfect trip</p>
+            <p className="text-xs text-white/50">Powered by Gemini AI â€” plan your perfect trip</p>
           </div>
         </div>
 
@@ -282,7 +283,7 @@ const ItineraryGenerator: React.FC = () => {
       {/* Main grid */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-5 min-h-0 overflow-hidden">
 
-        {/* -- LEFT — Form (mode-conditional) ---------------- */}
+        {/* -- LEFT â€” Form (mode-conditional) ---------------- */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 overflow-y-auto pr-1 min-h-0" style={{ scrollbarWidth: 'thin' }}>
 
         {activeTab === 'custom' ? (
@@ -294,7 +295,7 @@ const ItineraryGenerator: React.FC = () => {
                 <span className="text-[10px] text-white/40">{customPrompt.length} chars</span>
               </div>
               <p className="text-xs text-white/50 leading-relaxed">
-                Describe exactly what you want — destination, duration, budget, style, special requests. The AI will follow your instructions precisely.
+                Describe exactly what you want â€” destination, duration, budget, style, special requests. The AI will follow your instructions precisely.
               </p>
               <textarea
                 value={customPrompt}
@@ -307,7 +308,7 @@ const ItineraryGenerator: React.FC = () => {
 
             {/* Example prompts */}
             <div className="glass-card rounded-xl p-4 space-y-2">
-              <p className="text-xs font-semibold text-white/50 uppercase tracking-widest">Examples — click to use</p>
+              <p className="text-xs font-semibold text-white/50 uppercase tracking-widest">Examples â€” click to use</p>
               {EXAMPLE_PROMPTS.map((ex, i) => (
                 <button key={i} type="button"
                   onClick={() => setCustomPrompt(ex)}
@@ -491,7 +492,7 @@ const ItineraryGenerator: React.FC = () => {
           )}
         </form>
 
-        {/* -- RIGHT — Output --------------------------------- */}
+        {/* -- RIGHT â€” Output --------------------------------- */}
         <div className="glass-card rounded-xl flex flex-col h-full overflow-hidden">
 
           {/* Output header */}

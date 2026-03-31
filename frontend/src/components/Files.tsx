@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../config/env';
 import { Download, X, Loader2, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
+import { getToken } from "../services/auth";
 
 // #endregion Imports
 interface FilesProps {
@@ -66,7 +67,7 @@ const Files = ({ roomId }: FilesProps) => {
     const fetchImages = async () => {
       setIsLoading(true);
       try {
-        const token = localStorage.getItem('travelBuddyToken');
+        const token = getToken();
         const res = await fetch(`${API_BASE_URL}/api/messages/${roomId}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });

@@ -66,7 +66,7 @@ const ResetPassword: React.FC = () => {
               </div>
               <h3 className="text-white font-semibold text-lg">Password reset!</h3>
               <p className="text-gray-300 text-sm">
-                Your password has been updated. Redirecting you to sign in…
+                Your password has been updated. Redirecting you to sign in...
               </p>
               <Link
                 to="/login"
@@ -90,7 +90,7 @@ const ResetPassword: React.FC = () => {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     autoComplete="new-password"
-                    placeholder="••••••••"
+                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     className="block w-full px-3 py-2 pr-10 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white placeholder-gray-300"
@@ -122,7 +122,7 @@ const ResetPassword: React.FC = () => {
                     name="confirm"
                     type={showPassword ? "text" : "password"}
                     autoComplete="new-password"
-                    placeholder="••••••••"
+                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                     value={confirm}
                     onChange={e => setConfirm(e.target.value)}
                     className="block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white placeholder-gray-300"

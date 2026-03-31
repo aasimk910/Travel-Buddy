@@ -7,6 +7,7 @@ import { socket } from "../utils/socket";
 import { useAuth } from "../context/AuthContext";
 import { API_BASE_URL } from "../config/env";
 import { Paperclip, FileText, X, Send, Loader2 } from "lucide-react";
+import { getToken } from "../services/auth";
 
 // #endregion Imports
 interface ChatProps {
@@ -37,7 +38,7 @@ const fetchMessages = async (
   before?: string
 ): Promise<{ messages: Message[]; hasMore: boolean }> => {
   try {
-    const token = localStorage.getItem("travelBuddyToken");
+    const token = getToken();
     const url = new URL(`${API_BASE_URL}/api/messages/${hikeId}`);
     url.searchParams.set("limit", "50");
     if (before) url.searchParams.set("before", before);
@@ -258,7 +259,7 @@ const Chat = ({ roomId }: ChatProps) => {
                   disabled={isLoadingMore}
                   className="text-xs text-indigo-300 hover:text-indigo-100 disabled:opacity-50 transition-colors"
                 >
-                  {isLoadingMore ? "Loading…" : "Load older messages"}
+                  {isLoadingMore ? "Loading..." : "Load older messages"}
                 </button>
               </div>
             )}

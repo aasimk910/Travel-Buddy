@@ -3,6 +3,7 @@
 // #region Imports
 import { io } from "socket.io-client";
 import { API_BASE_URL } from "../config/env";
+import { getToken } from "../services/auth";
 
 // #endregion Imports
 export const socket = io(API_BASE_URL, {
@@ -10,7 +11,7 @@ export const socket = io(API_BASE_URL, {
   transports: ['websocket'],
   autoConnect: false,
   auth: (cb) => {
-    cb({ token: localStorage.getItem("travelBuddyToken") || "" });
+    cb({ token: getToken() || "" });
   },
 });
 

@@ -16,6 +16,7 @@ import {
 import { API_BASE_URL } from "../config/env";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { getToken } from "../services/auth";
 
 // -- Leaflet helpers -----------------------------------------------------
 const adminStartIcon = L.divIcon({
@@ -273,7 +274,7 @@ const Admin: React.FC = () => {
   const [productSaving, setProductSaving] = useState(false);
 
   // Handles authHeader logic.
-  const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem("travelBuddyToken")}` });
+  const authHeader = () => ({ Authorization: `Bearer ${getToken()}` });
 
   // Handles throwIfNotOk logic.
   const throwIfNotOk = async (res: Response) => {
@@ -1000,7 +1001,7 @@ const Admin: React.FC = () => {
                         </button>
                       </td>
                       <td className="py-3 pr-4 text-glass-dim">{h.location}</td>
-                      <td className="py-3 pr-4 text-glass-dim">{h.userId?.name || "—"}</td>
+                      <td className="py-3 pr-4 text-glass-dim">{h.userId?.name || "..."}</td>
                       <td className="py-3 pr-4 text-glass-dim">{h.difficulty}/5</td>
                       <td className="py-3 pr-4 text-glass-dim">{h.spotsLeft}</td>
                       <td className="py-3 pr-4 text-glass-dim">{h.participants?.length ?? 0}</td>
@@ -1359,7 +1360,7 @@ const Admin: React.FC = () => {
               <input
                 value={orderSearch}
                 onChange={e => { setOrderSearch(e.target.value); setOrderPage(1); }}
-                placeholder="Search order ID / customer…"
+                placeholder="Search order ID / customer..."
                 className="glass-input text-sm rounded-lg px-3 py-1.5 w-52"
               />
               <select
@@ -1391,7 +1392,7 @@ const Admin: React.FC = () => {
 
           {/* Table */}
           {ordersLoading ? (
-            <div className="text-center py-12 text-glass-dim text-sm">Loading orders…</div>
+            <div className="text-center py-12 text-glass-dim text-sm">Loading orders...</div>
           ) : orders.length === 0 ? (
             <div className="text-center py-12">
               <ClipboardList className="w-10 h-10 text-glass-dim mx-auto mb-3 opacity-50" />
@@ -1805,7 +1806,7 @@ const Admin: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-glass-dim mb-1">Difficulty (1–5)</label>
+                  <label className="block text-xs text-glass-dim mb-1">Difficulty (1-5)</label>
                   <input type="number" min="1" max="5" value={hikeForm.difficulty}
                     onChange={(e) => setHikeForm({ ...hikeForm, difficulty: e.target.value })}
                     className="w-full px-3 py-2 rounded-lg glass-input text-sm" />
@@ -2162,7 +2163,7 @@ const Admin: React.FC = () => {
                         )}
                       </td>
                       <td className="py-2.5 pr-3 text-glass-dim">
-                        <div>{pkg.hotelId?.name || "—"}</div>
+                        <div>{pkg.hotelId?.name || "..."}</div>
                         <div className="text-[10px] text-glass-dim">{pkg.hotelId?.location || ""}</div>
                       </td>
                       <td className="py-2.5 pr-3">
@@ -2172,7 +2173,7 @@ const Admin: React.FC = () => {
                       <td className="py-2.5 pr-3 text-glass-dim">{pkg.capacity} guests</td>
                       <td className="py-2.5 pr-3 text-glass-dim">{pkg.availableRooms}</td>
                       <td className="py-2.5 pr-3 text-glass-dim">
-                        {pkg.minStayNights}n{pkg.maxStayNights ? `–${pkg.maxStayNights}n` : "+"}
+                        {pkg.minStayNights}n{pkg.maxStayNights ? `â€”${pkg.maxStayNights}n` : "+"}
                       </td>
                       <td className="py-2.5 pr-3">
                         <span className={`px-1.5 py-0.5 rounded text-[10px] ${

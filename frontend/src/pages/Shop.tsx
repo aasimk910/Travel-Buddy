@@ -14,6 +14,7 @@ import { API_BASE_URL } from '../config/env';
 import { useAuth } from '../context/AuthContext';
 import { initiateKhaltiPayment } from '../services/payment';
 import PaymentSuccessModal from '../components/PaymentSuccessModal';
+import { getToken } from "../services/auth";
 
 const LS_ORDERS_KEY = 'tb_saved_orders';
 // Handles ordersKey logic.
@@ -63,7 +64,7 @@ const CATEGORIES = [
   { label: 'Safety',      icon: <Shield    className="w-3.5 h-3.5" /> },
 ];
 
-// Products are now loaded from the backend � this static list is kept only as a
+// Products are now loaded from the backend — this static list is kept only as a
 // loading fallback and will be replaced once the API responds.
 const STATIC_PRODUCTS: Product[] = [
   // -- Backpacks --------------------------------------------------------------
@@ -121,10 +122,10 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
     ],
-    description: 'Featherlight freestanding 2-person tent at just 1.06 kg. Hub-and-pole architecture erects in 3 minutes. Dual vestibules provide 1.1 m� of gear storage each. 1500 mm rated fly handles Himalayan rain squalls with ease.',
+    description: 'Featherlight freestanding 2-person tent at just 1.06 kg. Hub-and-pole architecture erects in 3 minutes. Dual vestibules provide 1.1 m— of gear storage each. 1500 mm rated fly handles Himalayan rain squalls with ease.',
   },
   {
-    _id: "6", name: 'Western Mountaineering Alpinlite 35�F Bag', category: 'Camping', price: 18500, rating: 4.8, reviews: 178, badge: null,
+    _id: "6", name: 'Western Mountaineering Alpinlite 35°F Bag', category: 'Camping', price: 18500, rating: 4.8, reviews: 178, badge: null,
     img: 'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=800',
@@ -132,7 +133,7 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
     ],
-    description: '850-fill power goose down in an ultralight 11 oz body. Comfort rating 2 �C, lower limit -4 �C. Full-length draft collar and anti-snag YKK zipper. The preferred high-altitude sleeping bag on Everest expedition teams.',
+    description: '850-fill power goose down in an ultralight 11 oz body. Comfort rating 2 °C, lower limit -4 °C. Full-length draft collar and anti-snag YKK zipper. The preferred high-altitude sleeping bag on Everest expedition teams.',
   },
   {
     _id: "7", name: 'Jetboil Flash Cooking System', category: 'Camping', price: 7800, rating: 4.9, reviews: 334, badge: 'Top Rated',
@@ -154,7 +155,7 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=800',
     ],
-    description: 'R-value of 7.3 in a 430 g inflatable pad � the highest warmth-to-weight ratio available. Triangular Core Matrix baffles maximise insulation without bulk. WingLock valve inflates fully in 10 breaths and seals airtight.',
+    description: 'R-value of 7.3 in a 430 g inflatable pad — the highest warmth-to-weight ratio available. Triangular Core Matrix baffles maximise insulation without bulk. WingLock valve inflates fully in 10 breaths and seals airtight.',
   },
   // -- Footwear ---------------------------------------------------------------
   {
@@ -199,7 +200,7 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/3682215/pexels-photo-3682215.jpeg?auto=compress&w=800',
     ],
-    description: '56 % fine Merino wool blend with indestructible Cordura nylon reinforcement at heel and toe. Targeted cushioning zones under ball and arch. Machine-washable with a lifetime guarantee � no questions asked.',
+    description: '56 % fine Merino wool blend with indestructible Cordura nylon reinforcement at heel and toe. Targeted cushioning zones under ball and arch. Machine-washable with a lifetime guarantee — no questions asked.',
   },
   // -- Photography ------------------------------------------------------------
   {
@@ -233,7 +234,7 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&w=800',
     ],
-    description: 'Aluminium and stainless steel camera clip mounts to any backpack strap or belt in seconds. One-handed capture and re-attachment in under a second. Arca-Swiss compatible and tested to 45 kg pull strength � trail-proof.',
+    description: 'Aluminium and stainless steel camera clip mounts to any backpack strap or belt in seconds. One-handed capture and re-attachment in under a second. Arca-Swiss compatible and tested to 45 kg pull strength — trail-proof.',
   },
   {
     _id: "16", name: 'Anker 747 Power Bank 26000mAh', category: 'Photography', price: 10500, rating: 4.8, reviews: 467, badge: null,
@@ -244,7 +245,7 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/243757/pexels-photo-243757.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=800',
     ],
-    description: '26000 mAh, 150 W bi-directional GaN charging. Charges a MacBook Pro from 0�80 % in 43 minutes and an iPhone 15 three full times. Three simultaneous outputs. Low-temperature rated to -20 �C for high-altitude use.',
+    description: '26000 mAh, 150 W bi-directional GaN charging. Charges a MacBook Pro from 0-80 % in 43 minutes and an iPhone 15 three full times. Three simultaneous outputs. Low-temperature rated to -20 °C for high-altitude use.',
   },
   // -- Navigation -------------------------------------------------------------
   {
@@ -267,7 +268,7 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
     ],
-    description: 'Multi-band GPS smartwatch with solar charging, sapphire lens, and titanium bezel. Barometric altimeter, storm alarm, and preloaded TopoActive Nepal maps. Up to 428 hours GPS battery life � outlasts the longest EBC itineraries.',
+    description: 'Multi-band GPS smartwatch with solar charging, sapphire lens, and titanium bezel. Barometric altimeter, storm alarm, and preloaded TopoActive Nepal maps. Up to 428 hours GPS battery life — outlasts the longest EBC itineraries.',
   },
   {
     _id: "19", name: 'Suunto A-30 Field Compass', category: 'Navigation', price: 2800, rating: 4.5, reviews: 342, badge: null,
@@ -278,7 +279,7 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
     ],
-    description: 'Liquid-filled baseplate compass with a built-in clinometer and 1:25000 map scale. Global needle works across all latitudes without tilting. Luminous bezel markings for night navigation � essential backup for any trek.',
+    description: 'Liquid-filled baseplate compass with a built-in clinometer and 1:25000 map scale. Global needle works across all latitudes without tilting. Luminous bezel markings for night navigation — essential backup for any trek.',
   },
   {
     _id: "20", name: 'Garmin GPSMAP 67i', category: 'Navigation', price: 71000, rating: 4.9, reviews: 63, badge: 'Best Seller',
@@ -334,7 +335,7 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
     ],
-    description: '120 dB pealess whistle audible over 2.5 km, paired with a military-spec acrylic signal mirror visible to search aircraft beyond 16 km. Combo clips to a locking carabiner � just 22 g of life-saving emergency signalling.',
+    description: '120 dB pealess whistle audible over 2.5 km, paired with a military-spec acrylic signal mirror visible to search aircraft beyond 16 km. Combo clips to a locking carabiner — just 22 g of life-saving emergency signalling.',
   },
 ];
 
@@ -428,7 +429,7 @@ const Shop: React.FC = () => {
   // Sync order statuses from backend whenever the orders panel opens
   useEffect(() => {
     if (!ordersOpen) return;
-    const token = localStorage.getItem('travelBuddyToken');
+    const token = getToken();
     if (!token) return;
     fetch(`${API_BASE_URL}/api/orders/mine`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -447,7 +448,7 @@ const Shop: React.FC = () => {
           return updated;
         });
       })
-      .catch(() => {/* silent � localStorage copy is still shown */});
+      .catch(() => {/* silent — localStorage copy is still shown */});
   }, [ordersOpen, userOrdersKey]);
 
 
@@ -494,7 +495,7 @@ const Shop: React.FC = () => {
       return updated;
     });
     // Persist to backend (fire-and-forget; localStorage is source of truth for UI)
-    const token = localStorage.getItem('travelBuddyToken');
+    const token = getToken();
     fetch(`${API_BASE_URL}/api/orders`, {
       method: 'POST',
       headers: {
@@ -524,7 +525,7 @@ const Shop: React.FC = () => {
   const handleKhaltiPay = async () => {
     setKhaltiLoading(true);
     try {
-      const token = localStorage.getItem('travelBuddyToken');
+      const token = getToken();
       if (!token) {
         alert('Your session has expired. Please log in again.');
         navigate('/login', { state: { from: '/shop' } });
@@ -570,7 +571,7 @@ const Shop: React.FC = () => {
         (async () => {
           const saved = JSON.parse(raw) as { cartItems: CartItem[]; customer: CustomerInfo; subtotal: number; shipping: number; total: number; orderId: string; paymentMethod: 'khalti' };
           // Verify payment server-side before accepting
-          const token = localStorage.getItem('travelBuddyToken');
+          const token = getToken();
           const verifyRes = await fetch(`${API_BASE_URL}/api/payment/khalti/verify`, {
             method: 'POST',
             headers: {
@@ -1005,7 +1006,7 @@ const Shop: React.FC = () => {
               const expanded = expandedOrderId === order.orderId;
               return (
                 <div key={order.orderId} className="glass-card rounded-2xl overflow-hidden">
-                  {/* Order card header � always visible */}
+                  {/* Order card header — always visible */}
                   <button
                     onClick={() => setExpandedOrderId(expanded ? null : order.orderId)}
                     className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-white/5 transition-all"
@@ -1067,7 +1068,7 @@ const Shop: React.FC = () => {
                               className="w-9 h-9 rounded-lg object-cover shrink-0" />
                             <div className="flex-1 min-w-0">
                               <p className="text-white text-xs font-semibold line-clamp-1">{i.product.name}</p>
-                              <p className="text-white/40 text-[11px]">NPR {i.product.price.toLocaleString()} � {i.qty}</p>
+                              <p className="text-white/40 text-[11px]">NPR {i.product.price.toLocaleString()} — {i.qty}</p>
                             </div>
                             <p className="text-white text-xs font-semibold shrink-0">NPR {(i.product.price * i.qty).toLocaleString()}</p>
                           </div>
@@ -1210,7 +1211,7 @@ const Shop: React.FC = () => {
         {/* Drawer body */}
         <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
           {checkedOut && orderSnapshot ? (
-            /* -- Order confirmed � full receipt -- */
+            /* -- Order confirmed — full receipt -- */
             <div className="flex flex-col gap-4 py-2 pb-6">
               {/* Header */}
               <div className="flex flex-col items-center text-center gap-3 py-4">
@@ -1219,7 +1220,7 @@ const Shop: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-white font-bold text-xl flex items-center gap-2">Order Placed! <PartyPopper className="w-5 h-5 text-emerald-400" /></h3>
-                  <p className="text-white/55 text-sm mt-1">Your gear is on its way. Estimated delivery in 3�5 business days.</p>
+                  <p className="text-white/55 text-sm mt-1">Your gear is on its way. Estimated delivery in 3-5 business days.</p>
                 </div>
               </div>
 
@@ -1252,7 +1253,7 @@ const Shop: React.FC = () => {
                       className="w-10 h-10 rounded-lg object-cover shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-xs font-semibold line-clamp-1">{i.product.name}</p>
-                      <p className="text-white/40 text-[11px]">NPR {i.product.price.toLocaleString()} � {i.qty}</p>
+                      <p className="text-white/40 text-[11px]">NPR {i.product.price.toLocaleString()} — {i.qty}</p>
                     </div>
                     <p className="text-white font-semibold text-sm shrink-0">NPR {(i.product.price * i.qty).toLocaleString()}</p>
                   </div>
@@ -1308,7 +1309,7 @@ const Shop: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-indigo-300 text-sm font-semibold">Order Placed</p>
-                    <p className="text-white/45 text-xs">Estimated delivery in 3�5 business days</p>
+                    <p className="text-white/45 text-xs">Estimated delivery in 3-5 business days</p>
                   </div>
                 </div>
               </div>
@@ -1491,9 +1492,9 @@ const Shop: React.FC = () => {
                 }`}
               >
                 {khaltiLoading ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Redirecting to Khalti�</>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Redirecting to Khalti...</>
                 ) : (
-                  <>Place Order � NPR {total.toLocaleString()} <ChevronRight className="w-4 h-4" /></>
+                  <>Place Order — NPR {total.toLocaleString()} <ChevronRight className="w-4 h-4" /></>
                 )}
               </button>
             </div>
@@ -1552,7 +1553,7 @@ const Shop: React.FC = () => {
           )}
         </div>
 
-        {/* Drawer footer � order summary + checkout */}
+        {/* Drawer footer — order summary + checkout */}
         {!checkedOut && !paymentStep && !detailsStep && cartItems.length > 0 && (
           <div className="px-6 py-5 border-t border-white/10 shrink-0 space-y-4">
             {/* Free shipping banner */}
@@ -1594,7 +1595,7 @@ const Shop: React.FC = () => {
                 onClick={() => setDetailsStep(true)}
                 className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl glass-button-dark text-white font-bold text-sm transition-all"
               >
-                Checkout � NPR {total.toLocaleString()} <ChevronRight className="w-4 h-4" />
+                Checkout — NPR {total.toLocaleString()} <ChevronRight className="w-4 h-4" />
               </button>
             ) : (
               <div className="space-y-2">

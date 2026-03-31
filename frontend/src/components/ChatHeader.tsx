@@ -71,7 +71,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ hikeId, activeTab, onTabChange 
       <div className="p-4 flex justify-between items-center">
       <div>
         <h2 className="text-xl font-bold text-glass-light">{hikeDetails.name}</h2>
-        {hikeId && <p className="text-sm text-glass-dim">{hikeDetails.members} {hikeDetails.members === 1 ? 'member' : 'members'} • {hikeDetails.date}</p>}
+        {hikeId && <p className="text-sm text-glass-dim">{hikeDetails.members} {hikeDetails.members === 1 ? 'member' : 'members'} â€” {hikeDetails.date}</p>}
       </div>
 
       </div>

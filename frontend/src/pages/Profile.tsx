@@ -1,4 +1,4 @@
-﻿// src/pages/Profile.tsx
+// src/pages/Profile.tsx
 // #region Imports
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ import { compressImage } from "../utils/imageCompression";
 import { API_BASE_URL } from "../config/env";
 import { getUserPhotos } from "../services/photos";
 import { getUserTrips } from "../services/trips";
+import { getToken } from "../services/auth";
 
 // #endregion Imports
 const MAX_PHOTO_SIZE_BYTES = 6 * 1024 * 1024;
@@ -175,7 +176,7 @@ const Profile: React.FC = () => {
     if (!window.confirm("Are you sure you want to update your profile?")) return;
     setIsSubmitting(true);
     try {
-      const token = localStorage.getItem("travelBuddyToken");
+      const token = getToken();
       if (!token) { showError("You must be logged in to update your profile"); navigate("/login"); return; }
       let avatarUrl = user?.avatarUrl || undefined;
       if (profilePicture) avatarUrl = await convertFileToBase64(profilePicture);

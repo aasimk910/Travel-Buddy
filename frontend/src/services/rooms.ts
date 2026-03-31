@@ -2,10 +2,11 @@
 // API client for E2E encrypted chat room key exchange.
 // #region Imports
 import { API_BASE_URL } from "../config/env";
+import { getToken, clearToken } from "./auth";
 
 // #endregion Imports
 const authHeaders = (): Record<string, string> => {
-  const token = localStorage.getItem("travelBuddyToken");
+  const token = getToken();
   return token ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } : { "Content-Type": "application/json" };
 };
 
@@ -19,7 +20,7 @@ export async function uploadPublicKey(publicKeyJwk: JsonWebKey): Promise<void> {
 
   // Handle 401 Unauthorized
   if (res.status === 401) {
-    localStorage.removeItem("travelBuddyToken");
+    clearToken();
     localStorage.removeItem("travelBuddyUser");
     window.location.href = "/login";
     throw new Error("Session expired - please log in again");

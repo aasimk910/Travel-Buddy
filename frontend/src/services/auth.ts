@@ -57,9 +57,42 @@ export const signup = (payload: SignupPayload) => postJson("/api/auth/signup", p
 // Handles googleAuth logic.
 export const googleAuth = (credential: string) => postJson("/api/auth/google", { credential });
 
-// Handles storeToken logic.
-export const storeToken = (token?: string) => {
-  if (token) localStorage.setItem("travelBuddyToken", token);
+// Key used to remember whether the user chose "Remember me"
+const REMEMBER_KEY = "travelBuddyRemember";
+const TOKEN_KEY = "travelBuddyToken";
+
+// Store the JWT token in the appropriate storage based on the "Remember me" choice.
+// localStorage persists across browser sessions; sessionStorage is cleared when the tab closes.
+export const storeToken = (token?: string, remember?: boolean) => {
+  if (!token) return;
+  // If remember flag is explicitly provided, persist the preference
+  if (remember !== undefined) {
+    if (remember) {
+      localStorage.setItem(REMEMBER_KEY, "true");
+    } else {
+      localStorage.removeItem(REMEMBER_KEY);
+    }
+  }
+  // Determine which storage to use
+  const shouldPersist = remember ?? localStorage.getItem(REMEMBER_KEY) === "true";
+  if (shouldPersist) {
+    localStorage.setItem(TOKEN_KEY, token);
+    sessionStorage.removeItem(TOKEN_KEY); // clean up the other storage
+  } else {
+    sessionStorage.setItem(TOKEN_KEY, token);
+    localStorage.removeItem(TOKEN_KEY); // clean up the other storage
+  }
+};
+
+// Retrieve the JWT token from whichever storage it was placed in.
+export const getToken = (): string | null => {
+  return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+};
+
+// Remove the JWT token from both storages (used on logout / 401).
+export const clearToken = () => {
+  localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
 };
 
 // Handles forgotPassword logic.

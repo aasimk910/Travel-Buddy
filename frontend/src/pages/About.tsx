@@ -94,7 +94,7 @@ const About: React.FC = () => {
         <p className="text-gray-200 text-base sm:text-lg leading-relaxed reveal reveal-fade delay-200">
           Travel Buddy is a community platform built for hikers and outdoor
           enthusiasts in Nepal. Discover trails, connect with fellow adventurers,
-          plan trips together, and share your journey — all in one place.
+          plan trips together, and share your journey â€” all in one place.
         </p>
       </section>
 
@@ -103,7 +103,7 @@ const About: React.FC = () => {
         <div className="space-y-4 reveal reveal-left">
           <h2 className="text-2xl sm:text-3xl font-bold text-white">Our Mission</h2>
           <p className="text-gray-200 leading-relaxed">
-            Nepal is home to some of the world's most breathtaking trails —
+            Nepal is home to some of the world's most breathtaking trails â€”
             from day hikes around Kathmandu Valley to multi-day treks in the
             Annapurna and Everest regions. Yet finding reliable trail partners
             and accurate route information can be difficult.
@@ -116,10 +116,10 @@ const About: React.FC = () => {
         </div>
         <div className="grid gap-4 grid-cols-2 reveal reveal-right delay-200">
           {[
-            { label: "Hikes Listed", value: stats ? stats.hikeCount.toString() : "…", delay: "delay-100" },
-            { label: "Active Hikers", value: stats ? stats.userCount.toString() : "…", delay: "delay-200" },
-            { label: "Trip Photos", value: stats ? stats.photoCount.toString() : "…", delay: "delay-300" },
-            { label: "Upcoming Hikes", value: stats ? stats.upcomingHikes.toString() : "…", delay: "delay-400" },
+            { label: "Hikes Listed", value: stats ? stats.hikeCount.toString() : "...", delay: "delay-100" },
+            { label: "Active Hikers", value: stats ? stats.userCount.toString() : "...", delay: "delay-200" },
+            { label: "Trip Photos", value: stats ? stats.photoCount.toString() : "...", delay: "delay-300" },
+            { label: "Upcoming Hikes", value: stats ? stats.upcomingHikes.toString() : "...", delay: "delay-400" },
           ].map(({ label, value, delay }) => (
             <div
               key={label}
@@ -147,7 +147,7 @@ const About: React.FC = () => {
           <FeatureCard
             icon={<Ruler className="w-5 h-5" />}
             title="Trail Distance Calculator"
-            desc="Measure real walking distances along actual paths — not straight lines. Powered by OSRM foot-routing, so you know exactly how far you'll hike."
+            desc="Measure real walking distances along actual paths â€” not straight lines. Powered by OSRM foot-routing, so you know exactly how far you'll hike."
             delay="delay-200"
           />
           <FeatureCard
@@ -209,12 +209,12 @@ const About: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-12 text-gray-300">Loading reviews…</div>
+          <div className="text-center py-12 text-gray-300">Loading reviews...</div>
         ) : error ? (
           <div className="text-center py-12 text-red-300">{error}</div>
         ) : reviews.length === 0 ? (
           <div className="glass-card rounded-xl p-10 text-center text-gray-300">
-            No reviews yet — join a hike and be the first to share your experience!
+            No reviews yet â€” join a hike and be the first to share your experience!
           </div>
         ) : (
           <>

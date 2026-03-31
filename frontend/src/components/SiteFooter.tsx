@@ -53,7 +53,7 @@ const SiteFooter: React.FC = () => {
 
       <div className="border-t border-white/20">
         <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[11px] text-gray-200">© {new Date().getFullYear()} Travel Buddy. All rights reserved.</p>
+          <p className="text-[11px] text-gray-200">Â© {new Date().getFullYear()} Travel Buddy. All rights reserved.</p>
           <div className="flex items-center gap-4 text-[11px] text-gray-200">
             <button className="hover:text-white transition-colors">Privacy</button>
             <button className="hover:text-white transition-colors">Terms</button>

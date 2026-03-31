@@ -11,6 +11,7 @@ import { getUserTrips } from "../../services/trips";
 import { MapContainer, TileLayer, Marker, Polyline, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import HotelDetails from "./HotelDetails";
+import { getToken } from "../../services/auth";
 
 // #endregion Imports
 // Fix leaflet default icons
@@ -249,7 +250,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
 
   // Handles handleJoin logic.
   const handleJoin = async () => {
-    const token = localStorage.getItem("travelBuddyToken");
+    const token = getToken();
     if (!token) {
       showError("You must be logged in to join a hike.");
       return;
@@ -343,7 +344,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
                 </button>
               ) : (
                 <button type="button" onClick={handleJoin} disabled={isJoining || hike.spotsLeft <= 0} className="px-5 py-2 glass-button-dark rounded-full font-semibold disabled:opacity-60 transition-colors shadow-lg text-white">
-                  {isJoining ? "Joining…" : "Join Hike"}
+                  {isJoining ? "Joining..." : "Join Hike"}
                 </button>
               )}
             </div>
@@ -409,7 +410,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
                           <Polyline positions={routeGeometry} pathOptions={{ color: '#6366f1', weight: 4 }}>
                             <Tooltip sticky>
                               <span className="font-semibold">
-                                Trail: {routeDistance !== null ? formatDistance(routeDistance) : '…'}
+                                Trail: {routeDistance !== null ? formatDistance(routeDistance) : '...'}
                               </span>
                             </Tooltip>
                           </Polyline>

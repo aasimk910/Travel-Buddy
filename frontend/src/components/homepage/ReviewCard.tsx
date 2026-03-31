@@ -8,6 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 import DOMPurify from "dompurify";
 import { MapPin, PenLine, RefreshCw, Star } from "lucide-react";
 import { submitReview } from "../../services/reviews";
+import { getToken } from "../../services/auth";
 
 // #endregion Imports
 const FEATURED_LOCATIONS = [
@@ -57,7 +58,7 @@ const ReviewCard: React.FC = () => {
     setReviewMessage(null);
 
     try {
-      const token = localStorage.getItem("travelBuddyToken");
+      const token = getToken();
       if (!token) {
         setReviewMessage({ type: "error", text: "You must be logged in to submit a review." });
         navigate("/login");
@@ -128,7 +129,7 @@ const ReviewCard: React.FC = () => {
           </div>
           {!locationTouched && (
             <p className="text-center text-white/35 text-xs mt-1.5">
-              Suggested · <button type="button" onClick={handleShowAnother} className="underline hover:text-white/60 transition-colors">try another</button>
+              Suggested â€” <button type="button" onClick={handleShowAnother} className="underline hover:text-white/60 transition-colors">try another</button>
             </p>
           )}
         </div>
@@ -166,7 +167,7 @@ const ReviewCard: React.FC = () => {
         <textarea
           value={reviewComment}
           onChange={(e) => setReviewComment(e.target.value)}
-          placeholder="Share your experience — what did you love? Any tips for others?"
+          placeholder="Share your experience â€” what did you love? Any tips for others?"
           className="w-full px-4 py-3 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white/40 resize-none mb-4 text-white placeholder-gray-400"
           rows={4}
         />

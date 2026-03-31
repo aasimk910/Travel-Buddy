@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { completeOnboarding } from "../services/onboarding";
 import { getRecommendedHikes, type Hike } from "../services/hikes";
+import { getToken } from "../services/auth";
 
 // #endregion Imports
 type LocationState = {
@@ -68,7 +69,7 @@ const Onboarding: React.FC = () => {
       return;
     }
 
-    const token = localStorage.getItem("travelBuddyToken");
+    const token = getToken();
     if (!token) {
       navigate("/login", { replace: true });
       return;

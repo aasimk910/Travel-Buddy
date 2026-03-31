@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { API_BASE_URL } from "../../config/env";
 import { CreditCard, Loader2 } from "lucide-react";
+import { getToken } from "../../services/auth";
 
 // #endregion Imports
 interface KhaltiPaymentButtonProps {
@@ -31,7 +32,7 @@ export default function KhaltiPaymentButton({
       setIsLoading(true);
 
       // Call backend to initiate payment
-      const token = localStorage.getItem("travelBuddyToken");
+      const token = getToken();
       const paymentResponse = await fetch(`${API_BASE_URL}/api/payments/hotel-booking`, {
         method: "POST",
         headers: {

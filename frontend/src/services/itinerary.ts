@@ -1,6 +1,7 @@
-﻿// frontend/src/services/itinerary.ts
+// frontend/src/services/itinerary.ts
 // #region Imports
 import { API_BASE_URL } from "../config/env";
+import { clearToken } from "./auth";
 
 // #endregion Imports
 interface ItineraryRequest {
@@ -43,7 +44,7 @@ export const generateItinerary = async (
 
   if (!response.ok) {
     if (response.status === 401) {
-      localStorage.removeItem("travelBuddyToken");
+      clearToken();
       throw new Error("AUTH_EXPIRED");
     }
     if (response.status === 429) {

@@ -9,6 +9,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { Hotel, HotelPackage, createBooking } from "../../services/hikes";
 import KhaltiPaymentButton from "./KhaltiPaymentButton";
+import { getToken } from "../../services/auth";
 
 // #endregion Imports
 type BookingModalProps = {
@@ -139,7 +140,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
 
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("travelBuddyToken");
+      const token = getToken();
       if (!token) {
         showError("Authentication token not found");
         setIsLoading(false);

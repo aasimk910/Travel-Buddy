@@ -1,4 +1,4 @@
-﻿// #region Imports
+// #region Imports
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, MapPin, Navigation, CheckCircle2, Flag, MousePointerClick } from "lucide-react";
@@ -8,6 +8,7 @@ import { useToast } from "../../context/ToastContext";
 import { createHike } from "../../services/hikes";
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
+import { getToken } from "../../services/auth";
 
 // #endregion Imports
 // Fix for default marker icons in React-Leaflet
@@ -106,7 +107,7 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
     try {
       let imageBase64: string | undefined;
       if (imageFile) imageBase64 = await convertFileToBase64(imageFile);
-      const token = localStorage.getItem("travelBuddyToken");
+      const token = getToken();
       if (!token) {
         setMessage({ type: "error", text: "You must be logged in to create a hike." });
         return;

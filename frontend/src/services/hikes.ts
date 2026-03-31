@@ -2,6 +2,7 @@
 // API client for hike CRUD, join/leave, hotel bookings, and hotel queries.
 // #region Imports
 import { API_BASE_URL } from "../config/env";
+import { clearToken } from "./auth";
 
 // #endregion Imports
 export type HotelPackage = {
@@ -148,7 +149,7 @@ export const createHike = async (payload: CreateHikePayload, token: string) => {
   });
   if (!res.ok) {
     if (res.status === 401) {
-      localStorage.removeItem("travelBuddyToken");
+      clearToken();
       throw new Error("AUTH_EXPIRED");
     }
     if (res.status === 429) {
@@ -176,7 +177,7 @@ export const joinHike = async (hikeId: string, token: string) => {
   });
   if (!res.ok) {
     if (res.status === 401) {
-      localStorage.removeItem("travelBuddyToken");
+      clearToken();
       throw new Error("AUTH_EXPIRED");
     }
     if (res.status === 429) {
@@ -215,7 +216,7 @@ export const createBooking = async (payload: {
 
   if (!res.ok) {
     if (res.status === 401) {
-      localStorage.removeItem("travelBuddyToken");
+      clearToken();
       throw new Error("AUTH_EXPIRED");
     }
     try {
@@ -240,7 +241,7 @@ export const getUserBookings = async (token: string): Promise<HotelBooking[]> =>
 
   if (!res.ok) {
     if (res.status === 401) {
-      localStorage.removeItem("travelBuddyToken");
+      clearToken();
       throw new Error("AUTH_EXPIRED");
     }
     throw new Error("Unable to fetch bookings.");
@@ -259,7 +260,7 @@ export const getBooking = async (bookingId: string, token: string): Promise<Hote
 
   if (!res.ok) {
     if (res.status === 401) {
-      localStorage.removeItem("travelBuddyToken");
+      clearToken();
       throw new Error("AUTH_EXPIRED");
     }
     throw new Error("Unable to fetch booking.");
@@ -278,7 +279,7 @@ export const cancelBooking = async (bookingId: string, token: string): Promise<H
 
   if (!res.ok) {
     if (res.status === 401) {
-      localStorage.removeItem("travelBuddyToken");
+      clearToken();
       throw new Error("AUTH_EXPIRED");
     }
     throw new Error("Unable to cancel booking.");

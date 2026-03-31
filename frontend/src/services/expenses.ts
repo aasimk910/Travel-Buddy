@@ -2,6 +2,7 @@
 // API client for hike expense CRUD and summary retrieval.
 // #region Imports
 import { API_BASE_URL } from "../config/env";
+import { getToken, clearToken } from "./auth";
 
 // #endregion Imports
 export interface Expense {
@@ -44,7 +45,7 @@ export interface ExpenseSummary {
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
     if (response.status === 401) {
-      localStorage.removeItem("travelBuddyToken");
+      clearToken();
       throw new Error("AUTH_EXPIRED");
     }
     if (response.status === 429) {
@@ -62,7 +63,7 @@ const handleResponse = async (response: Response) => {
 };
 
 export const getExpenses = async (hikeId: string): Promise<Expense[]> => {
-  const token = localStorage.getItem("travelBuddyToken");
+  const token = getToken();
   if (!token) {
     throw new Error("No authentication token found.");
   }
@@ -80,7 +81,7 @@ export const createExpense = async (
   hikeId: string,
   expenseData: Partial<Expense>
 ): Promise<Expense> => {
-  const token = localStorage.getItem("travelBuddyToken");
+  const token = getToken();
   if (!token) {
     throw new Error("No authentication token found.");
   }
@@ -102,7 +103,7 @@ export const updateExpense = async (
   expenseId: string,
   expenseData: Partial<Expense>
 ): Promise<Expense> => {
-  const token = localStorage.getItem("travelBuddyToken");
+  const token = getToken();
   if (!token) {
     throw new Error("No authentication token found.");
   }
@@ -126,7 +127,7 @@ export const deleteExpense = async (
   hikeId: string,
   expenseId: string
 ): Promise<void> => {
-  const token = localStorage.getItem("travelBuddyToken");
+  const token = getToken();
   if (!token) {
     throw new Error("No authentication token found.");
   }
@@ -147,7 +148,7 @@ export const deleteExpense = async (
 export const getExpenseSummary = async (
   hikeId: string
 ): Promise<ExpenseSummary> => {
-  const token = localStorage.getItem("travelBuddyToken");
+  const token = getToken();
   if (!token) {
     throw new Error("No authentication token found.");
   }

@@ -2,6 +2,7 @@
 // API client for Khalti payment initiation and verification.
 // #region Imports
 import { API_BASE_URL } from '../config/env';
+import { clearToken } from "./auth";
 
 // #endregion Imports
 export interface KhaltiInitiateRequest {
@@ -40,7 +41,7 @@ export const initiateKhaltiPayment = async (
   const data = await res.json();
   if (!res.ok) {
     if (res.status === 401) {
-      localStorage.removeItem('travelBuddyToken');
+      clearToken();
       window.location.href = '/login';
     }
     throw new Error(data?.error || 'Payment failed');
@@ -56,7 +57,7 @@ export const verifyKhaltiPayment = async (pidx: string, token: string): Promise<
   const data = await res.json();
   if (!res.ok) {
     if (res.status === 401) {
-      localStorage.removeItem('travelBuddyToken');
+      clearToken();
       window.location.href = '/login';
     }
     throw new Error(data?.error || 'Verification failed');

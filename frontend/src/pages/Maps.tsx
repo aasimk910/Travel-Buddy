@@ -136,7 +136,7 @@ const DistanceMeasure: React.FC<{
         >
           <Tooltip sticky>
             <span className="font-semibold">
-              Trail distance: {routeDistance !== null ? formatDistance(routeDistance) : '…'}
+              Trail distance: {routeDistance !== null ? formatDistance(routeDistance) : '...'}
             </span>
           </Tooltip>
         </Polyline>
@@ -188,7 +188,7 @@ const Maps: React.FC = () => {
   // Handles handleMeasurePoint logic.
   const handleMeasurePoint = (pt: [number, number]) => {
     if (!pointA || (pointA && pointB)) {
-      // Start fresh — clear previous route
+      // Start fresh â€” clear previous route
       setPointA(pt);
       setPointB(null);
       setRouteGeometry(null);
@@ -237,7 +237,7 @@ const Maps: React.FC = () => {
           return;
         }
         const route = data.routes[0];
-        // OSRM GeoJSON coords are [lon, lat] — flip to [lat, lon] for Leaflet
+        // OSRM GeoJSON coords are [lon, lat] â€” flip to [lat, lon] for Leaflet
         const coords: [number, number][] = route.geometry.coordinates.map(
           ([lon, lat]: [number, number]) => [lat, lon]
         );
@@ -539,7 +539,7 @@ const Maps: React.FC = () => {
                     <span>{hike.location}</span>
                   </div>
                   <div className="text-xs text-glass-dim">
-                    {new Date(hike.date).toLocaleDateString()} • {hike.spotsLeft} spots left
+                    {new Date(hike.date).toLocaleDateString()} â€” {hike.spotsLeft} spots left
                   </div>
                 </div>
               );
@@ -565,7 +565,7 @@ const Maps: React.FC = () => {
             }`}
           >
             <Ruler className="w-4 h-4" />
-            {measureActive ? 'Measuring…' : 'Measure Distance'}
+            {measureActive ? 'Measuring...' : 'Measure Distance'}
           </button>
 
           {measureActive && (
@@ -575,14 +575,14 @@ const Maps: React.FC = () => {
                   ? '1. Click the map to set Point A'
                   : !pointB
                   ? '2. Click the map to set Point B'
-                  : 'Points set — click again to reset'}
+                  : 'Points set â€” click again to reset'}
               </p>
 
               <div className="flex gap-3 text-sm mb-3">
                 <div className="flex items-center gap-1">
                   <span className="inline-block w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow" />
                   <span className="text-gray-300">
-                    {pointA ? `${pointA[0].toFixed(4)}, ${pointA[1].toFixed(4)}` : '—'}
+                    {pointA ? `${pointA[0].toFixed(4)}, ${pointA[1].toFixed(4)}` : '...'}
                   </span>
                 </div>
               </div>
@@ -590,14 +590,14 @@ const Maps: React.FC = () => {
                 <div className="flex items-center gap-1">
                   <span className="inline-block w-3 h-3 rounded-full bg-red-500 border-2 border-white shadow" />
                   <span className="text-gray-300">
-                    {pointB ? `${pointB[0].toFixed(4)}, ${pointB[1].toFixed(4)}` : '—'}
+                    {pointB ? `${pointB[0].toFixed(4)}, ${pointB[1].toFixed(4)}` : '...'}
                   </span>
                 </div>
               </div>
 
               {routeLoading && (
                 <div className="bg-indigo-500/20 border border-indigo-400/40 rounded-lg px-3 py-2 text-center">
-                  <p className="text-xs text-indigo-300 font-medium uppercase tracking-wide">Calculating trail…</p>
+                  <p className="text-xs text-indigo-300 font-medium uppercase tracking-wide">Calculating trail...</p>
                   <div className="mt-1 h-5 flex items-center justify-center">
                     <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                   </div>

@@ -7,6 +7,7 @@ import { CheckCircle, AlertCircle, Loader } from "lucide-react";
 import { useToast } from "../context/ToastContext";
 import { API_BASE_URL } from "../config/env";
 import PaymentSuccessModal from "../components/PaymentSuccessModal";
+import { getToken } from "../services/auth";
 
 // #endregion Imports
 // #region Exports
@@ -34,7 +35,7 @@ export default function BookingConfirmation() {
       }
 
       try {
-        const token = localStorage.getItem("travelBuddyToken");
+        const token = getToken();
         if (!token) {
           setStatus("error");
           setMessage("You must be logged in to view booking details.");

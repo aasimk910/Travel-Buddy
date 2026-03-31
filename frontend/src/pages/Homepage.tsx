@@ -1,4 +1,4 @@
-﻿// src/pages/Homepage.tsx
+// src/pages/Homepage.tsx
 // #region Imports
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -13,6 +13,7 @@ import CreateHikeModal from "../components/homepage/CreateHikeModal";
 import ConnectModal from "../components/hikes/ConnectModal";
 import { getLatestPhotos } from "../services/photos";
 import { getRecommendedHikes, getSiteStats, type Hike, type SiteStats } from "../services/hikes";
+import { getToken } from "../services/auth";
 
  
 
@@ -47,7 +48,7 @@ const Homepage: React.FC = () => {
 
   // Handles fetchRecommendations logic.
   const fetchRecommendations = async () => {
-    const token = localStorage.getItem("travelBuddyToken");
+    const token = getToken();
     if (!token) return;
 
     setIsLoadingRecommendations(true);

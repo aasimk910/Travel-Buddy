@@ -75,7 +75,7 @@ const MyTrips: React.FC = () => {
                 <div>
                   <p className="font-semibold text-glass-light">{hike.title}</p>
                   <p className="text-sm text-glass-dim">
-                    {hike.location} • {formatDate(hike.date)}
+                    {hike.location} â€” {formatDate(hike.date)}
                   </p>
                 </div>
                 <span

@@ -2,10 +2,11 @@
 // API client for trip/hike join, leave, and user trip listing.
 // #region Imports
 import { API_BASE_URL } from "../config/env";
+import { getToken, clearToken } from "./auth";
 
 // #endregion Imports
 export const getUserTrips = async () => {
-  const token = localStorage.getItem("travelBuddyToken");
+  const token = getToken();
   if (!token) {
     throw new Error("No authentication token found.");
   }
@@ -19,7 +20,7 @@ export const getUserTrips = async () => {
   if (!response.ok) {
     if (response.status === 401) {
       // Clear invalid token
-      localStorage.removeItem("travelBuddyToken");
+      clearToken();
       throw new Error("AUTH_EXPIRED");
     }
     if (response.status === 429) {
@@ -38,7 +39,7 @@ export const getUserTrips = async () => {
 
 // Handles joinTrip logic.
 export const joinTrip = async (tripId: string) => {
-  const token = localStorage.getItem("travelBuddyToken");
+  const token = getToken();
   if (!token) {
     throw new Error("No authentication token found.");
   }
@@ -52,7 +53,7 @@ export const joinTrip = async (tripId: string) => {
 
   if (!response.ok) {
     if (response.status === 401) {
-      localStorage.removeItem("travelBuddyToken");
+      clearToken();
       throw new Error("AUTH_EXPIRED");
     }
     if (response.status === 429) {
@@ -71,7 +72,7 @@ export const joinTrip = async (tripId: string) => {
 
 // Handles leaveHike logic.
 export const leaveHike = async (hikeId: string) => {
-  const token = localStorage.getItem("travelBuddyToken");
+  const token = getToken();
   if (!token) {
     throw new Error("No authentication token found.");
   }
@@ -85,7 +86,7 @@ export const leaveHike = async (hikeId: string) => {
 
   if (!response.ok) {
     if (response.status === 401) {
-      localStorage.removeItem("travelBuddyToken");
+      clearToken();
       throw new Error("AUTH_EXPIRED");
     }
     if (response.status === 429) {

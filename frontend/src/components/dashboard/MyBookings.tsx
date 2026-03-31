@@ -5,6 +5,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { CheckCircle, Clock, XCircle, RefreshCw, Hotel, Calendar, CreditCard, Hash } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getUserBookings, HotelBooking } from '../../services/hikes';
+import { getToken } from "../../services/auth";
 
 // #endregion Imports
 const STATUS_CONFIG = {
@@ -36,7 +37,7 @@ const PAYMENT_CONFIG: Record<string, { label: string; cls: string }> = {
 
 const MyBookings: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  const token = localStorage.getItem('travelBuddyToken');
+  const token = getToken();
   const [bookings, setBookings]   = useState<HotelBooking[]>([]);
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState<string | null>(null);
@@ -81,7 +82,7 @@ const MyBookings: React.FC = () => {
       </div>
 
       {loading && (
-        <div className="text-center py-8 text-glass-dim text-sm">Loading bookings…</div>
+        <div className="text-center py-8 text-glass-dim text-sm">Loading bookings...</div>
       )}
 
       {!loading && error && (
@@ -117,7 +118,7 @@ const MyBookings: React.FC = () => {
                       <span className="text-glass font-semibold text-sm truncate">
                         {b.bookingReference}
                       </span>
-                      {/* Confirmed badge — prominent */}
+                      {/* Confirmed badge â€” prominent */}
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${st.cls}`}>
                         {st.icon}
                         {st.label}
@@ -149,7 +150,7 @@ const MyBookings: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-2 text-glass-dim">
                         <Calendar className="w-3.5 h-3.5 shrink-0" />
-                        <span>{b.numberOfNights} night{b.numberOfNights !== 1 ? 's' : ''} · {b.numberOfRooms} room{b.numberOfRooms !== 1 ? 's' : ''}</span>
+                        <span>{b.numberOfNights} night{b.numberOfNights !== 1 ? 's' : ''} â€” {b.numberOfRooms} room{b.numberOfRooms !== 1 ? 's' : ''}</span>
                       </div>
                       <div className="flex items-center gap-2 text-glass-dim">
                         <span>NPR {b.pricePerNight.toLocaleString()} / night</span>
