@@ -1,7 +1,14 @@
-// backend/controllers/hikeController.js
+﻿// backend/controllers/hikeController.js
+// CRUD operations for hikes, plus join/leave logic and AI-powered recommendations.
+// Recommendations score upcoming hikes against the user's onboarding profile.
+
+// #region Imports
 const Hike = require("../models/Hike");
 const OnboardingProfile = require("../models/OnboardingProfile");
 
+// #endregion Imports
+
+// Utility: determines the season (spring/summer/autumn/winter) from a Date value
 function getSeasonFromDate(dateValue) {
   const month = new Date(dateValue).getMonth() + 1;
   if (month >= 3 && month <= 5) return "spring";
@@ -10,6 +17,7 @@ function getSeasonFromDate(dateValue) {
   return "winter";
 }
 
+// Returns a paginated list of all hikes, sorted by date ascending.
 const getHikes = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -34,6 +42,9 @@ const getHikes = async (req, res) => {
   }
 };
 
+// Returns personalized hike recommendations for the authenticated user.
+// Scores each upcoming hike against the user's onboarding profile (difficulty, region,
+// season, fitness, budget, accommodation preference, etc.) and returns the top matches.
 const getRecommendedHikes = async (req, res) => {
   try {
     const onboardingProfile = await OnboardingProfile.findOne({ userId: req.user._id }).lean();
@@ -172,6 +183,7 @@ const getRecommendedHikes = async (req, res) => {
   }
 };
 
+// Returns a single hike by ID, populated with creator, participants, and linked hotels/packages.
 const getHikeById = async (req, res) => {
   try {
     const hike = await Hike.findById(req.params.id)
@@ -188,6 +200,7 @@ const getHikeById = async (req, res) => {
   }
 };
 
+// Creates a new hike. Validates required fields (title, location, date) and difficulty range.
 const createHike = async (req, res) => {
   try {
     const { title, location, coordinates, difficulty, date, spotsLeft, imageUrl, description } = req.body;
@@ -235,6 +248,8 @@ const createHike = async (req, res) => {
   }
 };
 
+// Adds the authenticated user to a hike's participant list.
+// Uses atomic findOneAndUpdate to prevent race conditions on spotsLeft.
 const joinHike = async (req, res) => {
   try {
     const hikeId = req.params.id;
@@ -266,6 +281,8 @@ const joinHike = async (req, res) => {
   }
 };
 
+// Removes the authenticated user from a hike's participant list.
+// Uses atomic findOneAndUpdate to safely increment spotsLeft.
 const leaveHike = async (req, res) => {
   try {
     const hikeId = req.params.id;
@@ -302,4 +319,6 @@ const getUserTrips = async (req, res) => {
   }
 };
 
+// #region Exports
 module.exports = { getHikes, getRecommendedHikes, getHikeById, createHike, joinHike, leaveHike, getUserTrips };
+// #endregion Exports

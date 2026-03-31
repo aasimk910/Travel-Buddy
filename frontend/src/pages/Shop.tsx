@@ -1,6 +1,10 @@
+// src/pages/Shop.tsx
+// E-commerce shop page for outdoor/travel gear with cart, checkout, and Khalti payment.
+// #region Imports
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
+// #endregion Imports
   ShoppingCart, Star, Search, SlidersHorizontal, Backpack, Tent,
   Camera, Mountain, Compass, Shield, X, Plus, Minus, Trash2,
   Package, ChevronRight, Tag, User, Phone, Mail, MapPin, Loader2,
@@ -9,11 +13,13 @@ import {
 import { API_BASE_URL } from '../config/env';
 import { useAuth } from '../context/AuthContext';
 import { initiateKhaltiPayment } from '../services/payment';
+import PaymentSuccessModal from '../components/PaymentSuccessModal';
 
 const LS_ORDERS_KEY = 'tb_saved_orders';
+// Handles ordersKey logic.
 const ordersKey = (userId?: string) => userId ? `${LS_ORDERS_KEY}_${userId}` : LS_ORDERS_KEY;
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// -- Types --------------------------------------------------------------------
 interface Product {
   _id: string; name: string; category: string;
   price: number; rating: number; reviews: number;
@@ -46,7 +52,7 @@ const ORDER_STATUSES: { key: OrderSnapshot['status']; label: string; desc: strin
   { key: 'delivered',        label: 'Delivered',        desc: 'Enjoy your gear!' },
 ];
 
-// ── Data ─────────────────────────────────────────────────────────────────────
+// -- Data ---------------------------------------------------------------------
 const CATEGORIES = [
   { label: 'All',         icon: null },
   { label: 'Backpacks',   icon: <Backpack  className="w-3.5 h-3.5" /> },
@@ -57,10 +63,10 @@ const CATEGORIES = [
   { label: 'Safety',      icon: <Shield    className="w-3.5 h-3.5" /> },
 ];
 
-// Products are now loaded from the backend — this static list is kept only as a
+// Products are now loaded from the backend � this static list is kept only as a
 // loading fallback and will be replaced once the API responds.
 const STATIC_PRODUCTS: Product[] = [
-  // ── Backpacks ──────────────────────────────────────────────────────────────
+  // -- Backpacks --------------------------------------------------------------
   {
     _id: "1", name: 'Osprey Atmos AG 65L', category: 'Backpacks', price: 24500, rating: 4.9, reviews: 512, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=400',
@@ -105,7 +111,7 @@ const STATIC_PRODUCTS: Product[] = [
     ],
     description: 'Carry-on compliant 45 L travel pack with a clamshell opening, lockable zippers, and padded laptop sleeve. Hip-belt stows away when not needed. Durable 420D nylon handles monsoon conditions on the trail to Lukla.',
   },
-  // ── Camping ────────────────────────────────────────────────────────────────
+  // -- Camping ----------------------------------------------------------------
   {
     _id: "5", name: 'Big Agnes Copper Spur HV UL 2P', category: 'Camping', price: 32000, rating: 4.9, reviews: 241, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=400',
@@ -115,10 +121,10 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
     ],
-    description: 'Featherlight freestanding 2-person tent at just 1.06 kg. Hub-and-pole architecture erects in 3 minutes. Dual vestibules provide 1.1 m² of gear storage each. 1500 mm rated fly handles Himalayan rain squalls with ease.',
+    description: 'Featherlight freestanding 2-person tent at just 1.06 kg. Hub-and-pole architecture erects in 3 minutes. Dual vestibules provide 1.1 m� of gear storage each. 1500 mm rated fly handles Himalayan rain squalls with ease.',
   },
   {
-    _id: "6", name: 'Western Mountaineering Alpinlite 35°F Bag', category: 'Camping', price: 18500, rating: 4.8, reviews: 178, badge: null,
+    _id: "6", name: 'Western Mountaineering Alpinlite 35�F Bag', category: 'Camping', price: 18500, rating: 4.8, reviews: 178, badge: null,
     img: 'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=400',
     images: [
       'https://images.pexels.com/photos/1504557/pexels-photo-1504557.jpeg?auto=compress&w=800',
@@ -126,7 +132,7 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
     ],
-    description: '850-fill power goose down in an ultralight 11 oz body. Comfort rating 2 °C, lower limit -4 °C. Full-length draft collar and anti-snag YKK zipper. The preferred high-altitude sleeping bag on Everest expedition teams.',
+    description: '850-fill power goose down in an ultralight 11 oz body. Comfort rating 2 �C, lower limit -4 �C. Full-length draft collar and anti-snag YKK zipper. The preferred high-altitude sleeping bag on Everest expedition teams.',
   },
   {
     _id: "7", name: 'Jetboil Flash Cooking System', category: 'Camping', price: 7800, rating: 4.9, reviews: 334, badge: 'Top Rated',
@@ -148,9 +154,9 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1525041/pexels-photo-1525041.jpeg?auto=compress&w=800',
     ],
-    description: 'R-value of 7.3 in a 430 g inflatable pad — the highest warmth-to-weight ratio available. Triangular Core Matrix baffles maximise insulation without bulk. WingLock valve inflates fully in 10 breaths and seals airtight.',
+    description: 'R-value of 7.3 in a 430 g inflatable pad � the highest warmth-to-weight ratio available. Triangular Core Matrix baffles maximise insulation without bulk. WingLock valve inflates fully in 10 breaths and seals airtight.',
   },
-  // ── Footwear ───────────────────────────────────────────────────────────────
+  // -- Footwear ---------------------------------------------------------------
   {
     _id: "9", name: 'Salomon X Ultra 4 Mid GTX', category: 'Footwear', price: 13800, rating: 4.8, reviews: 389, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&w=400',
@@ -193,9 +199,9 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/3682215/pexels-photo-3682215.jpeg?auto=compress&w=800',
     ],
-    description: '56 % fine Merino wool blend with indestructible Cordura nylon reinforcement at heel and toe. Targeted cushioning zones under ball and arch. Machine-washable with a lifetime guarantee — no questions asked.',
+    description: '56 % fine Merino wool blend with indestructible Cordura nylon reinforcement at heel and toe. Targeted cushioning zones under ball and arch. Machine-washable with a lifetime guarantee � no questions asked.',
   },
-  // ── Photography ────────────────────────────────────────────────────────────
+  // -- Photography ------------------------------------------------------------
   {
     _id: "13", name: 'DJI Action 5 Pro', category: 'Photography', price: 44000, rating: 4.9, reviews: 312, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=400',
@@ -227,7 +233,7 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/414781/pexels-photo-414781.jpeg?auto=compress&w=800',
     ],
-    description: 'Aluminium and stainless steel camera clip mounts to any backpack strap or belt in seconds. One-handed capture and re-attachment in under a second. Arca-Swiss compatible and tested to 45 kg pull strength — trail-proof.',
+    description: 'Aluminium and stainless steel camera clip mounts to any backpack strap or belt in seconds. One-handed capture and re-attachment in under a second. Arca-Swiss compatible and tested to 45 kg pull strength � trail-proof.',
   },
   {
     _id: "16", name: 'Anker 747 Power Bank 26000mAh', category: 'Photography', price: 10500, rating: 4.8, reviews: 467, badge: null,
@@ -238,9 +244,9 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/243757/pexels-photo-243757.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1787235/pexels-photo-1787235.jpeg?auto=compress&w=800',
     ],
-    description: '26000 mAh, 150 W bi-directional GaN charging. Charges a MacBook Pro from 0–80 % in 43 minutes and an iPhone 15 three full times. Three simultaneous outputs. Low-temperature rated to -20 °C for high-altitude use.',
+    description: '26000 mAh, 150 W bi-directional GaN charging. Charges a MacBook Pro from 0�80 % in 43 minutes and an iPhone 15 three full times. Three simultaneous outputs. Low-temperature rated to -20 �C for high-altitude use.',
   },
-  // ── Navigation ─────────────────────────────────────────────────────────────
+  // -- Navigation -------------------------------------------------------------
   {
     _id: "17", name: 'Garmin inReach Mini 2', category: 'Navigation', price: 45000, rating: 4.9, reviews: 158, badge: 'Top Rated',
     img: 'https://images.pexels.com/photos/3608311/pexels-photo-3608311.jpeg?auto=compress&w=400',
@@ -261,7 +267,7 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
     ],
-    description: 'Multi-band GPS smartwatch with solar charging, sapphire lens, and titanium bezel. Barometric altimeter, storm alarm, and preloaded TopoActive Nepal maps. Up to 428 hours GPS battery life — outlasts the longest EBC itineraries.',
+    description: 'Multi-band GPS smartwatch with solar charging, sapphire lens, and titanium bezel. Barometric altimeter, storm alarm, and preloaded TopoActive Nepal maps. Up to 428 hours GPS battery life � outlasts the longest EBC itineraries.',
   },
   {
     _id: "19", name: 'Suunto A-30 Field Compass', category: 'Navigation', price: 2800, rating: 4.5, reviews: 342, badge: null,
@@ -272,7 +278,7 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/2365457/pexels-photo-2365457.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&w=800',
     ],
-    description: 'Liquid-filled baseplate compass with a built-in clinometer and 1:25000 map scale. Global needle works across all latitudes without tilting. Luminous bezel markings for night navigation — essential backup for any trek.',
+    description: 'Liquid-filled baseplate compass with a built-in clinometer and 1:25000 map scale. Global needle works across all latitudes without tilting. Luminous bezel markings for night navigation � essential backup for any trek.',
   },
   {
     _id: "20", name: 'Garmin GPSMAP 67i', category: 'Navigation', price: 71000, rating: 4.9, reviews: 63, badge: 'Best Seller',
@@ -285,7 +291,7 @@ const STATIC_PRODUCTS: Product[] = [
     ],
     description: 'Rugged handheld GPS with built-in inReach satellite messaging and SOS, 2.7-inch sunlight-readable display, and 36-hour battery. Preloaded TopoActive Nepal maps at 1:24000 resolution with hill shading.',
   },
-  // ── Safety ─────────────────────────────────────────────────────────────────
+  // -- Safety -----------------------------------------------------------------
   {
     _id: "21", name: 'Adventure Medical Kits Mountain Series 2.0', category: 'Safety', price: 6500, rating: 4.8, reviews: 267, badge: 'Best Seller',
     img: 'https://images.pexels.com/photos/3735747/pexels-photo-3735747.jpeg?auto=compress&w=400',
@@ -328,7 +334,7 @@ const STATIC_PRODUCTS: Product[] = [
       'https://images.pexels.com/photos/1061640/pexels-photo-1061640.jpeg?auto=compress&w=800',
       'https://images.pexels.com/photos/2422265/pexels-photo-2422265.jpeg?auto=compress&w=800',
     ],
-    description: '120 dB pealess whistle audible over 2.5 km, paired with a military-spec acrylic signal mirror visible to search aircraft beyond 16 km. Combo clips to a locking carabiner — just 22 g of life-saving emergency signalling.',
+    description: '120 dB pealess whistle audible over 2.5 km, paired with a military-spec acrylic signal mirror visible to search aircraft beyond 16 km. Combo clips to a locking carabiner � just 22 g of life-saving emergency signalling.',
   },
 ];
 
@@ -341,7 +347,7 @@ const BADGE_COLORS: Record<string, string> = {
 const SHIPPING_THRESHOLD = 10000;
 const SHIPPING_FEE       = 350;
 
-// ── Component ────────────────────────────────────────────────────────────────
+// -- Component ----------------------------------------------------------------
 const Shop: React.FC = () => {
   const [products, setProducts]             = useState<Product[]>(STATIC_PRODUCTS);
   const [productsLoading, setProductsLoading] = useState(true);
@@ -371,6 +377,7 @@ const Shop: React.FC = () => {
   const [customer, setCustomer]             = useState<CustomerInfo>({ name: '', phone: '', email: '', address: '', city: '' });
   const [detailsErrors, setDetailsErrors]   = useState<Record<string, string>>({});
   const [khaltiLoading, setKhaltiLoading]   = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [orderSnapshot, setOrderSnapshot]   = useState<OrderSnapshot | null>(null);
   const [ordersOpen, setOrdersOpen]         = useState(false);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
@@ -384,6 +391,7 @@ const Shop: React.FC = () => {
   // Fetch products from backend on mount
   useEffect(() => {
     let cancelled = false;
+    // Handles fetchProducts logic.
     const fetchProducts = async () => {
       try {
         setProductsLoading(true);
@@ -439,7 +447,7 @@ const Shop: React.FC = () => {
           return updated;
         });
       })
-      .catch(() => {/* silent — localStorage copy is still shown */});
+      .catch(() => {/* silent � localStorage copy is still shown */});
   }, [ordersOpen, userOrdersKey]);
 
 
@@ -448,7 +456,7 @@ const Shop: React.FC = () => {
     if (selectedProduct) setActiveImg(selectedProduct.images[0]);
   }, [selectedProduct]);
 
-  // ── Cart helpers ───────────────────────────────────────────────────────────
+  // -- Cart helpers -----------------------------------------------------------
   const addToCart = (product: Product) => {
     setCartItems(prev => {
       const existing = prev.find(i => i.product._id === product._id);
@@ -457,6 +465,7 @@ const Shop: React.FC = () => {
     });
   };
 
+  // Handles changeQty logic.
   const changeQty = (id: string, delta: number) => {
     setCartItems(prev =>
       prev.flatMap(i => {
@@ -467,7 +476,9 @@ const Shop: React.FC = () => {
     );
   };
 
+  // Handles removeItem logic.
   const removeItem = (id: string) => setCartItems(prev => prev.filter(i => i.product._id !== id));
+  // Handles clearCart logic.
   const clearCart  = () => {
     setCartItems([]); setCheckedOut(false); setDetailsStep(false);
     setPaymentStep(false); setPaymentMethod(null); setOrderSnapshot(null);
@@ -475,7 +486,7 @@ const Shop: React.FC = () => {
     setDetailsErrors({});
   };
 
-  // ── Persist a new order to localStorage ───────────────────────────────────────
+  // -- Persist a new order to localStorage ---------------------------------------
   const saveOrder = (snapshot: OrderSnapshot) => {
     setSavedOrders(prev => {
       const updated = [snapshot, ...prev];
@@ -509,7 +520,7 @@ const Shop: React.FC = () => {
     }).catch(err => console.warn('Order sync failed:', err));
   };
 
-  // ── Khalti payment initiation ─────────────────────────────────────────────
+  // -- Khalti payment initiation ---------------------------------------------
   const handleKhaltiPay = async () => {
     setKhaltiLoading(true);
     try {
@@ -548,7 +559,7 @@ const Shop: React.FC = () => {
     }
   };
 
-  // ── Detect return from Khalti gateway ─────────────────────────────────────
+  // -- Detect return from Khalti gateway -------------------------------------
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const status = params.get('status');
@@ -592,6 +603,7 @@ const Shop: React.FC = () => {
           saveOrder(snap);
           setCheckedOut(true);
           setCartOpen(true);
+          setShowPaymentModal(true);
           sessionStorage.removeItem('khalti_pending');
           setSearchParams({});
         })();
@@ -599,7 +611,7 @@ const Shop: React.FC = () => {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Place COD order ───────────────────────────────────────────────────────
+  // -- Place COD order -------------------------------------------------------
   const placeCodOrder = () => {
     const snap: OrderSnapshot = {
       orderId:       `TB-${Date.now()}`,
@@ -618,7 +630,7 @@ const Shop: React.FC = () => {
     setCheckedOut(true);
   };
 
-  // ── Validate customer details & advance ───────────────────────────────────
+  // -- Validate customer details & advance -----------------------------------
   const validateAndProceed = () => {
     const errs: Record<string, string> = {};
     if (!customer.name.trim())    errs.name    = 'Name is required';
@@ -637,7 +649,7 @@ const Shop: React.FC = () => {
   const shipping     = subtotal === 0 ? 0 : shippingFree ? 0 : SHIPPING_FEE;
   const total        = subtotal + shipping;
 
-  // ── Filtered products ──────────────────────────────────────────────────────
+  // -- Filtered products ------------------------------------------------------
   const filtered = products.filter(p => {
     const matchCat    = activeCategory === 'All' || p.category === activeCategory;
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
@@ -647,7 +659,20 @@ const Shop: React.FC = () => {
   return (
     <div className="min-h-screen w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8">
 
-      {/* ── Header ─────────────────────────────────────────────────────── */}
+      {/* Payment Success Popup Modal (shown after Khalti return) */}
+      <PaymentSuccessModal
+        open={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        amount={orderSnapshot?.total}
+        reference={orderSnapshot?.orderId}
+        actionLabel="View Order"
+        onAction={() => {
+          setShowPaymentModal(false);
+          setCartOpen(true);
+        }}
+      />
+
+      {/* -- Header ------------------------------------------------------- */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white">Gear Shop</h1>
@@ -681,10 +706,10 @@ const Shop: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Main layout: sidebar + grid ─────────────────────────────── */}
+      {/* -- Main layout: sidebar + grid ------------------------------- */}
       <div className="flex gap-6 items-start">
 
-        {/* ── Left Sidebar ─────────────────────────────────────────────── */}
+        {/* -- Left Sidebar ----------------------------------------------- */}
         <aside className="w-52 shrink-0 flex flex-col gap-4 sticky top-24">
           {/* Search */}
           <div className="relative">
@@ -718,7 +743,7 @@ const Shop: React.FC = () => {
           <p className="text-white/35 text-xs px-1">{filtered.length} item{filtered.length !== 1 ? 's' : ''} found</p>
         </aside>
 
-        {/* ── Product grid ─────────────────────────────────────────────── */}
+        {/* -- Product grid ----------------------------------------------- */}
         <div className="flex-1 min-w-0">
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 gap-4">
@@ -796,7 +821,7 @@ const Shop: React.FC = () => {
         </div>{/* end flex-1 product area */}
       </div>{/* end sidebar + grid flex row */}
 
-      {/* ── Product detail modal ──────────────────────────────────────── */}
+      {/* -- Product detail modal ---------------------------------------- */}
       {selectedProduct && (
         <>
           <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50" onClick={() => setSelectedProduct(null)} />
@@ -806,7 +831,7 @@ const Shop: React.FC = () => {
               className="pointer-events-auto w-full max-w-3xl glass-card rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-2xl"
               style={{ maxHeight: '92vh' }}
             >
-              {/* ── Left: image gallery ───────────────────────── */}
+              {/* -- Left: image gallery ------------------------- */}
               <div className="md:w-96 shrink-0 flex flex-col bg-white/3">
                 {/* Main image */}
                 <div className="relative flex-1 min-h-64 md:min-h-0 overflow-hidden">
@@ -852,7 +877,7 @@ const Shop: React.FC = () => {
                 </div>
               </div>
 
-              {/* ── Right: product info ───────────────────────── */}
+              {/* -- Right: product info ------------------------- */}
               <div className="flex flex-col flex-1 overflow-y-auto">
                 {/* Sticky header */}
                 <div className="flex items-start justify-between gap-3 px-6 pt-6 pb-4 border-b border-white/8">
@@ -935,12 +960,12 @@ const Shop: React.FC = () => {
         </>
       )}
 
-      {/* ── Orders drawer backdrop ─────────────────────────────────────── */}
+      {/* -- Orders drawer backdrop --------------------------------------- */}
       {ordersOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" onClick={() => setOrdersOpen(false)} />
       )}
 
-      {/* ── Orders drawer ───────────────────────────────────────────────── */}
+      {/* -- Orders drawer ------------------------------------------------- */}
       <div
         className={`glass-dark fixed top-0 right-0 h-full w-full max-w-md z-50 flex flex-col transition-transform duration-300 ease-in-out border-l border-white/10 ${ordersOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
@@ -980,7 +1005,7 @@ const Shop: React.FC = () => {
               const expanded = expandedOrderId === order.orderId;
               return (
                 <div key={order.orderId} className="glass-card rounded-2xl overflow-hidden">
-                  {/* Order card header — always visible */}
+                  {/* Order card header � always visible */}
                   <button
                     onClick={() => setExpandedOrderId(expanded ? null : order.orderId)}
                     className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-white/5 transition-all"
@@ -1042,7 +1067,7 @@ const Shop: React.FC = () => {
                               className="w-9 h-9 rounded-lg object-cover shrink-0" />
                             <div className="flex-1 min-w-0">
                               <p className="text-white text-xs font-semibold line-clamp-1">{i.product.name}</p>
-                              <p className="text-white/40 text-[11px]">NPR {i.product.price.toLocaleString()} × {i.qty}</p>
+                              <p className="text-white/40 text-[11px]">NPR {i.product.price.toLocaleString()} � {i.qty}</p>
                             </div>
                             <p className="text-white text-xs font-semibold shrink-0">NPR {(i.product.price * i.qty).toLocaleString()}</p>
                           </div>
@@ -1156,12 +1181,12 @@ const Shop: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Cart drawer backdrop ────────────────────────────────────────── */}
+      {/* -- Cart drawer backdrop ------------------------------------------ */}
       {cartOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" onClick={() => setCartOpen(false)} />
       )}
 
-      {/* ── Cart drawer ─────────────────────────────────────────────────── */}
+      {/* -- Cart drawer --------------------------------------------------- */}
       <div
         className={`glass-dark fixed top-0 right-0 h-full w-full max-w-md z-50 flex flex-col transition-transform duration-300 ease-in-out border-l border-white/10 ${cartOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
@@ -1185,7 +1210,7 @@ const Shop: React.FC = () => {
         {/* Drawer body */}
         <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
           {checkedOut && orderSnapshot ? (
-            /* ── Order confirmed — full receipt ── */
+            /* -- Order confirmed � full receipt -- */
             <div className="flex flex-col gap-4 py-2 pb-6">
               {/* Header */}
               <div className="flex flex-col items-center text-center gap-3 py-4">
@@ -1194,7 +1219,7 @@ const Shop: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-white font-bold text-xl flex items-center gap-2">Order Placed! <PartyPopper className="w-5 h-5 text-emerald-400" /></h3>
-                  <p className="text-white/55 text-sm mt-1">Your gear is on its way. Estimated delivery in 3–5 business days.</p>
+                  <p className="text-white/55 text-sm mt-1">Your gear is on its way. Estimated delivery in 3�5 business days.</p>
                 </div>
               </div>
 
@@ -1227,7 +1252,7 @@ const Shop: React.FC = () => {
                       className="w-10 h-10 rounded-lg object-cover shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-xs font-semibold line-clamp-1">{i.product.name}</p>
-                      <p className="text-white/40 text-[11px]">NPR {i.product.price.toLocaleString()} × {i.qty}</p>
+                      <p className="text-white/40 text-[11px]">NPR {i.product.price.toLocaleString()} � {i.qty}</p>
                     </div>
                     <p className="text-white font-semibold text-sm shrink-0">NPR {(i.product.price * i.qty).toLocaleString()}</p>
                   </div>
@@ -1283,7 +1308,7 @@ const Shop: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-indigo-300 text-sm font-semibold">Order Placed</p>
-                    <p className="text-white/45 text-xs">Estimated delivery in 3–5 business days</p>
+                    <p className="text-white/45 text-xs">Estimated delivery in 3�5 business days</p>
                   </div>
                 </div>
               </div>
@@ -1315,7 +1340,7 @@ const Shop: React.FC = () => {
               </button>
             </div>
           ) : detailsStep ? (
-            /* ── Customer details form ── */
+            /* -- Customer details form -- */
             <div className="flex flex-col gap-4 py-2">
               <div>
                 <button onClick={() => setDetailsStep(false)}
@@ -1389,7 +1414,7 @@ const Shop: React.FC = () => {
             </div>
 
           ) : paymentStep ? (
-            /* ── Payment method selection ── */
+            /* -- Payment method selection -- */
             <div className="flex flex-col gap-5 py-2">
               <div>
                 <button onClick={() => { setPaymentStep(false); setDetailsStep(true); }}
@@ -1466,14 +1491,14 @@ const Shop: React.FC = () => {
                 }`}
               >
                 {khaltiLoading ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Redirecting to Khalti…</>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Redirecting to Khalti�</>
                 ) : (
-                  <>Place Order — NPR {total.toLocaleString()} <ChevronRight className="w-4 h-4" /></>
+                  <>Place Order � NPR {total.toLocaleString()} <ChevronRight className="w-4 h-4" /></>
                 )}
               </button>
             </div>
           ) : cartItems.length === 0 ? (
-            /* ── Empty cart ── */
+            /* -- Empty cart -- */
             <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
               <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
                 <ShoppingCart className="w-8 h-8 text-white/25" />
@@ -1486,7 +1511,7 @@ const Shop: React.FC = () => {
               </button>
             </div>
           ) : (
-            /* ── Cart items list ── */
+            /* -- Cart items list -- */
             <>
               {cartItems.map(({ product, qty }) => (
                 <div key={product._id} className="flex gap-3 glass-card rounded-xl p-3">
@@ -1527,7 +1552,7 @@ const Shop: React.FC = () => {
           )}
         </div>
 
-        {/* Drawer footer — order summary + checkout */}
+        {/* Drawer footer � order summary + checkout */}
         {!checkedOut && !paymentStep && !detailsStep && cartItems.length > 0 && (
           <div className="px-6 py-5 border-t border-white/10 shrink-0 space-y-4">
             {/* Free shipping banner */}
@@ -1569,7 +1594,7 @@ const Shop: React.FC = () => {
                 onClick={() => setDetailsStep(true)}
                 className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl glass-button-dark text-white font-bold text-sm transition-all"
               >
-                Checkout — NPR {total.toLocaleString()} <ChevronRight className="w-4 h-4" />
+                Checkout � NPR {total.toLocaleString()} <ChevronRight className="w-4 h-4" />
               </button>
             ) : (
               <div className="space-y-2">
@@ -1606,5 +1631,7 @@ const Shop: React.FC = () => {
   );
 };
 
+// #region Exports
 export default Shop;
 
+// #endregion Exports

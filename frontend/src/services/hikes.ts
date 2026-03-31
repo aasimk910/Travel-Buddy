@@ -1,5 +1,9 @@
+// frontend/src/services/hikes.ts
+// API client for hike CRUD, join/leave, hotel bookings, and hotel queries.
+// #region Imports
 import { API_BASE_URL } from "../config/env";
 
+// #endregion Imports
 export type HotelPackage = {
   _id: string;
   hotelId: string;
@@ -132,6 +136,7 @@ export type CreateHikePayload = {
   description?: string;
 };
 
+// Handles createHike logic.
 export const createHike = async (payload: CreateHikePayload, token: string) => {
   const res = await fetch(`${API_BASE_URL}/api/hikes`, {
     method: "POST",
@@ -161,6 +166,7 @@ export const createHike = async (payload: CreateHikePayload, token: string) => {
   return data;
 };
 
+// Handles joinHike logic.
 export const joinHike = async (hikeId: string, token: string) => {
   const res = await fetch(`${API_BASE_URL}/api/hikes/${hikeId}/join`, {
     method: "POST",

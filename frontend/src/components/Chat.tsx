@@ -1,9 +1,14 @@
+// src/components/Chat.tsx
+// Real-time group chat component for hike participants. Uses Socket.IO for messaging
+// and supports file attachments uploaded to Cloudinary.
+// #region Imports
 import { useEffect, useState, useRef } from "react";
 import { socket } from "../utils/socket";
 import { useAuth } from "../context/AuthContext";
 import { API_BASE_URL } from "../config/env";
 import { Paperclip, FileText, X, Send, Loader2 } from "lucide-react";
 
+// #endregion Imports
 interface ChatProps {
   roomId?: string;
 }
@@ -57,6 +62,7 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
+// Handles Chat logic.
 const Chat = ({ roomId }: ChatProps) => {
   const { user } = useAuth();
   const userId = user?.id || user?.email || user?.name;
@@ -126,6 +132,7 @@ const Chat = ({ roomId }: ChatProps) => {
     };
     socket.on("receive_message", handleReceiveMessage);
 
+    // Handles handleAttachmentError logic.
     const handleAttachmentError = ({ message: errMsg }: { message: string }) => {
       setAttachmentError(errMsg);
       setTimeout(() => setAttachmentError(null), 5000);
@@ -139,6 +146,7 @@ const Chat = ({ roomId }: ChatProps) => {
     };
   }, [roomId]);
 
+  // Handles handleFileSelect logic.
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -156,6 +164,7 @@ const Chat = ({ roomId }: ChatProps) => {
     }
   };
 
+  // Handles clearSelectedFile logic.
   const clearSelectedFile = () => {
     setSelectedFile(null);
     if (fileInputRef.current) {
@@ -163,6 +172,7 @@ const Chat = ({ roomId }: ChatProps) => {
     }
   };
 
+  // Handles sendMessage logic.
   const sendMessage = async () => {
     if ((!message.trim() && !selectedFile) || !userId) return;
 
@@ -248,7 +258,7 @@ const Chat = ({ roomId }: ChatProps) => {
                   disabled={isLoadingMore}
                   className="text-xs text-indigo-300 hover:text-indigo-100 disabled:opacity-50 transition-colors"
                 >
-                  {isLoadingMore ? "Loadingâ€¦" : "Load older messages"}
+                  {isLoadingMore ? "Loading…" : "Load older messages"}
                 </button>
               </div>
             )}
@@ -367,4 +377,6 @@ const Chat = ({ roomId }: ChatProps) => {
   );
 }
 
+// #region Exports
 export default Chat;
+// #endregion Exports

@@ -1,8 +1,12 @@
+// src/components/homepage/PhotoFeed.tsx
+// Displays a grid of user-uploaded travel photos with delete capability for own photos.
+// #region Imports
 import React, { useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import type { PhotoItem } from "../../services/photos";
 import { deletePhoto } from "../../services/photos";
 
+// #endregion Imports
 type PhotoFeedProps = {
   photos: PhotoItem[];
   isLoading: boolean;
@@ -16,6 +20,7 @@ const PhotoFeed: React.FC<PhotoFeedProps> = ({ photos, isLoading, error, current
   const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
   const [photoIndices, setPhotoIndices] = useState<Record<string, number>>({});
 
+  // Handles handleDelete logic.
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this photo?")) return;
     setDeletingPhotoId(id);
@@ -32,6 +37,7 @@ const PhotoFeed: React.FC<PhotoFeedProps> = ({ photos, isLoading, error, current
     }
   };
 
+  // Handles changeIndex logic.
   const changeIndex = (photoId: string, delta: number, total: number) => {
     setPhotoIndices((prev) => {
       const current = prev[photoId] && prev[photoId] < total ? prev[photoId] : 0;
@@ -45,7 +51,7 @@ const PhotoFeed: React.FC<PhotoFeedProps> = ({ photos, isLoading, error, current
   }
 
   if (isLoading && (!Array.isArray(photos) || photos.length === 0)) {
-    return <p className="text-sm text-gray-200">Loading photosâ€¦</p>;
+    return <p className="text-sm text-gray-200">Loading photos…</p>;
   }
 
   if (!Array.isArray(photos) || photos.length === 0) {
@@ -73,7 +79,7 @@ const PhotoFeed: React.FC<PhotoFeedProps> = ({ photos, isLoading, error, current
                   disabled={deletingPhotoId === photo._id}
                   className="absolute top-2 right-2 z-10 inline-flex items-center justify-center rounded-full glass-strong px-2 py-1 text-[10px] font-medium text-black shadow-sm hover:bg-red-200/50 disabled:opacity-60"
                 >
-                  {deletingPhotoId === photo._id ? "Deletingâ€¦" : "Delete"}
+                  {deletingPhotoId === photo._id ? "Deleting…" : "Delete"}
                 </button>
               )}
 
@@ -90,14 +96,14 @@ const PhotoFeed: React.FC<PhotoFeedProps> = ({ photos, isLoading, error, current
                       onClick={() => changeIndex(photo._id, -1, totalImages)}
                       className="absolute left-1 top-1/2 -translate-y-1/2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white text-xs hover:bg-black/70"
                     >
-                      â€¹
+                      ‹
                     </button>
                     <button
                       type="button"
                       onClick={() => changeIndex(photo._id, 1, totalImages)}
                       className="absolute right-1 top-1/2 -translate-y-1/2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white text-xs hover:bg-black/70"
                     >
-                      â€º
+                      ›
                     </button>
                   </>
                 )}
@@ -125,4 +131,6 @@ const PhotoFeed: React.FC<PhotoFeedProps> = ({ photos, isLoading, error, current
   );
 };
 
+// #region Exports
 export default PhotoFeed;
+// #endregion Exports

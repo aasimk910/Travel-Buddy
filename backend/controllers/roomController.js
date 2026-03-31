@@ -1,9 +1,16 @@
-// backend/controllers/roomController.js
+﻿// backend/controllers/roomController.js
+// Manages end-to-end encrypted (E2E) chat room keys for hike group conversations.
+// Keys are wrapped with ECDH P-256 for each participant.
+
+// #region Imports
 const mongoose = require("mongoose");
 const RoomKey = require("../models/RoomKey");
 const User = require("../models/User");
 const Hike = require("../models/Hike");
 
+// #endregion Imports
+
+// Returns the E2E room key for the authenticated user in a specific hike room.
 const getMyKey = async (req, res) => {
   try {
     const { hikeId } = req.params;
@@ -27,6 +34,9 @@ const getMyKey = async (req, res) => {
   }
 };
 
+// Stores (upserts) wrapped room keys for multiple participants in a hike.
+// Each key entry contains the wrapped AES key, IV, and sender's public key.
+// Only hike participants are allowed to store keys.
 const storeRoomKeys = async (req, res) => {
   try {
     const { hikeId } = req.params;
@@ -80,6 +90,8 @@ const storeRoomKeys = async (req, res) => {
   }
 };
 
+// Returns the ECDH public keys of all participants in a hike room.
+// Used by clients to wrap the room key for new/existing members.
 const getParticipantsPublicKeys = async (req, res) => {
   try {
     const { hikeId } = req.params;
@@ -117,4 +129,6 @@ const getParticipantsPublicKeys = async (req, res) => {
   }
 };
 
+// #region Exports
 module.exports = { getMyKey, storeRoomKeys, getParticipantsPublicKeys };
+// #endregion Exports

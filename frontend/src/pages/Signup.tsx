@@ -1,4 +1,5 @@
-// src/pages/Signup.tsx
+﻿// src/pages/Signup.tsx
+// #region Imports
 import React, { useEffect, useState, useRef } from "react";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -12,6 +13,7 @@ import AuthHeader from "../components/AuthHeader";
 import StatusAlert from "../components/StatusAlert";
 import { signup as signupRequest, googleAuth, storeToken } from "../services/auth";
 
+// #endregion Imports
 type SignupFormValues = {
   name: string;
   email: string;
@@ -458,4 +460,6 @@ const Signup: React.FC = () => {
   );
 };
 
+// #region Exports
 export default Signup;
+// #endregion Exports

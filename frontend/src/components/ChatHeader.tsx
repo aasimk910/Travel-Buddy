@@ -1,6 +1,10 @@
+// src/components/ChatHeader.tsx
+// Displays hike title and participant count at the top of the chat panel.
+// #region Imports
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/env';
 
+// #endregion Imports
 interface ChatHeaderProps {
   hikeId?: string;
   activeTab: string;
@@ -14,6 +18,7 @@ interface HikeDetails {
   participants?: string[];
 }
 
+// Handles formatDate logic.
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
     month: 'short',
@@ -66,7 +71,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ hikeId, activeTab, onTabChange 
       <div className="p-4 flex justify-between items-center">
       <div>
         <h2 className="text-xl font-bold text-glass-light">{hikeDetails.name}</h2>
-        {hikeId && <p className="text-sm text-glass-dim">{hikeDetails.members} {hikeDetails.members === 1 ? 'member' : 'members'} â€¢ {hikeDetails.date}</p>}
+        {hikeId && <p className="text-sm text-glass-dim">{hikeDetails.members} {hikeDetails.members === 1 ? 'member' : 'members'} • {hikeDetails.date}</p>}
       </div>
 
       </div>
@@ -100,4 +105,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ hikeId, activeTab, onTabChange 
   );
 };
 
+// #region Exports
 export default ChatHeader;
+// #endregion Exports

@@ -1,5 +1,11 @@
+﻿// backend/utils/cloudinaryUpload.js
+// Helper functions for uploading and deleting images via the Cloudinary SDK.
+// Supports single and batch operations for base64-encoded images.
+
+// #region Imports
 const cloudinary = require('../config/cloudinary');
 
+// #endregion Imports
 /**
  * Upload a Base64 image to Cloudinary
  * @param {string} base64Image - Base64 encoded image string
@@ -76,7 +82,9 @@ const deleteMultipleImages = async (publicIds) => {
   }
 };
 
+// #region Exports
 module.exports = {
+// #endregion Exports
   uploadBase64Image,
   uploadMultipleBase64Images,
   deleteImage,

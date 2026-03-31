@@ -1,5 +1,9 @@
+// src/components/dashboard/DashboardNav.tsx
+// Side/top navigation for the dashboard page with tab switching (Profile, Trips, Bookings, etc.).
+// #region Imports
 import React from 'react';
 
+// #endregion Imports
 interface DashboardNavProps {
   activeView: string;
   setActiveView: (view: string) => void;
@@ -21,4 +25,6 @@ const DashboardNav: React.FC<DashboardNavProps> = ({ activeView, setActiveView }
   );
 };
 
+// #region Exports
 export default DashboardNav;
+// #endregion Exports

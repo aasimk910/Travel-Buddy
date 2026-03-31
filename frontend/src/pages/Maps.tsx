@@ -1,3 +1,6 @@
+// src/pages/Maps.tsx
+// Interactive Leaflet map page showing hike locations with clickable markers.
+// #region Imports
 import React, { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, Polyline, Tooltip } from 'react-leaflet';
 import { getHikes, getHike } from '../services/hikes';
@@ -5,6 +8,7 @@ import { MapPin, Search, Filter, X, Ruler, Navigation, BedDouble, Hotel } from '
 import L from 'leaflet';
 import ConnectModal from '../components/hikes/ConnectModal';
 
+// #endregion Imports
 // Fix for default marker icons in React-Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -95,6 +99,7 @@ const DistanceMeasure: React.FC<{
     },
   });
 
+  // Handles formatDistance logic.
   const formatDistance = (meters: number) => {
     if (meters >= 1000) return `${(meters / 1000).toFixed(2)} km`;
     return `${Math.round(meters)} m`;
@@ -131,7 +136,7 @@ const DistanceMeasure: React.FC<{
         >
           <Tooltip sticky>
             <span className="font-semibold">
-              Trail distance: {routeDistance !== null ? formatDistance(routeDistance) : 'â€¦'}
+              Trail distance: {routeDistance !== null ? formatDistance(routeDistance) : '…'}
             </span>
           </Tooltip>
         </Polyline>
@@ -149,6 +154,7 @@ const getHikeCoordinates = (hike: Hike): [number, number] => {
   return [27.7172, 85.324];
 };
 
+// Handles getStableIndexFromId logic.
 const getStableIndexFromId = (id: string, length: number) => {
   if (length <= 0) return 0;
   let hash = 0;
@@ -179,9 +185,10 @@ const Maps: React.FC = () => {
   const [routeError, setRouteError] = useState<string | null>(null);
   const [selectedTrailGeometry, setSelectedTrailGeometry] = useState<[number, number][] | null>(null);
 
+  // Handles handleMeasurePoint logic.
   const handleMeasurePoint = (pt: [number, number]) => {
     if (!pointA || (pointA && pointB)) {
-      // Start fresh â€” clear previous route
+      // Start fresh — clear previous route
       setPointA(pt);
       setPointB(null);
       setRouteGeometry(null);
@@ -192,6 +199,7 @@ const Maps: React.FC = () => {
     }
   };
 
+  // Handles clearMeasurement logic.
   const clearMeasurement = () => {
     setPointA(null);
     setPointB(null);
@@ -200,6 +208,7 @@ const Maps: React.FC = () => {
     setRouteError(null);
   };
 
+  // Handles formatDistance logic.
   const formatDistance = (meters: number) => {
     if (meters >= 1000) return `${(meters / 1000).toFixed(2)} km`;
     return `${Math.round(meters)} m`;
@@ -228,7 +237,7 @@ const Maps: React.FC = () => {
           return;
         }
         const route = data.routes[0];
-        // OSRM GeoJSON coords are [lon, lat] â€” flip to [lat, lon] for Leaflet
+        // OSRM GeoJSON coords are [lon, lat] — flip to [lat, lon] for Leaflet
         const coords: [number, number][] = route.geometry.coordinates.map(
           ([lon, lat]: [number, number]) => [lat, lon]
         );
@@ -400,6 +409,7 @@ const Maps: React.FC = () => {
   }, [selectedHike, selectedHikeHotels]);
 
   useEffect(() => {
+    // Handles fetchHikes logic.
     const fetchHikes = async () => {
       try {
         const data = await getHikes();
@@ -424,6 +434,7 @@ const Maps: React.FC = () => {
     return isUpcoming && matchesSearch && matchesDifficulty;
   });
 
+  // Handles getDifficultyColor logic.
   const getDifficultyColor = (difficulty: number) => {
     switch(difficulty) {
       case 1: return 'bg-green-500';
@@ -435,11 +446,13 @@ const Maps: React.FC = () => {
     }
   };
 
+  // Handles getDifficultyLabel logic.
   const getDifficultyLabel = (difficulty: number) => {
     const labels = ['', 'Easy', 'Moderate', 'Challenging', 'Hard', 'Expert'];
     return labels[difficulty] || 'Unknown';
   };
 
+  // Handles handleHikeClick logic.
   const handleHikeClick = async (hike: Hike, coords: [number, number]) => {
     setSelectedHike(hike);
     setMapCenter(coords);
@@ -526,7 +539,7 @@ const Maps: React.FC = () => {
                     <span>{hike.location}</span>
                   </div>
                   <div className="text-xs text-glass-dim">
-                    {new Date(hike.date).toLocaleDateString()} â€¢ {hike.spotsLeft} spots left
+                    {new Date(hike.date).toLocaleDateString()} • {hike.spotsLeft} spots left
                   </div>
                 </div>
               );
@@ -552,7 +565,7 @@ const Maps: React.FC = () => {
             }`}
           >
             <Ruler className="w-4 h-4" />
-            {measureActive ? 'Measuringâ€¦' : 'Measure Distance'}
+            {measureActive ? 'Measuring…' : 'Measure Distance'}
           </button>
 
           {measureActive && (
@@ -562,14 +575,14 @@ const Maps: React.FC = () => {
                   ? '1. Click the map to set Point A'
                   : !pointB
                   ? '2. Click the map to set Point B'
-                  : 'Points set â€” click again to reset'}
+                  : 'Points set — click again to reset'}
               </p>
 
               <div className="flex gap-3 text-sm mb-3">
                 <div className="flex items-center gap-1">
                   <span className="inline-block w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow" />
                   <span className="text-gray-300">
-                    {pointA ? `${pointA[0].toFixed(4)}, ${pointA[1].toFixed(4)}` : 'â€”'}
+                    {pointA ? `${pointA[0].toFixed(4)}, ${pointA[1].toFixed(4)}` : '—'}
                   </span>
                 </div>
               </div>
@@ -577,14 +590,14 @@ const Maps: React.FC = () => {
                 <div className="flex items-center gap-1">
                   <span className="inline-block w-3 h-3 rounded-full bg-red-500 border-2 border-white shadow" />
                   <span className="text-gray-300">
-                    {pointB ? `${pointB[0].toFixed(4)}, ${pointB[1].toFixed(4)}` : 'â€”'}
+                    {pointB ? `${pointB[0].toFixed(4)}, ${pointB[1].toFixed(4)}` : '—'}
                   </span>
                 </div>
               </div>
 
               {routeLoading && (
                 <div className="bg-indigo-500/20 border border-indigo-400/40 rounded-lg px-3 py-2 text-center">
-                  <p className="text-xs text-indigo-300 font-medium uppercase tracking-wide">Calculating trailâ€¦</p>
+                  <p className="text-xs text-indigo-300 font-medium uppercase tracking-wide">Calculating trail…</p>
                   <div className="mt-1 h-5 flex items-center justify-center">
                     <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                   </div>
@@ -795,4 +808,6 @@ const Maps: React.FC = () => {
   );
 };
 
+// #region Exports
 export default Maps;
+// #endregion Exports

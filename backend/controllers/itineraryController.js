@@ -1,7 +1,16 @@
-// backend/controllers/itineraryController.js
+﻿// backend/controllers/itineraryController.js
+// Generates travel itineraries using either the Groq AI API or a demo fallback.
+// Supports custom prompts and full trip specifications (destination, budget, dates, style).
+
+// #region Imports
 const axios = require("axios");
 
+// #endregion Imports
+
+// Calculates a daily budget breakdown by category based on travel style.
+// Returns an object with transport, accommodation, food, activities, misc, and total.
 function calculateDayBudget(dailyBudget, travelStyle) {
+  // Multiplier percentages vary by travel style
   const multipliers = {
     budget: { transport: 0.15, accommodation: 0.35, food: 0.25, activities: 0.15, misc: 0.10 },
     balanced: { transport: 0.20, accommodation: 0.30, food: 0.25, activities: 0.15, misc: 0.10 },
@@ -18,6 +27,8 @@ function calculateDayBudget(dailyBudget, travelStyle) {
   };
 }
 
+// Builds a plain-text demo itinerary when the AI model is unavailable.
+// Includes day-by-day schedule with estimated costs in NPR.
 function generateDemoItinerary(destination, days, budget, travelStyle, interests) {
   let itinerary = `${days}-Day Adventure to ${destination}\n`;
   itinerary += `\nNOTE: This is a demo itinerary. AI model is currently unavailable.\n\n---\n\n`;
@@ -87,6 +98,9 @@ function generateDemoItinerary(destination, days, budget, travelStyle, interests
   return itinerary;
 }
 
+// POST handler: generates a travel itinerary.
+// If GROQ_API_KEY is set, calls the Groq LLM API; otherwise returns the demo itinerary.
+// Accepts either a custom freeform prompt or structured trip parameters.
 const generateItinerary = async (req, res) => {
   try {
     const {
@@ -263,4 +277,6 @@ const generateItinerary = async (req, res) => {
   }
 };
 
+// #region Exports
 module.exports = { generateItinerary };
+// #endregion Exports

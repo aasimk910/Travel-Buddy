@@ -1,3 +1,6 @@
+// src/pages/ForgotPassword.tsx
+// Password reset request page. Sends a reset link to the user's email.
+// #region Imports
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import AuthHeader from "../components/AuthHeader";
@@ -5,12 +8,14 @@ import StatusAlert from "../components/StatusAlert";
 import { forgotPassword } from "../services/auth";
 import { CheckCircle } from "lucide-react";
 
+// #endregion Imports
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Handles handleSubmit logic.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) { setError("Please enter your email address."); return; }
@@ -97,4 +102,6 @@ const ForgotPassword: React.FC = () => {
   );
 };
 
+// #region Exports
 export default ForgotPassword;
+// #endregion Exports

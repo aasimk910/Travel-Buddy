@@ -1,5 +1,9 @@
+// frontend/src/services/rooms.ts
+// API client for E2E encrypted chat room key exchange.
+// #region Imports
 import { API_BASE_URL } from "../config/env";
 
+// #endregion Imports
 const authHeaders = (): Record<string, string> => {
   const token = localStorage.getItem("travelBuddyToken");
   return token ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } : { "Content-Type": "application/json" };

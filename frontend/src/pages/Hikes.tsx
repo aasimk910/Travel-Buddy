@@ -1,8 +1,10 @@
-// src/pages/Hikes.tsx
+﻿// src/pages/Hikes.tsx
+// #region Imports
 import React, { useMemo, useState, useEffect } from "react";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { Link, useNavigate } from "react-router-dom";
 import {
+// #endregion Imports
   Map,
   Globe2,
   Search,
@@ -58,6 +60,7 @@ const extractPlace = (location: string): string => {
   return "Nepal";
 };
 
+// Handles difficultyLabel logic.
 const difficultyLabel = (value: number) => `Difficulty: ${value}/5`;
 
 const Hikes: React.FC = () => {
@@ -78,6 +81,7 @@ const Hikes: React.FC = () => {
 
   // Fetch hikes from API
   useEffect(() => {
+    // Handles fetchHikes logic.
     const fetchHikes = async () => {
       setIsLoading(true);
       setError(null);
@@ -392,4 +396,6 @@ const Hikes: React.FC = () => {
   );
 };
 
+// #region Exports
 export default Hikes;
+// #endregion Exports

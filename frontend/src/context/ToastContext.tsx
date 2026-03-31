@@ -1,7 +1,12 @@
-// src/context/ToastContext.tsx
+﻿// src/context/ToastContext.tsx
+// Global toast notification system. Provides showSuccess, showError, showInfo, showWarning
+// helpers to any component via the useToast() hook.
+
+// #region Imports
 import React, { createContext, useContext, useState, useCallback } from "react";
 import ToastComponent, { Toast, ToastType } from "../components/Toast";
 
+// #endregion Imports
 interface ToastContextType {
   showToast: (message: string, type?: ToastType) => void;
   showSuccess: (message: string) => void;

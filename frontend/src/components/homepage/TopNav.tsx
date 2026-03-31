@@ -1,13 +1,18 @@
+// src/components/homepage/TopNav.tsx
+// Main application navigation bar with links to Hikes, Maps, Dashboard, Shop, and admin panel.
+// #region Imports
 import React from "react";
 import { Map, LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
+// #endregion Imports
 const TopNav: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const location = useLocation();
 
+  // Handles getLinkClass logic.
   const getLinkClass = (path: string) => {
     const baseClass = "transition-colors";
     if (location.pathname === path) {
@@ -109,4 +114,6 @@ const TopNav: React.FC = () => {
   );
 };
 
+// #region Exports
 export default TopNav;
+// #endregion Exports

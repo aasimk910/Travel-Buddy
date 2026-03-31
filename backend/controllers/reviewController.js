@@ -1,6 +1,12 @@
-// backend/controllers/reviewController.js
+﻿// backend/controllers/reviewController.js
+// Manages travel location reviews (CRUD). Users rate locations 1-5 with optional comments.
+
+// #region Imports
 const Review = require("../models/Review");
 
+// #endregion Imports
+
+// Returns all reviews, newest first.
 const getReviews = async (req, res) => {
   try {
     const reviews = await Review.find().sort({ createdAt: -1 });
@@ -11,6 +17,7 @@ const getReviews = async (req, res) => {
   }
 };
 
+// Returns the N most recent reviews (limit via query param, default 10).
 const getLatestReviews = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
@@ -22,6 +29,7 @@ const getLatestReviews = async (req, res) => {
   }
 };
 
+// Creates a new review. Validates user profile completeness, location name, and rating range (1-5).
 const createReview = async (req, res) => {
   try {
     const { locationName, rating, comment } = req.body;
@@ -65,4 +73,6 @@ const createReview = async (req, res) => {
   }
 };
 
+// #region Exports
 module.exports = { getReviews, getLatestReviews, createReview };
+// #endregion Exports

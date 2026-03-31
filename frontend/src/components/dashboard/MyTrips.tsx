@@ -1,7 +1,11 @@
+// src/components/dashboard/MyTrips.tsx
+// Shows hikes the user has joined with chat, expenses, and file-sharing panels.
+// #region Imports
 import React, { useState, useEffect } from 'react';
 import { getUserTrips } from '../../services/trips';
 import { useToast } from '../../context/ToastContext';
 
+// #endregion Imports
 interface Hike {
   _id: string;
   title: string;
@@ -13,6 +17,7 @@ interface Hike {
   description?: string;
 }
 
+// Handles formatDate logic.
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
     month: 'short',
@@ -38,6 +43,7 @@ const MyTrips: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Handles fetchUserTrips logic.
     const fetchUserTrips = async () => {
       try {
         const userHikes = await getUserTrips();
@@ -69,7 +75,7 @@ const MyTrips: React.FC = () => {
                 <div>
                   <p className="font-semibold text-glass-light">{hike.title}</p>
                   <p className="text-sm text-glass-dim">
-                    {hike.location} â€¢ {formatDate(hike.date)}
+                    {hike.location} • {formatDate(hike.date)}
                   </p>
                 </div>
                 <span
@@ -91,4 +97,6 @@ const MyTrips: React.FC = () => {
   );
 };
 
+// #region Exports
 export default MyTrips;
+// #endregion Exports

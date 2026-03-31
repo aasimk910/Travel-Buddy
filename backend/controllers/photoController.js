@@ -1,8 +1,15 @@
-// backend/controllers/photoController.js
+﻿// backend/controllers/photoController.js
+// Manages user-uploaded travel photos. Stores images on Cloudinary.
+// Supports multi-image uploads, pagination, and per-user filtering.
+
+// #region Imports
 const mongoose = require("mongoose");
 const Photo = require("../models/Photo");
 const { uploadMultipleBase64Images, deleteMultipleImages } = require("../utils/cloudinaryUpload");
 
+// #endregion Imports
+
+// Returns all photos, optionally filtered by userName query param.
 const getPhotos = async (req, res) => {
   try {
     const { userName } = req.query;
@@ -15,6 +22,7 @@ const getPhotos = async (req, res) => {
   }
 };
 
+// Returns the latest photos with pagination (page/limit query params).
 const getLatestPhotos = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -34,6 +42,8 @@ const getLatestPhotos = async (req, res) => {
   }
 };
 
+// Uploads one or more base64-encoded images to Cloudinary and creates a Photo record.
+// Validates image format before upload. Supports both single (imageData) and batch (images[]) inputs.
 const createPhoto = async (req, res) => {
   try {
     const { caption, imageData, images } = req.body;
@@ -80,6 +90,8 @@ const createPhoto = async (req, res) => {
   }
 };
 
+// Deletes a photo owned by the authenticated user.
+// Also removes the image(s) from Cloudinary to free storage.
 const deletePhoto = async (req, res) => {
   try {
     const { id } = req.params;
@@ -111,4 +123,6 @@ const deletePhoto = async (req, res) => {
   }
 };
 
+// #region Exports
 module.exports = { getPhotos, getLatestPhotos, createPhoto, deletePhoto };
+// #endregion Exports

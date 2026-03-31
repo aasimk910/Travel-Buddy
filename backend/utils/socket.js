@@ -1,14 +1,19 @@
-// backend/utils/socket.js
-// Socket.IO server logic extracted from index.js
+﻿// backend/utils/socket.js
+// Socket.IO server logic for real-time group chat, E2E key exchange, and file attachments.
+// Authenticates connections via JWT and persists messages to MongoDB.
+
+// #region Imports
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Message = require("../models/Message");
 const { uploadBase64Image } = require("./cloudinaryUpload");
 
+// #endregion Imports
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// Initializes all Socket.IO event handlers and JWT-based connection authentication.
 function initSocket(io) {
-  // Authenticate socket connections via JWT passed in handshake auth
+  // Middleware: authenticate every socket connection using the JWT from handshake auth
   io.use(async (socket, next) => {
     try {
       const token = socket.handshake.auth?.token;
@@ -27,30 +32,33 @@ function initSocket(io) {
   io.on("connection", (socket) => {
     console.log("✅ a user connected");
 
+    // Join a hike's chat room so the user receives messages broadcast to it
     socket.on("join_room", (data) => {
       const roomId = typeof data === "string" ? data : data.roomId;
       if (roomId) socket.join(roomId);
     });
 
+    // Leave a hike chat room (e.g. when navigating away)
     socket.on("leave_room", (data) => {
       const roomId = typeof data === "string" ? data : data.roomId;
       if (roomId) socket.leave(roomId);
     });
 
-    // E2E key exchange: broadcast key request to all peers in the room
+    // E2E key exchange: new participant broadcasts a request for the room key
     socket.on("request_room_key", (data) => {
       const { roomId, requesterId, requesterPublicKeyJwk } = data || {};
       if (!roomId || !requesterId) return;
       socket.to(roomId).emit("room_key_requested", { roomId, requesterId, requesterPublicKeyJwk });
     });
 
-    // A peer responds with a freshly wrapped copy of the room key
+    // An existing participant responds with a freshly wrapped copy of the AES room key
     socket.on("provide_room_key", (data) => {
       const { roomId, recipientId, wrappedKey, iv, senderPublicKeyJwk } = data || {};
       if (!roomId || !recipientId) return;
       io.to(roomId).emit("room_key_provided", { recipientId, wrappedKey, iv, senderPublicKeyJwk });
     });
 
+    // Handles incoming chat messages — persists to DB, uploads attachments, and broadcasts
     socket.on("send_message", async (msg) => {
       if (!msg.roomId) return;
       try {
@@ -106,4 +114,6 @@ function initSocket(io) {
   });
 }
 
+// #region Exports
 module.exports = { initSocket };
+// #endregion Exports

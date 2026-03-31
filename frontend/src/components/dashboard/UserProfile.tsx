@@ -1,7 +1,11 @@
+// src/components/dashboard/UserProfile.tsx
+// Dashboard profile card showing user info with navigation to the full profile editor.
+// #region Imports
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
+// #endregion Imports
 const UserProfile: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -23,4 +27,6 @@ const UserProfile: React.FC = () => {
   );
 };
 
+// #region Exports
 export default UserProfile;
+// #endregion Exports

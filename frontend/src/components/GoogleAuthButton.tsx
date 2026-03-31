@@ -1,6 +1,10 @@
+// src/components/GoogleAuthButton.tsx
+// Renders the Google One Tap / Sign-In button using the Google Identity Services SDK.
+// #region Imports
 import React, { useEffect, useRef } from "react";
 import { GOOGLE_CLIENT_ID } from "../config/env";
 
+// #endregion Imports
 type RenderOptions = {
   theme?: "outline" | "filled_blue" | "filled_black";
   size?: "large" | "medium" | "small";
@@ -33,6 +37,7 @@ const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
   useEffect(() => {
     if (!clientId) return;
 
+    // Handles init logic.
     const init = () => {
       const w = window as any;
       if (!w.google || !buttonRef.current) return;
@@ -75,4 +80,6 @@ const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
   return <div ref={buttonRef} className={className} />;
 };
 
+// #region Exports
 export default GoogleAuthButton;
+// #endregion Exports

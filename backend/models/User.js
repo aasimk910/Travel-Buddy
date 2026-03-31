@@ -1,6 +1,11 @@
-// backend/models/User.js
+﻿// backend/models/User.js
+// Mongoose schema for user accounts. Supports local (password) and Google OAuth providers.
+// Stores optional travel profile, hiking preferences (onboarding), and E2E public key.
+
+// #region Imports
 const mongoose = require("mongoose");
 
+// #endregion Imports
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -84,4 +89,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// #region Exports
 module.exports = mongoose.model("User", userSchema);
+// #endregion Exports

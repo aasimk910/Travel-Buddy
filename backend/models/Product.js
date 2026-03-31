@@ -1,6 +1,11 @@
-// backend/models/Product.js
+﻿// backend/models/Product.js
+// Mongoose schema for shop products (outdoor/travel gear). Categorized by type
+// (Backpacks, Camping, etc.) with pricing, images, badge labels, and stock status.
+
+// #region Imports
 const mongoose = require("mongoose");
 
+// #endregion Imports
 const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -22,4 +27,6 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// #region Exports
 module.exports = mongoose.model("Product", productSchema);
+// #endregion Exports

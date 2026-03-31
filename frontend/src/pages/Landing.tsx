@@ -1,4 +1,5 @@
-// src/pages/Landing.tsx
+﻿// src/pages/Landing.tsx
+// #region Imports
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Map, Users, Compass, MessageCircle, Shield, LayoutDashboard, LogOut, ChevronRight, TrendingUp, Mountain, Camera } from "lucide-react";
@@ -6,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import { getSiteStats, getUpcomingHikes, type SiteStats, type Hike } from "../services/hikes";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 
+// #endregion Imports
 const Landing: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
@@ -23,6 +25,7 @@ const Landing: React.FC = () => {
 
   // Parallax on scroll
   useEffect(() => {
+    // Handles handleScroll logic.
     const handleScroll = () => {
       const y = window.scrollY;
       if (heroTextRef.current) {
@@ -39,6 +42,7 @@ const Landing: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Handles handleLogout logic.
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -717,4 +721,6 @@ const Landing: React.FC = () => {
   );
 };
 
+// #region Exports
 export default Landing;
+// #endregion Exports

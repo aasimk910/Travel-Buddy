@@ -1,8 +1,15 @@
-// backend/controllers/hotelController.js
+﻿// backend/controllers/hotelController.js
+// CRUD for hotels, hotel packages, and hotel-to-hike associations.
+// Hotels contain packages (room types); packages can be linked to hikes.
+
+// #region Imports
 const Hotel = require("../models/Hotel");
 const HotelPackage = require("../models/HotelPackage");
 const Hike = require("../models/Hike");
 
+// #endregion Imports
+
+// Returns all hotels with their populated packages, newest first.
 const getHotels = async (req, res) => {
   try {
     const hotels = await Hotel.find().populate("packages").sort({ createdAt: -1 });
@@ -13,6 +20,7 @@ const getHotels = async (req, res) => {
   }
 };
 
+// Returns a single hotel by ID with its packages.
 const getHotelById = async (req, res) => {
   try {
     const hotel = await Hotel.findById(req.params.id).populate("packages");
@@ -24,6 +32,7 @@ const getHotelById = async (req, res) => {
   }
 };
 
+// Creates a new hotel record. Name and location are required.
 const createHotel = async (req, res) => {
   try {
     const { name, location, coordinates, description, contactPhone, email, website, imageUrl, amenities } = req.body;
@@ -41,6 +50,7 @@ const createHotel = async (req, res) => {
   }
 };
 
+// Updates an existing hotel. Only provided fields are overwritten (sparse update).
 const updateHotel = async (req, res) => {
   try {
     const { name, location, coordinates, description, contactPhone, email, website, imageUrl, amenities, rating, reviewCount } = req.body;
@@ -71,6 +81,7 @@ const updateHotel = async (req, res) => {
   }
 };
 
+// Deletes a hotel and cascades: removes all its packages and unlinks from hikes.
 const deleteHotel = async (req, res) => {
   try {
     const hotel = await Hotel.findByIdAndDelete(req.params.id);
@@ -86,6 +97,7 @@ const deleteHotel = async (req, res) => {
   }
 };
 
+// Creates a new room package under a specific hotel and links it to the hotel.
 const createHotelPackage = async (req, res) => {
   try {
     const { name, description, roomType, pricePerNight, currency, capacity, amenities, image, availableRooms, maxStayNights, minStayNights, cancellationPolicy } = req.body;
@@ -124,6 +136,7 @@ const createHotelPackage = async (req, res) => {
   }
 };
 
+// Returns all packages belonging to a hotel.
 const getHotelPackages = async (req, res) => {
   try {
     const packages = await HotelPackage.find({ hotelId: req.params.id });
@@ -134,6 +147,7 @@ const getHotelPackages = async (req, res) => {
   }
 };
 
+// Updates a hotel package by ID.
 const updateHotelPackage = async (req, res) => {
   try {
     const { name, description, roomType, pricePerNight, currency, capacity, amenities, image, availableRooms, maxStayNights, minStayNights, cancellationPolicy } = req.body;
@@ -165,6 +179,7 @@ const updateHotelPackage = async (req, res) => {
   }
 };
 
+// Deletes a hotel package and removes its reference from the parent hotel.
 const deleteHotelPackage = async (req, res) => {
   try {
     const pkg = await HotelPackage.findByIdAndDelete(req.params.packageId);
@@ -178,6 +193,7 @@ const deleteHotelPackage = async (req, res) => {
   }
 };
 
+// Links a hotel to a hike using $addToSet (prevents duplicates).
 const addHotelToHike = async (req, res) => {
   try {
     const { hikeId, hotelId } = req.params;
@@ -195,6 +211,7 @@ const addHotelToHike = async (req, res) => {
   }
 };
 
+// Handles removeHotelFromHike logic.
 const removeHotelFromHike = async (req, res) => {
   try {
     const { hikeId, hotelId } = req.params;
@@ -212,7 +229,9 @@ const removeHotelFromHike = async (req, res) => {
   }
 };
 
+// #region Exports
 module.exports = {
+  // #endregion Exports
   getHotels,
   getHotelById,
   createHotel,

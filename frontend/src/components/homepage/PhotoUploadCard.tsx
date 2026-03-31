@@ -1,9 +1,13 @@
+// src/components/homepage/PhotoUploadCard.tsx
+// Card component for uploading travel photos with client-side image compression before upload.
+// #region Imports
 import React, { useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { compressImage } from "../../utils/imageCompression";
 import { uploadPhotos } from "../../services/photos";
 import { Camera, Upload, CloudUpload } from "lucide-react";
 
+// #endregion Imports
 const MAX_PHOTO_SIZE_BYTES = 6 * 1024 * 1024;
 
 const convertFileToBase64 = (file: File): Promise<string> =>
@@ -26,6 +30,7 @@ const PhotoUploadCard: React.FC<PhotoUploadCardProps> = ({ onUploaded }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // Handles handleChange logic.
   const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
     setMessage(null);
@@ -61,6 +66,7 @@ const PhotoUploadCard: React.FC<PhotoUploadCardProps> = ({ onUploaded }) => {
     }
   };
 
+  // Handles handleSubmit logic.
   const handleSubmit = async () => {
     if (!selectedPhotos.length) {
       setMessage({ type: "error", text: "Please choose at least one photo to upload." });
@@ -158,4 +164,6 @@ const PhotoUploadCard: React.FC<PhotoUploadCardProps> = ({ onUploaded }) => {
   );
 };
 
+// #region Exports
 export default PhotoUploadCard;
+// #endregion Exports

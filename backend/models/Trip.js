@@ -1,5 +1,11 @@
+﻿// backend/models/Trip.js
+// Mongoose schema for organized trips. Includes destination, date range, status,
+// max traveler capacity, and participant list.
+
+// #region Imports
 const mongoose = require("mongoose");
 
+// #endregion Imports
 const TripSchema = new mongoose.Schema(
   {
     name: {
@@ -50,5 +56,7 @@ const TripSchema = new mongoose.Schema(
   }
 );
 
+// #region Exports
 module.exports = mongoose.model("Trip", TripSchema);
 
+// #endregion Exports

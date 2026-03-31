@@ -1,5 +1,11 @@
+﻿// backend/utils/email.js
+// Transactional email service using Nodemailer (SMTP).
+// Sends welcome emails on signup and password reset links.
+
+// #region Imports
 const nodemailer = require("nodemailer");
 
+// #endregion Imports
 const {
   SMTP_HOST,
   SMTP_PORT,
@@ -27,6 +33,7 @@ if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
   );
 }
 
+// Handles sendMail logic.
 const sendMail = async ({ to, subject, html }) => {
   if (!transporter) {
     return;
@@ -40,6 +47,7 @@ const sendMail = async ({ to, subject, html }) => {
   });
 };
 
+// Handles sendWelcomeEmail logic.
 const sendWelcomeEmail = async ({ name, email }) => {
   const safeName = name || "Traveler";
 
@@ -102,6 +110,7 @@ const sendWelcomeEmail = async ({ name, email }) => {
   }
 };
 
+// Handles sendPasswordResetEmail logic.
 const sendPasswordResetEmail = async ({ name, email, resetUrl }) => {
   const safeName = name || "Traveler";
   const html = `
@@ -145,7 +154,9 @@ const sendPasswordResetEmail = async ({ name, email, resetUrl }) => {
   }
 };
 
+// #region Exports
 module.exports = {
+// #endregion Exports
   sendWelcomeEmail,
   sendPasswordResetEmail,
 };

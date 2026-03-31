@@ -1,21 +1,31 @@
-// backend/controllers/bookingController.js
+﻿// backend/controllers/bookingController.js
+// Manages hotel booking lifecycle: create, read, update, cancel.
+// Validates date ranges, room availability, min/max stay, and calculates total price.
+
+// #region Imports
 const HotelBooking = require("../models/HotelBooking");
 const HotelPackage = require("../models/HotelPackage");
 const Hotel = require("../models/Hotel");
 const Hike = require("../models/Hike");
 const User = require("../models/User");
 
+// #endregion Imports
+
+// Creates a new hotel booking for the authenticated user.
+// Validates package availability, date constraints, and decrements available rooms.
 const createBooking = async (req, res) => {
   try {
     const userId = req.user._id;
     const { hikeId, hotelId, packageId, checkInDate, checkOutDate, numberOfRooms, specialRequests } = req.body;
 
+    // All core fields are required for a valid booking
     if (!hikeId || !hotelId || !packageId || !checkInDate || !checkOutDate || !numberOfRooms) {
       return res.status(400).json({
         message: "Missing required fields: hikeId, hotelId, packageId, checkInDate, checkOutDate, numberOfRooms",
       });
     }
 
+    // Verify the user and package exist
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -25,6 +35,7 @@ const createBooking = async (req, res) => {
     const checkIn = new Date(checkInDate);
     const checkOut = new Date(checkOutDate);
 
+    // If linked to a hike, check-in must not be after the hike date
     if (hikeId) {
       const hike = await Hike.findById(hikeId).select("date");
       if (hike && hike.date && checkIn > new Date(hike.date)) {
@@ -32,10 +43,12 @@ const createBooking = async (req, res) => {
       }
     }
 
+    // Basic date validation
     if (checkIn >= checkOut) {
       return res.status(400).json({ message: "Check-in date must be before check-out date" });
     }
 
+    // Calculate number of nights and validate against package min/max stay
     const nightsValue = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
     if (nightsValue < pkg.minStayNights) {
       return res.status(400).json({ message: `Minimum stay is ${pkg.minStayNights} night(s)` });
@@ -45,10 +58,12 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ message: `Maximum stay is ${pkg.maxStayNights} night(s)` });
     }
 
+    // Check room availability against the package's remaining inventory
     if (numberOfRooms > pkg.availableRooms) {
       return res.status(400).json({ message: `Only ${pkg.availableRooms} room(s) available` });
     }
 
+    // Calculate total price: pricePerNight × rooms × nights
     const totalPrice = pkg.pricePerNight * numberOfRooms * nightsValue;
 
     const booking = new HotelBooking({
@@ -71,8 +86,10 @@ const createBooking = async (req, res) => {
 
     await booking.save();
 
+    // Atomically reduce available room count in the package
     await HotelPackage.findByIdAndUpdate(packageId, { $inc: { availableRooms: -numberOfRooms } });
 
+    // Populate related documents for the response
     await booking.populate([
       { path: "userId", select: "name email phone" },
       { path: "hotelId", select: "name location" },
@@ -87,6 +104,7 @@ const createBooking = async (req, res) => {
   }
 };
 
+// Returns all bookings for the authenticated user, optionally filtered by status.
 const getUserBookings = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -111,6 +129,7 @@ const getUserBookings = async (req, res) => {
   }
 };
 
+// Returns a single booking by ID, only if owned by the authenticated user.
 const getBookingById = async (req, res) => {
   try {
     const bookingId = req.params.id;
@@ -136,6 +155,7 @@ const getBookingById = async (req, res) => {
   }
 };
 
+// Updates booking status/notes. Enforces valid state transitions (pending→confirmed/cancelled, confirmed→cancelled).
 const updateBooking = async (req, res) => {
   try {
     const bookingId = req.params.id;
@@ -179,6 +199,7 @@ const updateBooking = async (req, res) => {
   }
 };
 
+// Cancels a booking and restores the available room count on the package.
 const cancelBooking = async (req, res) => {
   try {
     const bookingId = req.params.id;
@@ -207,6 +228,7 @@ const cancelBooking = async (req, res) => {
   }
 };
 
+// Admin-only: returns all bookings for a specific hotel.
 const getHotelBookings = async (req, res) => {
   try {
     const hotelId = req.params.hotelId;
@@ -231,4 +253,6 @@ const getHotelBookings = async (req, res) => {
   }
 };
 
+// #region Exports
 module.exports = { createBooking, getUserBookings, getBookingById, updateBooking, cancelBooking, getHotelBookings };
+// #endregion Exports

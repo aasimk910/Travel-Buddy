@@ -1,6 +1,14 @@
-// backend/controllers/tripController.js
+﻿// backend/controllers/tripController.js
+// Handles trip join functionality. Uses atomic MongoDB operations to prevent race conditions.
+
+// #region Imports
 const Trip = require("../models/Trip");
 
+// #endregion Imports
+
+// Adds the authenticated user to a trip's participant list.
+// Uses atomic findOneAndUpdate with $expr to check capacity without race conditions.
+// Distinguishes between "not found", "already joined", and "trip full" error cases.
 const joinTrip = async (req, res) => {
   try {
     const tripId = req.params.id;
@@ -34,4 +42,6 @@ const joinTrip = async (req, res) => {
   }
 };
 
+// #region Exports
 module.exports = { joinTrip };
+// #endregion Exports

@@ -1,6 +1,8 @@
-// src/components/ErrorBoundary.tsx
+﻿// src/components/ErrorBoundary.tsx
+// #region Imports
 import React, { Component, ErrorInfo, ReactNode } from "react";
 
+// #endregion Imports
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
@@ -58,6 +60,8 @@ class ErrorBoundary extends Component<Props, State> {
   }
 }
 
+// #region Exports
 export default ErrorBoundary;
 
 
+// #endregion Exports

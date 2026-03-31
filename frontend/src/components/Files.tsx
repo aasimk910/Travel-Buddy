@@ -1,7 +1,11 @@
+// src/components/Files.tsx
+// Photo gallery/lightbox component for viewing hike group photos with zoom and navigation.
+// #region Imports
 import { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../config/env';
 import { Download, X, Loader2, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 
+// #endregion Imports
 interface FilesProps {
   roomId?: string;
 }
@@ -22,12 +26,14 @@ interface Message {
   attachment?: Attachment;
 }
 
+// Handles Files logic.
 const Files = ({ roomId }: FilesProps) => {
   const [images, setImages] = useState<Array<{ url: string; name: string; date: string; sender: string }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [downloading, setDownloading] = useState(false);
 
+  // Handles handleDownload logic.
   const handleDownload = async (url: string, name: string) => {
     if (downloading) return;
     setDownloading(true);
@@ -56,6 +62,7 @@ const Files = ({ roomId }: FilesProps) => {
       return;
     }
 
+    // Handles fetchImages logic.
     const fetchImages = async () => {
       setIsLoading(true);
       try {
@@ -93,6 +100,7 @@ const Files = ({ roomId }: FilesProps) => {
 
   useEffect(() => {
     if (lightboxIdx === null) return;
+    // Handles handleKey logic.
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setLightboxIdx(null);
       else if (e.key === 'ArrowLeft') setLightboxIdx(i => (i! > 0 ? i! - 1 : images.length - 1));
@@ -239,4 +247,6 @@ const Files = ({ roomId }: FilesProps) => {
   );
 };
 
+// #region Exports
 export default Files;
+// #endregion Exports

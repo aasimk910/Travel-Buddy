@@ -1,4 +1,5 @@
-// Shared user utilities
+﻿// backend/utils/userUtils.js
+// Shared user utilities for building safe API response objects.
 
 /**
  * Builds a sanitised user object safe to return in API responses.
@@ -19,4 +20,6 @@ const buildUserResponse = (user) => ({
   hikingProfile: user.hikingProfile || null,
 });
 
+// #region Exports
 module.exports = { buildUserResponse };
+// #endregion Exports

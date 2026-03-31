@@ -1,6 +1,8 @@
-// frontend/src/services/itinerary.ts
+﻿// frontend/src/services/itinerary.ts
+// #region Imports
 import { API_BASE_URL } from "../config/env";
 
+// #endregion Imports
 interface ItineraryRequest {
   destination?: string;
   startDate?: string;

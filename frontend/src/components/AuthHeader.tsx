@@ -1,6 +1,10 @@
+// src/components/AuthHeader.tsx
+// Shared header/logo component displayed on login, signup, and password reset pages.
+// #region Imports
 import React from "react";
 import { Map } from "lucide-react";
 
+// #endregion Imports
 type AuthHeaderProps = {
   title: string;
   subtitle?: string;
@@ -27,4 +31,6 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
   );
 };
 
+// #region Exports
 export default AuthHeader;
+// #endregion Exports

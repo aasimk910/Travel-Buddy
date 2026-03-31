@@ -1,3 +1,6 @@
+// src/pages/Dashboard.tsx
+// User dashboard with tabbed panels: Profile, My Trips, Bookings, Itinerary, and Hotels.
+// #region Imports
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import TripGroups from '../components/TripGroups';
@@ -13,6 +16,7 @@ import ItineraryGenerator from '../components/dashboard/ItineraryGenerator';
 import HikeHotelsPanel from '../components/dashboard/HikeHotelsPanel';
 import MyBookings from '../components/dashboard/MyBookings';
 
+// #endregion Imports
 const Dashboard: React.FC = () => {
   const { hikeId } = useParams<{ hikeId: string }>();
   const [activeView, setActiveView] = useState('chat');
@@ -55,4 +59,6 @@ const Dashboard: React.FC = () => {
   );
 };
 
+// #region Exports
 export default Dashboard;
+// #endregion Exports

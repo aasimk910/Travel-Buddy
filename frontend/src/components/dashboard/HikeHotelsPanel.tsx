@@ -1,8 +1,12 @@
+// src/components/dashboard/HikeHotelsPanel.tsx
+// Panel that displays linked hotels for a specific hike, with expandable hotel details.
+// #region Imports
 import React, { useEffect, useState } from "react";
 import { BedDouble } from "lucide-react";
 import { getHike, Hotel } from "../../services/hikes";
 import HotelDetails from "../hikes/HotelDetails";
 
+// #endregion Imports
 type HikeHotelsPanelProps = {
   hikeId?: string;
 };
@@ -91,4 +95,6 @@ const HikeHotelsPanel: React.FC<HikeHotelsPanelProps> = ({ hikeId }) => {
   );
 };
 
+// #region Exports
 export default HikeHotelsPanel;
+// #endregion Exports

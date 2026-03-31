@@ -1,5 +1,9 @@
+// src/components/StatusAlert.tsx
+// Reusable inline alert banner for displaying success, error, warning, or info messages.
+// #region Imports
 import React from "react";
 
+// #endregion Imports
 type StatusAlertProps = {
   message?: string | null;
 };
@@ -13,4 +17,6 @@ const StatusAlert: React.FC<StatusAlertProps> = ({ message }) => {
   );
 };
 
+// #region Exports
 export default StatusAlert;
+// #endregion Exports

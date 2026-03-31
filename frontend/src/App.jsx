@@ -1,4 +1,8 @@
-// src/App.jsx
+﻿// src/App.jsx
+// Root application component. Defines all client-side routes and wraps them
+// with layout, authentication guards, and an error boundary.
+
+// #region Imports
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
@@ -21,11 +25,13 @@ import Admin from "./pages/Admin";
 import About from "./pages/About";
 import Shop from "./pages/Shop";
 
+// #endregion Imports
+
 const App = () => {
   return (
     <ErrorBoundary>
       <div className="min-h-screen">
-        {/* Fixed full-screen mountain background video — served locally */}
+        {/* Fixed full-screen mountain background video — served from /public */}
         <video
           autoPlay
           muted
@@ -45,11 +51,14 @@ const App = () => {
           <source src="/vid2.mp4" type="video/mp4" />
         </video>
         <Routes>
+          {/* --- Public routes (no auth required) --- */}
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+          {/* --- Protected routes (JWT auth required) --- */}
           <Route
             path="/onboarding"
             element={
@@ -146,4 +155,6 @@ const App = () => {
   );
 };
 
+// #region Exports
 export default App;
+// #endregion Exports

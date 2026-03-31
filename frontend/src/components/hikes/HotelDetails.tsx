@@ -1,8 +1,12 @@
+// src/components/hikes/HotelDetails.tsx
+// Expandable hotel card showing amenities, contact info, and room packages with booking buttons.
+// #region Imports
 import React, { useState } from "react";
 import { ChevronDown, MapPin, Phone, Mail, Globe, Star, Users, Wifi, UtensilsCrossed, BookOpen } from "lucide-react";
 import { Hotel, HotelPackage } from "../../services/hikes";
 import BookingModal from "./BookingModal";
 
+// #endregion Imports
 type HotelDetailsProps = {
   hotels: Hotel[];
   hikeId: string;
@@ -20,20 +24,24 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ hotels, hikeId, hikeDate })
     return null;
   }
 
+  // Handles toggleHotel logic.
   const toggleHotel = (hotelId: string) => {
     setExpandedHotelId(expandedHotelId === hotelId ? null : hotelId);
   };
 
+  // Handles togglePackage logic.
   const togglePackage = (packageId: string) => {
     setExpandedPackageId(expandedPackageId === packageId ? null : packageId);
   };
 
+  // Handles handleBookPackage logic.
   const handleBookPackage = (hotel: Hotel, pkg: HotelPackage) => {
     setSelectedHotel(hotel);
     setSelectedPackage(pkg);
     setBookingModalOpen(true);
   };
 
+  // Handles renderStars logic.
   const renderStars = (rating: number) => {
     return (
       <div className="flex items-center gap-1">
@@ -48,6 +56,7 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ hotels, hikeId, hikeDate })
     );
   };
 
+  // Handles getRoomTypeBadgeColor logic.
   const getRoomTypeBadgeColor = (roomType: string) => {
     const colors: Record<string, string> = {
       single: "bg-blue-500/20 text-blue-300 border-blue-400/40",
@@ -59,6 +68,7 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ hotels, hikeId, hikeDate })
     return colors[roomType] || "bg-gray-500/20 text-gray-300 border-gray-400/40";
   };
 
+  // Handles getCancellationBadgeColor logic.
   const getCancellationBadgeColor = (policy: string) => {
     const colors: Record<string, string> = {
       free: "text-green-300",
@@ -310,4 +320,6 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ hotels, hikeId, hikeDate })
   );
 };
 
+// #region Exports
 export default HotelDetails;
+// #endregion Exports

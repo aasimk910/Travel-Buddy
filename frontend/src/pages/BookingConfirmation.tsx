@@ -1,22 +1,31 @@
+// src/pages/BookingConfirmation.tsx
+// Post-payment landing page that verifies Khalti payment and shows booking confirmation.
+// #region Imports
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { CheckCircle, AlertCircle, Loader } from "lucide-react";
 import { useToast } from "../context/ToastContext";
 import { API_BASE_URL } from "../config/env";
+import PaymentSuccessModal from "../components/PaymentSuccessModal";
 
+// #endregion Imports
+// #region Exports
 export default function BookingConfirmation() {
+// #endregion Exports
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [bookingData, setBookingData] = useState<any>(null);
   const [message, setMessage] = useState("");
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const bookingId = searchParams.get("bookingId");
   const khaltiStatus = searchParams.get("status");
   const pidx = searchParams.get("pidx");
 
   useEffect(() => {
+    // Handles verifyBooking logic.
     const verifyBooking = async () => {
       if (!bookingId) {
         setStatus("error");
@@ -68,6 +77,7 @@ export default function BookingConfirmation() {
         if (data.paymentStatus === "paid") {
           setStatus("success");
           setMessage("Your booking has been confirmed and paid!");
+          setShowPaymentModal(true);
         } else {
           setStatus("error");
           setMessage(
@@ -86,6 +96,15 @@ export default function BookingConfirmation() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+      {/* Payment Success Popup Modal */}
+      <PaymentSuccessModal
+        open={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        amount={bookingData?.totalPrice}
+        reference={bookingData?.bookingReference || bookingData?.bookingId}
+        actionLabel="View Booking Details"
+        onAction={() => setShowPaymentModal(false)}
+      />
       <div className="glass-card rounded-2xl shadow-2xl max-w-md w-full p-8">
         {status === "loading" && (
           <div className="text-center space-y-4">

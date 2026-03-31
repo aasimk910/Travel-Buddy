@@ -1,5 +1,11 @@
+﻿// backend/models/Hike.js
+// Mongoose schema for hiking events. Includes location, difficulty, dates, participants,
+// and linked hotels. Indexed on date, participants, and userId for common query patterns.
+
+// #region Imports
 const mongoose = require("mongoose");
 
+// #endregion Imports
 const HikeSchema = new mongoose.Schema(
   {
     userId: {
@@ -72,5 +78,7 @@ HikeSchema.index({ date: 1 });            // getHikes sorts/filters by date
 HikeSchema.index({ participants: 1 });    // getUserTrips & joinHike queries
 HikeSchema.index({ userId: 1 });          // filter hikes by creator
 
+// #region Exports
 module.exports = mongoose.model("Hike", HikeSchema);
 
+// #endregion Exports

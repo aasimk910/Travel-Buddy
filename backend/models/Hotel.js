@@ -1,5 +1,11 @@
+﻿// backend/models/Hotel.js
+// Mongoose schema for hotels. Contains contact info, coordinates, amenities,
+// rating, and references to HotelPackage documents (room types).
+
+// #region Imports
 const mongoose = require("mongoose");
 
+// #endregion Imports
 const HotelSchema = new mongoose.Schema(
   {
     name: {
@@ -62,4 +68,6 @@ const HotelSchema = new mongoose.Schema(
   }
 );
 
+// #region Exports
 module.exports = mongoose.model("Hotel", HotelSchema);
+// #endregion Exports

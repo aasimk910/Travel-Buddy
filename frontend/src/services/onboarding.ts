@@ -1,6 +1,10 @@
+// frontend/src/services/onboarding.ts
+// API client for saving the user's hiking onboarding preferences.
+// #region Imports
 import { API_BASE_URL } from "../config/env";
 import type { AuthUser } from "../context/AuthContext";
 
+// #endregion Imports
 export type OnboardingPayload = {
   experienceLevel: "beginner" | "intermediate" | "advanced";
   fitnessLevel: "low" | "medium" | "high";

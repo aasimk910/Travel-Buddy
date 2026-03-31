@@ -1,3 +1,6 @@
+// src/components/hikes/ConnectModal.tsx
+// Modal for joining a hike. Shows hike details, linked hotels, and a join button.
+// #region Imports
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, Users, Ruler } from "lucide-react";
@@ -9,6 +12,7 @@ import { MapContainer, TileLayer, Marker, Polyline, Tooltip } from 'react-leafle
 import L from 'leaflet';
 import HotelDetails from "./HotelDetails";
 
+// #endregion Imports
 // Fix leaflet default icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -129,6 +133,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
     }).filter(Boolean) as { _id: string; name: string; position: [number, number]; nearestTrailPoint: [number, number] | null }[];
   }, [fullHike.hotels, routeGeometry]);
 
+  // Handles formatDistance logic.
   const formatDistance = (m: number) =>
     m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`;
 
@@ -136,6 +141,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
   useEffect(() => {
     if (!open || !hike._id) return;
     
+    // Handles fetchFullHikeDetails logic.
     const fetchFullHikeDetails = async () => {
       try {
         const fullHikeData = await getHike(hike._id);
@@ -179,6 +185,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
 
   // Check if user is already connected to this hike
   useEffect(() => {
+    // Handles checkConnection logic.
     const checkConnection = async () => {
       if (!open || !user) {
         setIsCheckingConnection(false);
@@ -203,6 +210,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
   useEffect(() => {
     if (!open) return;
     lastFocusedElementRef.current = document.activeElement as HTMLElement;
+    // Handles handleKeyDown logic.
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -231,6 +239,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
     };
   }, [open]);
 
+  // Handles handleClose logic.
   const handleClose = () => {
     onClose();
     setTimeout(() => {
@@ -238,6 +247,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
     }, 0);
   };
 
+  // Handles handleJoin logic.
   const handleJoin = async () => {
     const token = localStorage.getItem("travelBuddyToken");
     if (!token) {
@@ -265,6 +275,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
     }
   };
 
+  // Handles handleGoToDashboard logic.
   const handleGoToDashboard = () => {
     handleClose();
     navigate(`/dashboard/${hike._id}`);
@@ -332,7 +343,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
                 </button>
               ) : (
                 <button type="button" onClick={handleJoin} disabled={isJoining || hike.spotsLeft <= 0} className="px-5 py-2 glass-button-dark rounded-full font-semibold disabled:opacity-60 transition-colors shadow-lg text-white">
-                  {isJoining ? "Joiningâ€¦" : "Join Hike"}
+                  {isJoining ? "Joining…" : "Join Hike"}
                 </button>
               )}
             </div>
@@ -398,7 +409,7 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
                           <Polyline positions={routeGeometry} pathOptions={{ color: '#6366f1', weight: 4 }}>
                             <Tooltip sticky>
                               <span className="font-semibold">
-                                Trail: {routeDistance !== null ? formatDistance(routeDistance) : 'â€¦'}
+                                Trail: {routeDistance !== null ? formatDistance(routeDistance) : '…'}
                               </span>
                             </Tooltip>
                           </Polyline>
@@ -453,4 +464,6 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
   );
 };
 
+// #region Exports
 export default ConnectModal;
+// #endregion Exports

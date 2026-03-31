@@ -1,4 +1,9 @@
-// backend/controllers/adminController.js
+﻿// backend/controllers/adminController.js
+// Admin-only CRUD operations for managing users, hikes, hotels, packages,
+// bookings, products, orders, and platform statistics.
+// Also provides seed/clear endpoints for populating dev data.
+
+// #region Imports
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const Hike = require("../models/Hike");
@@ -11,8 +16,10 @@ const Message = require("../models/Message");
 const Expense = require("../models/Expense");
 const Photo = require("../models/Photo");
 
+// #endregion Imports
 // ─── Users ────────────────────────────────────────────────────────────────────
 
+// Handles listUsers logic.
 const listUsers = async (req, res) => {
   try {
     const { page = 1, limit = 20, search = "" } = req.query;
@@ -31,6 +38,7 @@ const listUsers = async (req, res) => {
   }
 };
 
+// Handles createUser logic.
 const createUser = async (req, res) => {
   try {
     const { name, email, password, role = "user", country, travelStyle, budgetRange, interests, avatarUrl } = req.body;
@@ -59,6 +67,7 @@ const createUser = async (req, res) => {
   }
 };
 
+// Handles updateUser logic.
 const updateUser = async (req, res) => {
   try {
     const { name, email, role, country, travelStyle, budgetRange, interests, avatarUrl } = req.body;
@@ -89,6 +98,7 @@ const updateUser = async (req, res) => {
   }
 };
 
+// Handles updateUserRole logic.
 const updateUserRole = async (req, res) => {
   try {
     const { role } = req.body;
@@ -107,6 +117,7 @@ const updateUserRole = async (req, res) => {
   }
 };
 
+// Handles deleteUser logic.
 const deleteUser = async (req, res) => {
   try {
     if (req.params.id === req.user._id.toString()) {
@@ -128,6 +139,7 @@ const deleteUser = async (req, res) => {
 
 // ─── Hikes ────────────────────────────────────────────────────────────────────
 
+// Handles listHikes logic.
 const listHikes = async (req, res) => {
   try {
     const { page = 1, limit = 20, search = "" } = req.query;
@@ -146,6 +158,7 @@ const listHikes = async (req, res) => {
   }
 };
 
+// Handles createHikeAdmin logic.
 const createHikeAdmin = async (req, res) => {
   try {
     const { title, location, date, difficulty = 1, spotsLeft = 0, description, imageUrl, coordinates } = req.body;
@@ -178,6 +191,7 @@ const createHikeAdmin = async (req, res) => {
   }
 };
 
+// Handles updateHikeAdmin logic.
 const updateHikeAdmin = async (req, res) => {
   try {
     const { title, location, date, difficulty, spotsLeft, description, imageUrl, coordinates } = req.body;
@@ -206,6 +220,7 @@ const updateHikeAdmin = async (req, res) => {
   }
 };
 
+// Handles deleteHikeAdmin logic.
 const deleteHikeAdmin = async (req, res) => {
   try {
     const hike = await Hike.findByIdAndDelete(req.params.id);
@@ -223,6 +238,7 @@ const deleteHikeAdmin = async (req, res) => {
   }
 };
 
+// Handles seedHikes logic.
 const seedHikes = async (req, res) => {
   try {
     const existingHikes = await Hike.countDocuments();
@@ -263,6 +279,7 @@ const seedHikes = async (req, res) => {
   }
 };
 
+// Handles clearHikes logic.
 const clearHikes = async (req, res) => {
   try {
     const hikeCount = await Hike.countDocuments();
@@ -276,6 +293,7 @@ const clearHikes = async (req, res) => {
 
 // ─── Hotels ───────────────────────────────────────────────────────────────────
 
+// Handles listHotelsAdmin logic.
 const listHotelsAdmin = async (req, res) => {
   try {
     const { page = 1, limit = 10, search = "" } = req.query;
@@ -294,6 +312,7 @@ const listHotelsAdmin = async (req, res) => {
   }
 };
 
+// Handles getHotelAdmin logic.
 const getHotelAdmin = async (req, res) => {
   try {
     const hotel = await Hotel.findById(req.params.id).populate("packages");
@@ -305,6 +324,7 @@ const getHotelAdmin = async (req, res) => {
   }
 };
 
+// Handles createHotelAdmin logic.
 const createHotelAdmin = async (req, res) => {
   try {
     const { name, location, description, contactPhone, email, website, imageUrl, rating, amenities, coordinates } = req.body;
@@ -322,6 +342,7 @@ const createHotelAdmin = async (req, res) => {
   }
 };
 
+// Handles updateHotelAdmin logic.
 const updateHotelAdmin = async (req, res) => {
   try {
     const { name, location, description, contactPhone, email, website, imageUrl, rating, amenities, coordinates } = req.body;
@@ -343,6 +364,7 @@ const updateHotelAdmin = async (req, res) => {
   }
 };
 
+// Handles deleteHotelAdmin logic.
 const deleteHotelAdmin = async (req, res) => {
   try {
     const hotel = await Hotel.findByIdAndDelete(req.params.id);
@@ -360,6 +382,7 @@ const deleteHotelAdmin = async (req, res) => {
 
 // ─── Packages ─────────────────────────────────────────────────────────────────
 
+// Handles listPackagesAdmin logic.
 const listPackagesAdmin = async (req, res) => {
   try {
     const { page = 1, limit = 15, search = "", hotelId = "" } = req.query;
@@ -378,6 +401,7 @@ const listPackagesAdmin = async (req, res) => {
   }
 };
 
+// Handles addPackageToHotel logic.
 const addPackageToHotel = async (req, res) => {
   try {
     const hotel = await Hotel.findById(req.params.id);
@@ -401,6 +425,7 @@ const addPackageToHotel = async (req, res) => {
   }
 };
 
+// Handles updatePackageAdmin logic.
 const updatePackageAdmin = async (req, res) => {
   try {
     const { name, roomType, pricePerNight, capacity, amenities, availableRooms, minStayNights, maxStayNights, cancellationPolicy } = req.body;
@@ -421,6 +446,7 @@ const updatePackageAdmin = async (req, res) => {
   }
 };
 
+// Handles deletePackageAdmin logic.
 const deletePackageAdmin = async (req, res) => {
   try {
     const pkg = await HotelPackage.findByIdAndDelete(req.params.id);
@@ -435,6 +461,7 @@ const deletePackageAdmin = async (req, res) => {
 
 // ─── Bookings ─────────────────────────────────────────────────────────────────
 
+// Handles listBookingsAdmin logic.
 const listBookingsAdmin = async (req, res) => {
   try {
     const { page = 1, limit = 10, search = "", status = "" } = req.query;
@@ -459,6 +486,7 @@ const listBookingsAdmin = async (req, res) => {
   }
 };
 
+// Handles updateBookingStatusAdmin logic.
 const updateBookingStatusAdmin = async (req, res) => {
   try {
     const { status, paymentStatus } = req.body;
@@ -485,6 +513,7 @@ const updateBookingStatusAdmin = async (req, res) => {
   }
 };
 
+// Handles deleteBookingAdmin logic.
 const deleteBookingAdmin = async (req, res) => {
   try {
     const booking = await HotelBooking.findByIdAndDelete(req.params.id);
@@ -498,6 +527,7 @@ const deleteBookingAdmin = async (req, res) => {
 
 // ─── Products ─────────────────────────────────────────────────────────────────
 
+// Handles listProducts logic.
 const listProducts = async (req, res) => {
   try {
     const { page = 1, limit = 20, search = "", category = "" } = req.query;
@@ -516,6 +546,7 @@ const listProducts = async (req, res) => {
   }
 };
 
+// Handles createProduct logic.
 const createProduct = async (req, res) => {
   try {
     const { name, category, price, description, badge, img, images, inStock, featured } = req.body;
@@ -530,6 +561,7 @@ const createProduct = async (req, res) => {
   }
 };
 
+// Handles updateProduct logic.
 const updateProduct = async (req, res) => {
   try {
     const { name, category, price, description, badge, img, images, inStock, featured } = req.body;
@@ -549,6 +581,7 @@ const updateProduct = async (req, res) => {
   }
 };
 
+// Handles deleteProduct logic.
 const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
@@ -562,6 +595,7 @@ const deleteProduct = async (req, res) => {
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
+// Handles getStats logic.
 const getStats = async (req, res) => {
   try {
     const [totalUsers, totalAdmins, totalHikes, totalHotels, totalBookings, pendingBookings, totalProducts, totalOrders, pendingOrders] = await Promise.all([
@@ -584,6 +618,7 @@ const getStats = async (req, res) => {
 
 // ─── Seed / Clear Hotels ──────────────────────────────────────────────────────
 
+// Handles seedHotels logic.
 const seedHotels = async (req, res) => {
   try {
     const existingHotels = await Hotel.countDocuments();
@@ -660,6 +695,7 @@ const seedHotels = async (req, res) => {
   }
 };
 
+// Handles clearHotels logic.
 const clearHotels = async (req, res) => {
   try {
     const [hotelCount, packageCount] = await Promise.all([Hotel.countDocuments(), HotelPackage.countDocuments()]);
@@ -673,6 +709,7 @@ const clearHotels = async (req, res) => {
 
 // ─── Orders ───────────────────────────────────────────────────────────────────
 
+// Handles createOrder logic.
 const createOrder = async (req, res) => {
   try {
     const { orderId, items, customer, subtotal, shipping, total, paymentMethod } = req.body;
@@ -700,6 +737,7 @@ const createOrder = async (req, res) => {
   }
 };
 
+// Handles listOrders logic.
 const listOrders = async (req, res) => {
   try {
     const { page = 1, limit = 15, search = "", status = "", paymentMethod = "" } = req.query;
@@ -726,6 +764,7 @@ const listOrders = async (req, res) => {
   }
 };
 
+// Handles updateOrderStatus logic.
 const updateOrderStatus = async (req, res) => {
   try {
     const { status, paymentStatus } = req.body;
@@ -741,6 +780,7 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+// Handles deleteOrder logic.
 const deleteOrder = async (req, res) => {
   try {
     const order = await Order.findByIdAndDelete(req.params.id);
@@ -752,7 +792,9 @@ const deleteOrder = async (req, res) => {
   }
 };
 
+// #region Exports
 module.exports = {
+// #endregion Exports
   listUsers, createUser, updateUser, updateUserRole, deleteUser,
   listHikes, createHikeAdmin, updateHikeAdmin, deleteHikeAdmin, seedHikes, clearHikes,
   listHotelsAdmin, getHotelAdmin, createHotelAdmin, updateHotelAdmin, deleteHotelAdmin,

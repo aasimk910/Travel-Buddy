@@ -1,3 +1,7 @@
+// src/components/hikes/BookingModal.tsx
+// Modal dialog for creating a hotel booking. Validates dates, calculates pricing,
+// and submits the booking to the API.
+// #region Imports
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Calendar, Users, AlertCircle, CheckCircle } from "lucide-react";
@@ -6,6 +10,7 @@ import { useToast } from "../../context/ToastContext";
 import { Hotel, HotelPackage, createBooking } from "../../services/hikes";
 import KhaltiPaymentButton from "./KhaltiPaymentButton";
 
+// #endregion Imports
 type BookingModalProps = {
   open: boolean;
   hotel: Hotel;
@@ -94,6 +99,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
     setCalculatedPrice(totalPrice);
   };
 
+  // Handles handleDateChange logic.
   const handleDateChange = (field: string, value: string) => {
     if (field === "checkIn") {
       setCheckInDate(value);
@@ -102,12 +108,14 @@ const BookingModal: React.FC<BookingModalProps> = ({
     }
   };
 
+  // Handles handleNumberOfRoomsChange logic.
   const handleNumberOfRoomsChange = (value: number) => {
     if (value >= 1 && value <= pkg.availableRooms) {
       setNumberOfRooms(value);
     }
   };
 
+  // Handles handleBooking logic.
   const handleBooking = async () => {
     if (!user) {
       showError("Please log in to make a booking");
@@ -235,7 +243,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
                 disabled={numberOfRooms <= 1}
                 className="px-4 py-2 rounded-lg bg-white/10 text-white disabled:opacity-50 hover:bg-white/20 transition-colors"
               >
-                −
+                -
               </button>
               <input
                 type="number"
@@ -378,4 +386,6 @@ const BookingModal: React.FC<BookingModalProps> = ({
   return createPortal(modalContent, document.body);
 };
 
+// #region Exports
 export default BookingModal;
+// #endregion Exports

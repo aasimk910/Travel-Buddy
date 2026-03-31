@@ -1,6 +1,11 @@
-// backend/models/Order.js
+﻿// backend/models/Order.js
+// Mongoose schema for shop orders. Tracks order items, customer details, pricing,
+// payment method (COD/Khalti), payment status, and fulfillment status lifecycle.
+
+// #region Imports
 const mongoose = require("mongoose");
 
+// #endregion Imports
 const orderItemSchema = new mongoose.Schema(
   {
     productId: { type: String, required: true },
@@ -48,4 +53,6 @@ orderSchema.index({ userId: 1, createdAt: -1 });
 orderSchema.index({ status: 1 });
 orderSchema.index({ createdAt: -1 });
 
+// #region Exports
 module.exports = mongoose.model("Order", orderSchema);
+// #endregion Exports

@@ -1,13 +1,21 @@
-// backend/controllers/paymentController.js
+﻿// backend/controllers/paymentController.js
+// General-purpose Khalti payment gateway controller for shop orders.
+// Provides health check, payment initiation, and payment verification endpoints.
+
+// #region Imports
 const axios = require("axios");
 
-const KHALTI_SANDBOX_API = "https://dev.khalti.com/api/v2";
+// #endregion Imports
+const KHALTI_SANDBOX_API = "https://dev.khalti.com/api/v2";   // Khalti sandbox base URL
 const KHALTI_SANDBOX_SECRET = process.env.KHALTI_SANDBOX_SECRET || "test_secret_key";
 
+// Health check: returns OK status and the active Khalti API URL.
 const getHealth = (req, res) => {
   res.json({ status: "ok", mode: "sandbox", khaltiApi: KHALTI_SANDBOX_API });
 };
 
+// Initiates a Khalti e-payment for a shop order.
+// Sends the order details to Khalti and returns the payment URL for redirect.
 const initiateKhalti = async (req, res) => {
   try {
     const { amount, orderId, orderName, returnUrl, customer } = req.body;
@@ -51,6 +59,8 @@ const initiateKhalti = async (req, res) => {
   }
 };
 
+// Verifies a Khalti payment by looking up the pidx token.
+// Returns the transaction status, ID, amount, and fee.
 const verifyKhalti = async (req, res) => {
   try {
     const pidx = req.query.pidx || req.body?.pidx;
@@ -85,4 +95,6 @@ const verifyKhalti = async (req, res) => {
   }
 };
 
+// #region Exports
 module.exports = { getHealth, initiateKhalti, verifyKhalti };
+// #endregion Exports

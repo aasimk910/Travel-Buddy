@@ -1,9 +1,13 @@
+// src/components/MainLayout.tsx
+// Shared page layout wrapper that includes the top navigation bar and site footer.
+// #region Imports
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import TopNav from './homepage/TopNav';
 import Footer from './SiteFooter';
 import { useAuth } from '../context/AuthContext';
 
+// #endregion Imports
 interface MainLayoutProps {
   children: React.ReactNode;
 }
@@ -29,6 +33,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   }, [isAuthenticated, isAdmin, user?.onboardingCompleted, location.pathname, location.search, navigate]);
 
   useEffect(() => {
+    // Handles onScroll logic.
     const onScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -53,4 +58,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   );
 };
 
+// #region Exports
 export default MainLayout;
+// #endregion Exports

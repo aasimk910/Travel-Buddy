@@ -1,6 +1,11 @@
-// backend/models/RoomKey.js
+﻿// backend/models/RoomKey.js
+// Mongoose schema for E2E encrypted room keys. Each document stores one participant's
+// wrapped copy of the AES-256-GCM room key, encrypted via ECDH key agreement.
+
+// #region Imports
 const mongoose = require("mongoose");
 
+// #endregion Imports
 /**
  * Stores a per-user, per-room wrapped (encrypted) copy of the symmetric
  * AES-256-GCM room key.  The key material is encrypted client-side using
@@ -33,4 +38,6 @@ const RoomKeySchema = new mongoose.Schema(
 // Unique: one wrapped-key entry per user per room
 RoomKeySchema.index({ hikeId: 1, userId: 1 }, { unique: true });
 
+// #region Exports
 module.exports = mongoose.model("RoomKey", RoomKeySchema);
+// #endregion Exports

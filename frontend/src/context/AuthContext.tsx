@@ -1,5 +1,10 @@
-// src/context/AuthContext.tsx
+﻿// src/context/AuthContext.tsx
+// Global authentication context. Persists the logged-in user in localStorage
+// and manages Socket.IO connection lifecycle (connect on login, disconnect on logout).
+
+// #region Imports
 import React, {
+// #endregion Imports
   createContext,
   useContext,
   useState,
@@ -80,6 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // Only disconnect when user logs out (handled above when user becomes null)
   }, [user]);
 
+  // Handles saveUser logic.
   const saveUser = (u: AuthUser) => {
     setUser(u);
     if (typeof window !== "undefined") {
@@ -109,6 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
+  // Handles logout logic.
   const logout = () => {
     setUser(null);
     localStorage.removeItem("travelBuddyToken");

@@ -1,8 +1,12 @@
+// src/components/homepage/ProfileSummaryCard.tsx
+// Compact profile summary card shown on the homepage with avatar, name, and travel style.
+// #region Imports
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { MapPin } from "lucide-react";
 
+// #endregion Imports
 const ProfileSummaryCard: React.FC = () => {
   const { user } = useAuth();
 
@@ -54,4 +58,6 @@ const ProfileSummaryCard: React.FC = () => {
   );
 };
 
+// #region Exports
 export default ProfileSummaryCard;
+// #endregion Exports

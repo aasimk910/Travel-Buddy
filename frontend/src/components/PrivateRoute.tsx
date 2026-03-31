@@ -1,7 +1,11 @@
+// src/components/PrivateRoute.tsx
+// Route guard that redirects unauthenticated users to the login page.
+// #region Imports
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+// #endregion Imports
 type PrivateRouteProps = {
   children: React.ReactElement;
 };
@@ -40,5 +44,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
   return children;
 };
 
+// #region Exports
 export default PrivateRoute;
 
+// #endregion Exports

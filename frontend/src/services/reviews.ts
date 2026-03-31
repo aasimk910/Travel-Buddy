@@ -1,5 +1,9 @@
+// frontend/src/services/reviews.ts
+// API client for travel review CRUD (list all, latest, create).
+// #region Imports
 import { API_BASE_URL } from "../config/env";
 
+// #endregion Imports
 export type Review = {
   _id: string;
   userId: string;

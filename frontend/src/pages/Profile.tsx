@@ -1,4 +1,5 @@
-// src/pages/Profile.tsx
+﻿// src/pages/Profile.tsx
+// #region Imports
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, MapPin, Globe, DollarSign, CalendarDays, Tag } from "lucide-react";
@@ -10,6 +11,7 @@ import { API_BASE_URL } from "../config/env";
 import { getUserPhotos } from "../services/photos";
 import { getUserTrips } from "../services/trips";
 
+// #endregion Imports
 const MAX_PHOTO_SIZE_BYTES = 6 * 1024 * 1024;
 
 type PhotoItem = {
@@ -38,6 +40,7 @@ const convertFileToBase64 = (file: File): Promise<string> =>
     reader.onerror = (error) => reject(error);
   });
 
+// Handles formatDate logic.
 const formatDate = (dateString: string) =>
   new Date(dateString).toLocaleDateString("en-US", {
     month: "short",
@@ -165,6 +168,7 @@ const Profile: React.FC = () => {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  // Handles handleSubmit logic.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) { showError("Please fix the errors in the form"); return; }
@@ -549,4 +553,6 @@ const Profile: React.FC = () => {
   );
 };
 
+// #region Exports
 export default Profile;
+// #endregion Exports

@@ -1,7 +1,14 @@
-// backend/controllers/expenseController.js
+﻿// backend/controllers/expenseController.js
+// Manages shared expenses for hike groups.
+// Supports equal, share-based, and custom expense splitting among participants.
+
+// #region Imports
 const Expense = require("../models/Expense");
 const Hike = require("../models/Hike");
 
+// #endregion Imports
+
+// Returns all expenses for a given hike. Only hike participants can view.
 const getExpenses = async (req, res) => {
   try {
     const { hikeId } = req.params;
@@ -22,6 +29,8 @@ const getExpenses = async (req, res) => {
   }
 };
 
+// Creates a new expense entry for a hike.
+// Calculates per-participant amounts based on the chosen split type (equal/shares/custom).
 const createExpense = async (req, res) => {
   try {
     const { hikeId } = req.params;
@@ -84,6 +93,7 @@ const createExpense = async (req, res) => {
   }
 };
 
+// Updates an existing expense. Recalculates split amounts if splitType or amount changes.
 const updateExpense = async (req, res) => {
   try {
     const { expenseId } = req.params;
@@ -129,6 +139,7 @@ const updateExpense = async (req, res) => {
   }
 };
 
+// Deletes an expense by ID.
 const deleteExpense = async (req, res) => {
   try {
     const { expenseId } = req.params;
@@ -141,23 +152,28 @@ const deleteExpense = async (req, res) => {
   }
 };
 
+// Computes a summary of all expenses for a hike:
+// total spent, per-category breakdown, and settlement balances (who owes whom).
 const getExpenseSummary = async (req, res) => {
   try {
     const { hikeId } = req.params;
     const expenses = await Expense.find({ hikeId });
 
-    const balances = {};
-    const categoryTotals = {};
+    const balances = {};      // Tracks paid vs. owed per user
+    const categoryTotals = {}; // Aggregated spending per expense category
 
     expenses.forEach((expense) => {
+      // Sum category totals
       categoryTotals[expense.category] = (categoryTotals[expense.category] || 0) + expense.amount;
 
+      // Credit the payer
       const paidByUserId = expense.paidBy.userId;
       if (!balances[paidByUserId]) {
         balances[paidByUserId] = { name: expense.paidBy.name, paid: 0, owes: 0 };
       }
       balances[paidByUserId].paid += expense.amount;
 
+      // Debit each participant their share
       expense.participants.forEach((participant) => {
         if (!balances[participant.userId]) {
           balances[participant.userId] = { name: participant.name, paid: 0, owes: 0 };
@@ -166,6 +182,7 @@ const getExpenseSummary = async (req, res) => {
       });
     });
 
+    // Build settlement array with net balance per user
     const settlements = Object.entries(balances).map(([userId, data]) => ({
       userId,
       name: data.name,
@@ -188,4 +205,6 @@ const getExpenseSummary = async (req, res) => {
   }
 };
 
+// #region Exports
 module.exports = { getExpenses, createExpense, updateExpense, deleteExpense, getExpenseSummary };
+// #endregion Exports

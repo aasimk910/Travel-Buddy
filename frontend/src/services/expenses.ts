@@ -1,5 +1,9 @@
+// frontend/src/services/expenses.ts
+// API client for hike expense CRUD and summary retrieval.
+// #region Imports
 import { API_BASE_URL } from "../config/env";
 
+// #endregion Imports
 export interface Expense {
   _id: string;
   hikeId: string;
@@ -36,6 +40,7 @@ export interface ExpenseSummary {
   }>;
 }
 
+// Handles handleResponse logic.
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
     if (response.status === 401) {

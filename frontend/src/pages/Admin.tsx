@@ -1,8 +1,12 @@
+// src/pages/Admin.tsx
+// Admin dashboard with tabs for managing users, hikes, hotels, packages, bookings, products, and orders.
+// #region Imports
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Polyline, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import {
+// #endregion Imports
   Users, Mountain, ShieldCheck, Trash2, ChevronLeft, ChevronRight,
   Search, RefreshCw, Plus, Pencil, X, LogOut, MapPin, CalendarDays,
   Navigation, Eye, CheckCircle2, Flag, Hotel, BookOpen, Package,
@@ -268,8 +272,10 @@ const Admin: React.FC = () => {
   const [productForm, setProductForm] = useState(defaultProductForm);
   const [productSaving, setProductSaving] = useState(false);
 
+  // Handles authHeader logic.
   const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem("travelBuddyToken")}` });
 
+  // Handles throwIfNotOk logic.
   const throwIfNotOk = async (res: Response) => {
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
@@ -284,7 +290,7 @@ const Admin: React.FC = () => {
     else showError(err?.message || "An error occurred");
   }, [logout, navigate, showError]);
 
-  // ─── Fetch ─────────────────────────────────────────────────────────────────
+  // --- Fetch -----------------------------------------------------------------
 
   const fetchStats = useCallback(async () => {
     try {
@@ -391,10 +397,11 @@ const Admin: React.FC = () => {
   useEffect(() => { if (activeTab === "shop") fetchProducts(); }, [fetchProducts, activeTab]);
   useEffect(() => { if (activeTab === "orders") fetchOrders(); }, [fetchOrders, activeTab]);
 
-  // ─── User CRUD ─────────────────────────────────────────────────────────────
+  // --- User CRUD -------------------------------------------------------------
 
   const openCreateUser = () => { setEditingUser(null); setUserForm(defaultUserForm); setUserModal(true); };
 
+  // Handles openEditUser logic.
   const openEditUser = (u: AdminUser) => {
     setEditingUser(u);
     setUserForm({
@@ -406,6 +413,7 @@ const Admin: React.FC = () => {
     setUserModal(true);
   };
 
+  // Handles saveUser logic.
   const saveUser = async () => {
     if (!userForm.name.trim() || !userForm.email.trim()) { showError("Name and email are required."); return; }
     if (!editingUser && !userForm.password.trim()) { showError("Password is required for new users."); return; }
@@ -433,6 +441,7 @@ const Admin: React.FC = () => {
     finally { setUserSaving(false); }
   };
 
+  // Handles handleRoleChange logic.
   const handleRoleChange = async (userId: string, role: "user" | "admin") => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/role`, {
@@ -446,6 +455,7 @@ const Admin: React.FC = () => {
     } catch (err: any) { showError(err.message || "Failed to update role."); }
   };
 
+  // Handles handleDeleteUser logic.
   const handleDeleteUser = async (userId: string, name: string) => {
     if (!confirm(`Delete user "${name}"? This cannot be undone.`)) return;
     try {
@@ -455,7 +465,7 @@ const Admin: React.FC = () => {
     } catch (err: any) { showError(err.message || "Failed to delete user."); }
   };
 
-  // ─── Hike CRUD ─────────────────────────────────────────────────────────────
+  // --- Hike CRUD -------------------------------------------------------------
 
   // Fetch OSRM route whenever the detail modal opens with start+end points
   useEffect(() => {
@@ -485,8 +495,10 @@ const Admin: React.FC = () => {
       });
   }, [viewHike]);
 
+  // Handles openCreateHike logic.
   const openCreateHike = () => { setEditingHike(null); setHikeForm(defaultHikeForm); setHikeStartPoint(null); setHikeEndPoint(null); setHikeActivePoint('start'); setHikeModal(true); };
 
+  // Handles openEditHike logic.
   const openEditHike = (h: AdminHike) => {
     setEditingHike(h);
     setHikeForm({
@@ -503,6 +515,7 @@ const Admin: React.FC = () => {
     setHikeModal(true);
   };
 
+  // Handles saveHike logic.
   const saveHike = async () => {
     if (!hikeForm.title.trim() || !hikeForm.location.trim() || !hikeForm.date) {
       showError("Title, location and date are required."); return;
@@ -529,6 +542,7 @@ const Admin: React.FC = () => {
     finally { setHikeSaving(false); }
   };
 
+  // Handles handleDeleteHike logic.
   const handleDeleteHike = async (hikeId: string, title: string) => {
     if (!confirm(`Delete hike "${title}"? This cannot be undone.`)) return;
     try {
@@ -542,6 +556,7 @@ const Admin: React.FC = () => {
 
   const openCreateHotel = () => { setEditingHotel(null); setHotelForm(defaultHotelForm); setHotelModal(true); };
 
+  // Handles openEditHotel logic.
   const openEditHotel = (h: AdminHotel) => {
     setEditingHotel(h);
     setHotelForm({
@@ -552,6 +567,7 @@ const Admin: React.FC = () => {
     setHotelModal(true);
   };
 
+  // Handles saveHotel logic.
   const saveHotel = async () => {
     if (!hotelForm.name.trim() || !hotelForm.location.trim()) { showError("Name and location are required."); return; }
     setHotelSaving(true);
@@ -576,6 +592,7 @@ const Admin: React.FC = () => {
     finally { setHotelSaving(false); }
   };
 
+  // Handles handleDeleteHotel logic.
   const handleDeleteHotel = async (hotelId: string, name: string) => {
     if (!confirm(`Delete hotel "${name}" and all its packages? This cannot be undone.`)) return;
     try {
@@ -586,6 +603,7 @@ const Admin: React.FC = () => {
     } catch (err: any) { showError(err.message || "Failed to delete hotel."); }
   };
 
+  // Handles openViewHotel logic.
   const openViewHotel = async (h: AdminHotel) => {
     setViewHotel(h); setViewHotelLoading(true);
     try {
@@ -603,6 +621,7 @@ const Admin: React.FC = () => {
     setEditingPkg(null); setPkgForm(defaultPackageForm); setPkgHotelId(hotelId); setPkgModal(true);
   };
 
+  // Handles openEditPackage logic.
   const openEditPackage = (pkg: AdminHotelPackage, hotelId: string) => {
     setEditingPkg(pkg);
     setPkgForm({
@@ -615,6 +634,7 @@ const Admin: React.FC = () => {
     setPkgHotelId(hotelId); setPkgModal(true);
   };
 
+  // Handles savePackage logic.
   const savePackage = async () => {
     if (!pkgForm.name.trim() || !pkgForm.pricePerNight) { showError("Name and price are required."); return; }
     setPkgSaving(true);
@@ -647,6 +667,7 @@ const Admin: React.FC = () => {
     finally { setPkgSaving(false); }
   };
 
+  // Handles handleDeletePackage logic.
   const handleDeletePackage = async (pkgId: string) => {
     if (!confirm("Delete this package?")) return;
     try {
@@ -673,6 +694,7 @@ const Admin: React.FC = () => {
     } catch (err: any) { showError(err.message || "Failed to update booking."); }
   };
 
+  // Handles handlePaymentStatusChange logic.
   const handlePaymentStatusChange = async (bookingId: string, paymentStatus: string) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/admin/bookings/${bookingId}/status`, {
@@ -685,6 +707,7 @@ const Admin: React.FC = () => {
     } catch (err: any) { showError(err.message || "Failed to update payment status."); }
   };
 
+  // Handles handleDeleteBooking logic.
   const handleDeleteBooking = async (bookingId: string, ref: string) => {
     if (!confirm(`Delete booking ${ref}? This cannot be undone.`)) return;
     try {
@@ -694,13 +717,14 @@ const Admin: React.FC = () => {
     } catch (err: any) { showError(err.message || "Failed to delete booking."); }
   };
 
-  // ─── UI ────────────────────────────────────────────────────────────────────
+  // --- UI --------------------------------------------------------------------
 
 
   // --- Product CRUD ----------------------------------------------------------
 
   const openCreateProduct = () => { setEditingProduct(null); setProductForm(defaultProductForm); setProductModal(true); };
 
+  // Handles openEditProduct logic.
   const openEditProduct = (p: AdminProduct) => {
     setEditingProduct(p);
     setProductForm({
@@ -712,6 +736,7 @@ const Admin: React.FC = () => {
     setProductModal(true);
   };
 
+  // Handles saveProduct logic.
   const saveProduct = async () => {
     if (!productForm.name.trim() || !productForm.category || !productForm.price) {
       showError("Name, category, and price are required."); return;
@@ -741,6 +766,7 @@ const Admin: React.FC = () => {
     finally { setProductSaving(false); }
   };
 
+  // Handles handleDeleteProduct logic.
   const handleDeleteProduct = async (id: string, name: string) => {
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
     try {
@@ -750,7 +776,7 @@ const Admin: React.FC = () => {
     } catch (err: any) { showError(err.message || "Failed to delete product."); }
   };
 
-  // ─── Order management ──────────────────────────────────────────────────────
+  // --- Order management ------------------------------------------------------
 
   const handleOrderStatusChange = async (orderId: string, status: string) => {
     try {
@@ -764,6 +790,7 @@ const Admin: React.FC = () => {
     } catch (err: any) { showError(err.message || "Failed to update order."); }
   };
 
+  // Handles handleOrderPaymentChange logic.
   const handleOrderPaymentChange = async (orderId: string, paymentStatus: string) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/admin/orders/${orderId}/status`, {
@@ -776,6 +803,7 @@ const Admin: React.FC = () => {
     } catch (err: any) { showError(err.message || "Failed to update payment status."); }
   };
 
+  // Handles handleDeleteOrder logic.
   const handleDeleteOrder = async (orderId: string, ref: string) => {
     if (!confirm(`Delete order ${ref}? This cannot be undone.`)) return;
     try {
@@ -785,6 +813,7 @@ const Admin: React.FC = () => {
     } catch (err: any) { showError(err.message || "Failed to delete order."); }
   };
 
+  // Handles toggleProductField logic.
   const toggleProductField = async (p: AdminProduct, field: "inStock" | "featured") => {
     try {
       const body = {
@@ -861,7 +890,7 @@ const Admin: React.FC = () => {
         ))}
       </div>
 
-      {/* ── Users Tab ── */}
+      {/* -- Users Tab -- */}
       {activeTab === "users" && (
         <div className="glass-card rounded-xl p-5">
           <div className="flex items-center gap-3 mb-4">
@@ -930,7 +959,7 @@ const Admin: React.FC = () => {
         </div>
       )}
 
-      {/* ── Hikes Tab ── */}
+      {/* -- Hikes Tab -- */}
       {activeTab === "hikes" && (
         <div className="glass-card rounded-xl p-5">
           <div className="flex items-center gap-3 mb-4">
@@ -971,7 +1000,7 @@ const Admin: React.FC = () => {
                         </button>
                       </td>
                       <td className="py-3 pr-4 text-glass-dim">{h.location}</td>
-                      <td className="py-3 pr-4 text-glass-dim">{h.userId?.name || "—"}</td>
+                      <td className="py-3 pr-4 text-glass-dim">{h.userId?.name || "�"}</td>
                       <td className="py-3 pr-4 text-glass-dim">{h.difficulty}/5</td>
                       <td className="py-3 pr-4 text-glass-dim">{h.spotsLeft}</td>
                       <td className="py-3 pr-4 text-glass-dim">{h.participants?.length ?? 0}</td>
@@ -1039,7 +1068,7 @@ const Admin: React.FC = () => {
                             <span className="text-xs text-glass-dim">{h.location}</span>
                             <Star className="w-3 h-3 text-yellow-400 ml-2" />
                             <span className="text-xs text-glass-dim">{h.rating}</span>
-                            <span className="text-xs text-glass-dim">�</span>
+                            <span className="text-xs text-glass-dim">?</span>
                             <span className="text-xs text-glass-dim">{Array.isArray(h.packages) ? h.packages.length : 0} packages</span>
                           </div>
                           {h.amenities.length > 0 && (
@@ -1082,7 +1111,7 @@ const Admin: React.FC = () => {
                             <div key={pkg._id} className="flex items-center justify-between glass rounded-lg p-2 text-xs">
                               <div>
                                 <span className="font-medium text-glass-light">{pkg.name}</span>
-                                <span className="text-glass-dim ml-2">{pkg.roomType} � NPR {pkg.pricePerNight?.toLocaleString()}/night</span>
+                                <span className="text-glass-dim ml-2">{pkg.roomType} ? NPR {pkg.pricePerNight?.toLocaleString()}/night</span>
                                 <span className="text-glass-dim ml-2">{pkg.availableRooms} rooms</span>
                               </div>
                               <div className="flex items-center gap-1">
@@ -1166,8 +1195,8 @@ const Admin: React.FC = () => {
                         <div className="font-medium text-glass-light text-xs">{b.guestName}</div>
                         <div className="text-glass-dim text-[10px]">{b.guestEmail}</div>
                       </td>
-                      <td className="py-3 pr-3 text-glass-dim text-xs">{b.hotelId?.name || "�"}</td>
-                      <td className="py-3 pr-3 text-glass-dim text-xs">{b.packageId?.name || "�"}</td>
+                      <td className="py-3 pr-3 text-glass-dim text-xs">{b.hotelId?.name || "?"}</td>
+                      <td className="py-3 pr-3 text-glass-dim text-xs">{b.packageId?.name || "?"}</td>
                       <td className="py-3 pr-3 text-glass-dim text-xs">{new Date(b.checkInDate).toLocaleDateString()}</td>
                       <td className="py-3 pr-3 text-glass-dim text-xs">{b.numberOfNights}</td>
                       <td className="py-3 pr-3 text-glass-light text-xs font-medium">NPR {b.totalPrice?.toLocaleString()}</td>
@@ -1317,7 +1346,7 @@ const Admin: React.FC = () => {
         </div>
       )}
 
-      {/* ── Orders Tab ── */}
+      {/* -- Orders Tab -- */}
       {activeTab === "orders" && (
         <div className="glass-card rounded-2xl p-6">
           {/* Header */}
@@ -1330,7 +1359,7 @@ const Admin: React.FC = () => {
               <input
                 value={orderSearch}
                 onChange={e => { setOrderSearch(e.target.value); setOrderPage(1); }}
-                placeholder="Search order ID / customer…"
+                placeholder="Search order ID / customer�"
                 className="glass-input text-sm rounded-lg px-3 py-1.5 w-52"
               />
               <select
@@ -1362,7 +1391,7 @@ const Admin: React.FC = () => {
 
           {/* Table */}
           {ordersLoading ? (
-            <div className="text-center py-12 text-glass-dim text-sm">Loading orders…</div>
+            <div className="text-center py-12 text-glass-dim text-sm">Loading orders�</div>
           ) : orders.length === 0 ? (
             <div className="text-center py-12">
               <ClipboardList className="w-10 h-10 text-glass-dim mx-auto mb-3 opacity-50" />
@@ -1573,7 +1602,7 @@ const Admin: React.FC = () => {
                     {viewHike.userId?.name?.charAt(0).toUpperCase() ?? '?'}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-white">{viewHike.userId?.name ?? '�'}</p>
+                    <p className="text-sm font-medium text-white">{viewHike.userId?.name ?? '?'}</p>
                     <p className="text-xs text-gray-400">{viewHike.userId?.email ?? ''}</p>
                   </div>
                 </div>
@@ -1750,7 +1779,7 @@ const Admin: React.FC = () => {
         </div>
       )}
 
-      {/* ── Hike Modal ── */}
+      {/* -- Hike Modal -- */}
       {hikeModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="glass-card rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -1776,7 +1805,7 @@ const Admin: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-glass-dim mb-1">Difficulty (1–5)</label>
+                  <label className="block text-xs text-glass-dim mb-1">Difficulty (1�5)</label>
                   <input type="number" min="1" max="5" value={hikeForm.difficulty}
                     onChange={(e) => setHikeForm({ ...hikeForm, difficulty: e.target.value })}
                     className="w-full px-3 py-2 rounded-lg glass-input text-sm" />
@@ -2051,7 +2080,7 @@ const Admin: React.FC = () => {
                   className="w-full px-3 py-2 rounded-lg glass-input text-sm" placeholder="https://..." />
               </div>
               <div>
-                <label className="block text-xs text-glass-dim mb-1">Rating (0�5)</label>
+                <label className="block text-xs text-glass-dim mb-1">Rating (0?5)</label>
                 <input type="number" min="0" max="5" step="0.1" value={hotelForm.rating}
                   onChange={e => setHotelForm({ ...hotelForm, rating: e.target.value })}
                   className="w-full px-3 py-2 rounded-lg glass-input text-sm" />
@@ -2073,7 +2102,7 @@ const Admin: React.FC = () => {
         </div>
       )}
 
-      {/* ── Packages Tab ── */}
+      {/* -- Packages Tab -- */}
       {activeTab === "packages" && (
         <div className="glass-card rounded-xl p-5">
           <div className="flex items-center gap-3 mb-4 flex-wrap">
@@ -2133,7 +2162,7 @@ const Admin: React.FC = () => {
                         )}
                       </td>
                       <td className="py-2.5 pr-3 text-glass-dim">
-                        <div>{pkg.hotelId?.name || "—"}</div>
+                        <div>{pkg.hotelId?.name || "�"}</div>
                         <div className="text-[10px] text-glass-dim">{pkg.hotelId?.location || ""}</div>
                       </td>
                       <td className="py-2.5 pr-3">
@@ -2143,7 +2172,7 @@ const Admin: React.FC = () => {
                       <td className="py-2.5 pr-3 text-glass-dim">{pkg.capacity} guests</td>
                       <td className="py-2.5 pr-3 text-glass-dim">{pkg.availableRooms}</td>
                       <td className="py-2.5 pr-3 text-glass-dim">
-                        {pkg.minStayNights}n{pkg.maxStayNights ? `–${pkg.maxStayNights}n` : "+"}
+                        {pkg.minStayNights}n{pkg.maxStayNights ? `�${pkg.maxStayNights}n` : "+"}
                       </td>
                       <td className="py-2.5 pr-3">
                         <span className={`px-1.5 py-0.5 rounded text-[10px] ${
@@ -2370,4 +2399,6 @@ const Admin: React.FC = () => {
   );
 };
 
+// #region Exports
 export default Admin;
+// #endregion Exports

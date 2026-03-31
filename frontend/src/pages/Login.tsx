@@ -1,4 +1,5 @@
-// src/pages/Login.tsx
+﻿// src/pages/Login.tsx
+// #region Imports
 import React, { useEffect } from "react";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -12,6 +13,7 @@ import StatusAlert from "../components/StatusAlert";
 import { login as loginRequest, googleAuth, storeToken } from "../services/auth";
 
 
+// #endregion Imports
 interface LoginFormValues {
   email: string;
   password: string;
@@ -303,4 +305,6 @@ const Login: React.FC = () => {
   );
 };
 
+// #region Exports
 export default Login;
+// #endregion Exports

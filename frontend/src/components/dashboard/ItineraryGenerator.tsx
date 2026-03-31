@@ -1,9 +1,14 @@
+// src/components/dashboard/ItineraryGenerator.tsx
+// AI-powered trip itinerary generator form. Sends parameters to the backend Groq API
+// and displays the generated day-by-day itinerary.
+// #region Imports
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateItinerary } from '../../services/itinerary';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import {
+// #endregion Imports
   Loader2, MapPin, Calendar, Sparkles, Download, RotateCcw,
   Mountain, Utensils, Camera, Tent, Palmtree, Landmark, Wallet,
   Clock, Navigation, FileText, PenLine, LayoutList,
@@ -90,6 +95,7 @@ const ItineraryGenerator: React.FC = () => {
   });
 
   useEffect(() => {
+    // Handles handler logic.
     const handler = (e: MouseEvent) => {
       if (
         suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node) &&
@@ -100,6 +106,7 @@ const ItineraryGenerator: React.FC = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // Handles handleChange logic.
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -112,12 +119,14 @@ const ItineraryGenerator: React.FC = () => {
     }
   };
 
+  // Handles handleDestinationSelect logic.
   const handleDestinationSelect = (dest: string) => {
     setFormData(prev => ({ ...prev, destination: dest }));
     setShowSuggestions(false);
     setFilteredSuggestions([]);
   };
 
+  // Handles handleDestinationFocus logic.
   const handleDestinationFocus = () => {
     if (formData.destination.trim()) {
       const filtered = DESTINATION_SUGGESTIONS.filter(d =>
@@ -128,6 +137,7 @@ const ItineraryGenerator: React.FC = () => {
     }
   };
 
+  // Handles toggleInterest logic.
   const toggleInterest = (label: string) => {
     const next = selectedInterests.includes(label)
       ? selectedInterests.filter(i => i !== label)
@@ -136,6 +146,7 @@ const ItineraryGenerator: React.FC = () => {
     setFormData(prev => ({ ...prev, interests: next.join(', ') }));
   };
 
+  // Handles handleSubmit logic.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = localStorage.getItem('travelBuddyToken');
@@ -171,6 +182,7 @@ const ItineraryGenerator: React.FC = () => {
     }
   };
 
+  // Handles handleReset logic.
   const handleReset = () => {
     setFormData({ startingLocation:'',destination:'',startDate:'',endDate:'',budget:'',travelStyle:'balanced',interests:'',additionalNotes:'' });
     setGeneratedItinerary('');
@@ -178,6 +190,7 @@ const ItineraryGenerator: React.FC = () => {
     setCustomPrompt('');
   };
 
+  // Handles handleDownloadPDF logic.
   const handleDownloadPDF = async () => {
     if (!generatedItinerary) return;
     try {
@@ -188,6 +201,7 @@ const ItineraryGenerator: React.FC = () => {
       const mL = 18, mR = 18, mT = 18, mB = 25;
       const cW = pageWidth - mL - mR;
       let y = mT;
+      // Handles np logic.
       const np = (sp = 10) => { if (y + sp > pageHeight - mB) { doc.addPage(); y = mT; } };
       for (const line of generatedItinerary.split('\n')) {
         if (!line.trim()) { y += 2; continue; }
@@ -199,7 +213,7 @@ const ItineraryGenerator: React.FC = () => {
         const isDay   = /^Day \d+:/i.test(line);
         const isSub   = /^(Morning|Afternoon|Evening|Practical tips?|Transportation|Food):/i.test(line);
         const isCost  = /^(Estimated cost|Total cost)/i.test(line);
-        const isBullet= /^[•\-]\s/.test(line.trim());
+        const isBullet= /^[�\-]\s/.test(line.trim());
         np(isDay ? 28 : isSub ? 18 : 10);
         if (isDay)       { y+=6; doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(20,80,200); }
         else if (isSub)  { y+=4; doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(30,100,200); }
@@ -238,7 +252,7 @@ const ItineraryGenerator: React.FC = () => {
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">AI Itinerary Generator</h2>
-            <p className="text-xs text-white/50">Powered by Gemini AI — plan your perfect trip</p>
+            <p className="text-xs text-white/50">Powered by Gemini AI � plan your perfect trip</p>
           </div>
         </div>
 
@@ -268,11 +282,11 @@ const ItineraryGenerator: React.FC = () => {
       {/* Main grid */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-5 min-h-0 overflow-hidden">
 
-        {/* ── LEFT — Form (mode-conditional) ──────────────── */}
+        {/* -- LEFT � Form (mode-conditional) ---------------- */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 overflow-y-auto pr-1 min-h-0" style={{ scrollbarWidth: 'thin' }}>
 
         {activeTab === 'custom' ? (
-          /* ─── Custom Prompt panel ─────────────────────── */
+          /* --- Custom Prompt panel ----------------------- */
           <>
             <div className="glass-card rounded-xl p-4 space-y-3 flex-1 flex flex-col">
               <div className="flex items-center justify-between">
@@ -280,7 +294,7 @@ const ItineraryGenerator: React.FC = () => {
                 <span className="text-[10px] text-white/40">{customPrompt.length} chars</span>
               </div>
               <p className="text-xs text-white/50 leading-relaxed">
-                Describe exactly what you want — destination, duration, budget, style, special requests. The AI will follow your instructions precisely.
+                Describe exactly what you want � destination, duration, budget, style, special requests. The AI will follow your instructions precisely.
               </p>
               <textarea
                 value={customPrompt}
@@ -293,7 +307,7 @@ const ItineraryGenerator: React.FC = () => {
 
             {/* Example prompts */}
             <div className="glass-card rounded-xl p-4 space-y-2">
-              <p className="text-xs font-semibold text-white/50 uppercase tracking-widest">Examples — click to use</p>
+              <p className="text-xs font-semibold text-white/50 uppercase tracking-widest">Examples � click to use</p>
               {EXAMPLE_PROMPTS.map((ex, i) => (
                 <button key={i} type="button"
                   onClick={() => setCustomPrompt(ex)}
@@ -304,7 +318,7 @@ const ItineraryGenerator: React.FC = () => {
             </div>
           </>
         ) : (
-          /* ─── Guided Form panels ──────────────────────── */
+          /* --- Guided Form panels ------------------------ */
           <>
 
           {/* Where to */}
@@ -460,7 +474,7 @@ const ItineraryGenerator: React.FC = () => {
           </>
           )} {/* end guided form else */}
 
-          {/* ─── Shared Actions ───────────────────────────────── */}
+          {/* --- Shared Actions --------------------------------- */}
           {activeTab === 'custom' && (
           <div className="flex gap-3 pb-2">
             <button type="submit" disabled={isLoading}
@@ -477,7 +491,7 @@ const ItineraryGenerator: React.FC = () => {
           )}
         </form>
 
-        {/* ── RIGHT — Output ───────────────────────────────── */}
+        {/* -- RIGHT � Output --------------------------------- */}
         <div className="glass-card rounded-xl flex flex-col h-full overflow-hidden">
 
           {/* Output header */}
@@ -544,4 +558,6 @@ const ItineraryGenerator: React.FC = () => {
   );
 };
 
+// #region Exports
 export default ItineraryGenerator;
+// #endregion Exports

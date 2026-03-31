@@ -1,5 +1,9 @@
+// frontend/src/services/trips.ts
+// API client for trip/hike join, leave, and user trip listing.
+// #region Imports
 import { API_BASE_URL } from "../config/env";
 
+// #endregion Imports
 export const getUserTrips = async () => {
   const token = localStorage.getItem("travelBuddyToken");
   if (!token) {
@@ -32,6 +36,7 @@ export const getUserTrips = async () => {
   return response.json();
 };
 
+// Handles joinTrip logic.
 export const joinTrip = async (tripId: string) => {
   const token = localStorage.getItem("travelBuddyToken");
   if (!token) {
@@ -64,6 +69,7 @@ export const joinTrip = async (tripId: string) => {
   return response.json();
 };
 
+// Handles leaveHike logic.
 export const leaveHike = async (hikeId: string) => {
   const token = localStorage.getItem("travelBuddyToken");
   if (!token) {

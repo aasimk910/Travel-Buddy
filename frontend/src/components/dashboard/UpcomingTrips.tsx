@@ -1,3 +1,6 @@
+// src/components/dashboard/UpcomingTrips.tsx
+// Dashboard widget showing the next upcoming hike the user has joined.
+// #region Imports
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserTrips } from '../../services/trips';
@@ -5,6 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { CalendarDays } from 'lucide-react';
 
+// #endregion Imports
 interface Trip {
   _id: string;
   title: string;
@@ -20,6 +24,7 @@ const UpcomingTrips: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Handles fetchTrips logic.
     const fetchTrips = async () => {
       try {
         const userTrips = await getUserTrips();
@@ -51,6 +56,7 @@ const UpcomingTrips: React.FC = () => {
     fetchTrips();
   }, [showError]);
 
+  // Handles formatDate logic.
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
@@ -88,4 +94,6 @@ const UpcomingTrips: React.FC = () => {
   );
 };
 
+// #region Exports
 export default UpcomingTrips;
+// #endregion Exports

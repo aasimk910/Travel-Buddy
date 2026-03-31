@@ -1,18 +1,24 @@
-// backend/index.js
+﻿// backend/index.js
+// Main entry point for the Travel Buddy Express server.
+// Sets up middleware, routes, Socket.IO, and connects to MongoDB.
+
+// #region Imports
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
-const helmet = require("helmet");
-const compression = require("compression");
+const cors = require("cors");           // Cross-Origin Resource Sharing middleware
+const helmet = require("helmet");       // Adds various HTTP security headers
+const compression = require("compression"); // Gzip compression for responses
 const dotenv = require("dotenv");
 const http = require("http");
-const { Server } = require("socket.io");
+const { Server } = require("socket.io"); // Real-time bidirectional communication
 
+// #endregion Imports
 dotenv.config(); // loads .env from backend folder
 
 const app = express();
-const server = http.createServer(app);
+const server = http.createServer(app); // Wraps Express app for Socket.IO support
 
+// Whitelist of allowed origins for CORS (frontend URLs)
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   "http://localhost:5173",
@@ -31,6 +37,7 @@ const corsOptions = {
   credentials: true,
 };
 
+// Initialize Socket.IO server with the same CORS policy
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -40,10 +47,11 @@ const io = new Server(server, {
 });
 
 // === Config ===
-const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI;
-const MONGO_DB_NAME = process.env.MONGO_DB_NAME;
+const PORT = process.env.PORT || 5000;        // Server listen port
+const MONGO_URI = process.env.MONGO_URI;      // MongoDB connection string
+const MONGO_DB_NAME = process.env.MONGO_DB_NAME; // Optional database name override
 
+// Fail fast if no database URI is configured
 if (!MONGO_URI) {
   console.error("❌ MONGO_URI is not defined in .env");
   process.exit(1);
@@ -54,57 +62,61 @@ console.log("🚀 Starting Travel Buddy backend...");
 // === Middlewares ===
 // Trust the first proxy (needed for rate limiting behind load balancers/nginx)
 app.set("trust proxy", 1);
-app.use(helmet()); // Security headers
-app.use(compression()); // Gzip response compression
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // Handle preflight for all routes
-app.use(express.json({ limit: "10mb" }));
+app.use(helmet()); // Security headers (XSS, CSP, etc.)
+app.use(compression()); // Gzip response compression for faster transfers
+app.use(cors(corsOptions));             // Enable CORS for all routes
+app.options("*", cors(corsOptions));    // Handle preflight OPTIONS for all routes
+app.use(express.json({ limit: "10mb" })); // Parse JSON bodies up to 10 MB
 
-// Rate limiting
+// Apply global rate limiting to all /api/* endpoints
 const { apiLimiter } = require("./middleware/rateLimiter");
 app.use("/api/", apiLimiter);
 
 // === Routes ===
+// Health-check root endpoint
 app.get("/", (req, res) => {
   res.send("Travel Buddy API is running ✅");
 });
 
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/users", require("./routes/users"));
-app.use("/api/reviews", require("./routes/reviews"));
-app.use("/api/photos", require("./routes/photos"));
-app.use("/api/hikes", require("./routes/hikes"));
-app.use("/api/trips", require("./routes/trips"));
-app.use("/api/itinerary", require("./routes/itinerary"));
-app.use("/api/expenses", require("./routes/expenses"));
-app.use("/api/products", require("./routes/products"));
-app.use("/api/orders", require("./routes/orders"));
-app.use("/api/admin", require("./routes/admin"));
-app.use("/api/payment", require("./routes/payment"));
-app.use("/api/payments", require("./routes/khalti-payments"));
-app.use("/api/rooms", require("./routes/rooms"));
-app.use("/api/hotels", require("./routes/hotels"));
-app.use("/api/bookings", require("./routes/bookings"));
-app.use("/api/stats", require("./routes/stats"));
-app.use("/api/messages", require("./routes/messages"));
-app.use("/api/user-trips", require("./routes/user-trips"));
+// Mount all feature-specific API route modules
+app.use("/api/auth", require("./routes/auth"));           // Authentication (signup, login, Google, password reset)
+app.use("/api/users", require("./routes/users"));         // User profile management & onboarding
+app.use("/api/reviews", require("./routes/reviews"));     // Travel location reviews
+app.use("/api/photos", require("./routes/photos"));       // Photo uploads & gallery
+app.use("/api/hikes", require("./routes/hikes"));         // Hike CRUD & join/leave
+app.use("/api/trips", require("./routes/trips"));         // Trip join functionality
+app.use("/api/itinerary", require("./routes/itinerary")); // AI-powered itinerary generation
+app.use("/api/expenses", require("./routes/expenses"));   // Hike expense splitting
+app.use("/api/products", require("./routes/products"));   // Shop products (read-only)
+app.use("/api/orders", require("./routes/orders"));       // Shop order management
+app.use("/api/admin", require("./routes/admin"));         // Admin panel CRUD operations
+app.use("/api/payment", require("./routes/payment"));     // General Khalti payment gateway
+app.use("/api/payments", require("./routes/khalti-payments")); // Hotel booking Khalti payments
+app.use("/api/rooms", require("./routes/rooms"));         // E2E encrypted chat room keys
+app.use("/api/hotels", require("./routes/hotels"));       // Hotel & package management
+app.use("/api/bookings", require("./routes/bookings"));   // Hotel booking CRUD
+app.use("/api/stats", require("./routes/stats"));         // Public site statistics
+app.use("/api/messages", require("./routes/messages"));   // Chat message history
+app.use("/api/user-trips", require("./routes/user-trips")); // User's joined trips/hikes
 
-// 404 handler
+// 404 handler — catches any unmatched routes
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// Global error handler
+// Global error handler — logs and returns a generic 500
 app.use((err, req, res, next) => {
   console.error("💥 Server error:", err);
   res.status(500).json({ error: "Something went wrong on the server" });
 });
 
 // === Socket.IO ===
+// Initialize real-time chat and E2E key exchange via socket events
 const { initSocket } = require("./utils/socket");
 initSocket(io);
 
 // === DB helpers ===
+// Checks if the MongoDB URI already includes a database name after the host
 function mongoUriHasDbName(uri) {
   const withoutProtocol = uri.replace(/^mongodb(\+srv)?:\/\//, "");
   const firstSlash = withoutProtocol.indexOf("/");
@@ -114,9 +126,11 @@ function mongoUriHasDbName(uri) {
   return Boolean(afterSlash.split("?")[0]);
 }
 
+// Connects to MongoDB and starts the HTTP server
 async function startServer() {
   try {
     const connectOptions = {};
+    // If the URI doesn't specify a DB, use the MONGO_DB_NAME env var (default: travelbuddy)
     if (!mongoUriHasDbName(MONGO_URI)) {
       connectOptions.dbName = MONGO_DB_NAME || "travelbuddy";
     }
@@ -134,15 +148,15 @@ async function startServer() {
 }
 
 // === Handle unhandled promise rejections ===
+// Prevents silent failures from unhandled async errors
 process.on("unhandledRejection", (reason, promise) => {
   console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
 });
 
+// Crashes the process on synchronous exceptions to avoid undefined state
 process.on("uncaughtException", (err) => {
   console.error("❌ Uncaught Exception:", err);
   process.exit(1);
 });
 
 startServer();
-
-module.exports = app;

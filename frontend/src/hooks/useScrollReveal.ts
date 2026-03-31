@@ -1,5 +1,11 @@
+﻿// frontend/src/hooks/useScrollReveal.ts
+// Custom hook for scroll-triggered reveal animations using IntersectionObserver.
+// Adds the "visible" class to any child with class "reveal" when it enters the viewport.
+
+// #region Imports
 import { useRef, useCallback, useEffect } from "react";
 
+// #endregion Imports
 /**
  * Returns a ref-callback. Attach it to any container element and every
  * child with class "reveal" will get class "visible" added once it

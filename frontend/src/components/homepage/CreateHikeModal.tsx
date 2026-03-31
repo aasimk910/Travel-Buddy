@@ -1,3 +1,4 @@
+﻿// #region Imports
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, MapPin, Navigation, CheckCircle2, Flag, MousePointerClick } from "lucide-react";
@@ -8,6 +9,7 @@ import { createHike } from "../../services/hikes";
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 
+// #endregion Imports
 // Fix for default marker icons in React-Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -75,6 +77,7 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
       reader.onerror = (error) => reject(error);
     });
 
+  // Handles handleImageChange logic.
   const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -91,6 +94,7 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
     }
   };
 
+  // Handles handleSubmit logic.
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!title || !location || !date) {
@@ -318,4 +322,6 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
   );
 };
 
+// #region Exports
 export default CreateHikeModal;
+// #endregion Exports

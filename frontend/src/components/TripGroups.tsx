@@ -1,3 +1,6 @@
+// src/components/TripGroups.tsx
+// Shows the user's joined hike groups with leave functionality and navigation to hike details.
+// #region Imports
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getUserTrips, leaveHike } from '../services/trips';
@@ -5,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { LogOut, Search } from 'lucide-react';
 
+// #endregion Imports
 interface Hike {
   _id: string;
   title: string;
@@ -25,6 +29,7 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
   const [leavingHikeId, setLeavingHikeId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Handles fetchTrips logic.
   const fetchTrips = async () => {
     setIsLoading(true);
     try {
@@ -48,6 +53,7 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
     fetchTrips();
   }, []);
 
+  // Handles handleLeaveHike logic.
   const handleLeaveHike = async (e: React.MouseEvent, hikeId: string) => {
     e.stopPropagation();
     if (!confirm('Are you sure you want to leave this hike?')) return;
@@ -121,4 +127,6 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
   );
 };
 
+// #region Exports
 export default TripGroups;
+// #endregion Exports

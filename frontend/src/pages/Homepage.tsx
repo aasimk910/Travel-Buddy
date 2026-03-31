@@ -1,4 +1,5 @@
-// src/pages/Homepage.tsx
+﻿// src/pages/Homepage.tsx
+// #region Imports
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useScrollReveal } from "../hooks/useScrollReveal";
@@ -15,6 +16,7 @@ import { getRecommendedHikes, getSiteStats, type Hike, type SiteStats } from "..
 
  
 
+// #endregion Imports
 const Homepage: React.FC = () => {
   const { user } = useAuth();
   const revealRef = useScrollReveal();
@@ -28,6 +30,7 @@ const Homepage: React.FC = () => {
   const [selectedHike, setSelectedHike] = useState<Hike | null>(null);
   const [siteStats, setSiteStats] = useState<SiteStats | null>(null);
 
+  // Handles fetchLatestPhotos logic.
   const fetchLatestPhotos = async () => {
     setIsLoadingPhotos(true);
     setPhotosError(null);
@@ -42,6 +45,7 @@ const Homepage: React.FC = () => {
     }
   };
 
+  // Handles fetchRecommendations logic.
   const fetchRecommendations = async () => {
     const token = localStorage.getItem("travelBuddyToken");
     if (!token) return;
@@ -227,4 +231,6 @@ const Homepage: React.FC = () => {
   );
 };
 
+// #region Exports
 export default Homepage;
+// #endregion Exports

@@ -1,5 +1,11 @@
+﻿// backend/models/Expense.js
+// Mongoose schema for shared hike expenses. Supports equal, share-based, and custom splits.
+// Each expense records who paid and how the cost is divided among participants.
+
+// #region Imports
 const mongoose = require("mongoose");
 
+// #endregion Imports
 const ExpenseSchema = new mongoose.Schema(
   {
     hikeId: {
@@ -88,4 +94,6 @@ ExpenseSchema.index({ hikeId: 1, createdAt: -1 });
 
 const Expense = mongoose.model("Expense", ExpenseSchema);
 
+// #region Exports
 module.exports = Expense;
+// #endregion Exports

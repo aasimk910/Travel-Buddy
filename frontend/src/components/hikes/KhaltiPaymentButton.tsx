@@ -1,8 +1,12 @@
+// src/components/hikes/KhaltiPaymentButton.tsx
+// Button that initiates a Khalti payment flow for a hotel booking and redirects to checkout.
+// #region Imports
 import { useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { API_BASE_URL } from "../../config/env";
 import { CreditCard, Loader2 } from "lucide-react";
 
+// #endregion Imports
 interface KhaltiPaymentButtonProps {
   bookingId: string;
   amount: number;
@@ -10,7 +14,9 @@ interface KhaltiPaymentButtonProps {
   onPaymentFailure?: () => void;
 }
 
+// #region Exports
 export default function KhaltiPaymentButton({
+// #endregion Exports
   bookingId,
   amount,
   onPaymentSuccess,
@@ -19,6 +25,7 @@ export default function KhaltiPaymentButton({
   const [isLoading, setIsLoading] = useState(false);
   const { showToast } = useToast();
 
+  // Handles handlePaymentClick logic.
   const handlePaymentClick = async () => {
     try {
       setIsLoading(true);

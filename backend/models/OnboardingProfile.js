@@ -1,5 +1,12 @@
+﻿// backend/models/OnboardingProfile.js
+// Mongoose schema for the hiking onboarding questionnaire profile.
+// Stores preferences (experience, fitness, region, budget, etc.) used by the recommendation engine.
+// One profile per user (unique userId index).
+
+// #region Imports
 const mongoose = require("mongoose");
 
+// #endregion Imports
 const onboardingProfileSchema = new mongoose.Schema(
   {
     userId: {
@@ -73,4 +80,6 @@ const onboardingProfileSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// #region Exports
 module.exports = mongoose.model("OnboardingProfile", onboardingProfileSchema);
+// #endregion Exports

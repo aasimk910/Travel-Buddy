@@ -1,5 +1,7 @@
-// backend/routes/orders.js — public order placement endpoint
+﻿// backend/routes/orders.js — public order placement endpoint
+// #region Imports
 const express = require("express");
+// #endregion Imports
 const router = express.Router();
 const { createOrder } = require("../controllers/adminController");
 
@@ -7,6 +9,7 @@ const { createOrder } = require("../controllers/adminController");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
+// Handles optionalAuth logic.
 const optionalAuth = async (req, res, next) => {
   const header = req.headers.authorization;
   if (!header?.startsWith("Bearer ")) return next();
@@ -38,4 +41,6 @@ router.get("/mine", authenticateToken, async (req, res) => {
   }
 });
 
+// #region Exports
 module.exports = router;
+// #endregion Exports

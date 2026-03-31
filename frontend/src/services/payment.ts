@@ -1,5 +1,9 @@
+// frontend/src/services/payment.ts
+// API client for Khalti payment initiation and verification.
+// #region Imports
 import { API_BASE_URL } from '../config/env';
 
+// #endregion Imports
 export interface KhaltiInitiateRequest {
   amount: number;
   orderId: string;

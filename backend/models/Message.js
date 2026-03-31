@@ -1,5 +1,11 @@
+﻿// backend/models/Message.js
+// Mongoose schema for hike group chat messages. Supports text and optional file attachments
+// (stored on Cloudinary). Indexed on (hikeId, createdAt) for efficient pagination.
+
+// #region Imports
 const mongoose = require("mongoose");
 
+// #endregion Imports
 const AttachmentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   type: { type: String, required: true },
@@ -41,4 +47,6 @@ const MessageSchema = new mongoose.Schema(
 // Index for faster queries by hikeId
 MessageSchema.index({ hikeId: 1, createdAt: 1 });
 
+// #region Exports
 module.exports = mongoose.model("Message", MessageSchema);
+// #endregion Exports

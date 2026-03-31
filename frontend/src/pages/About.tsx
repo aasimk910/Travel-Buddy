@@ -1,6 +1,10 @@
+// src/pages/About.tsx
+// About page describing the Travel Buddy platform, mission, and team.
+// #region Imports
 import React, { useEffect, useState } from "react";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import {
+// #endregion Imports
   Map,
   Users,
   Navigation,
@@ -21,7 +25,7 @@ type SiteStats = {
   upcomingHikes: number;
 };
 
-// ─── Star renderer ────────────────────────────────────────────────
+// --- Star renderer ------------------------------------------------
 const Stars: React.FC<{ rating: number }> = ({ rating }) => (
   <div className="flex items-center gap-0.5">
     {[1, 2, 3, 4, 5].map((i) => (
@@ -33,7 +37,7 @@ const Stars: React.FC<{ rating: number }> = ({ rating }) => (
   </div>
 );
 
-// ─── Feature card ─────────────────────────────────────────────────
+// --- Feature card -------------------------------------------------
 const FeatureCard: React.FC<{
   icon: React.ReactNode;
   title: string;
@@ -49,7 +53,7 @@ const FeatureCard: React.FC<{
   </div>
 );
 
-// ─── Main page ────────────────────────────────────────────────────
+// --- Main page ----------------------------------------------------
 const About: React.FC = () => {
   const revealRef = useScrollReveal();
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -78,7 +82,7 @@ const About: React.FC = () => {
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-12 space-y-16" ref={revealRef}>
-      {/* ── Hero ─────────────────────────────────────────────────── */}
+      {/* -- Hero --------------------------------------------------- */}
       <section className="text-center max-w-3xl mx-auto space-y-5">
         <div className="inline-flex items-center gap-2 rounded-full glass-strong px-4 py-1.5 text-xs font-medium text-black reveal reveal-fade">
           <span className="w-2 h-2 rounded-full bg-emerald-500" />
@@ -90,16 +94,16 @@ const About: React.FC = () => {
         <p className="text-gray-200 text-base sm:text-lg leading-relaxed reveal reveal-fade delay-200">
           Travel Buddy is a community platform built for hikers and outdoor
           enthusiasts in Nepal. Discover trails, connect with fellow adventurers,
-          plan trips together, and share your journey — all in one place.
+          plan trips together, and share your journey � all in one place.
         </p>
       </section>
 
-      {/* ── Mission ──────────────────────────────────────────────── */}
+      {/* -- Mission ------------------------------------------------ */}
       <section className="glass-card rounded-2xl p-8 sm:p-12 grid md:grid-cols-2 gap-10 items-center reveal reveal-up">
         <div className="space-y-4 reveal reveal-left">
           <h2 className="text-2xl sm:text-3xl font-bold text-white">Our Mission</h2>
           <p className="text-gray-200 leading-relaxed">
-            Nepal is home to some of the world's most breathtaking trails —
+            Nepal is home to some of the world's most breathtaking trails �
             from day hikes around Kathmandu Valley to multi-day treks in the
             Annapurna and Everest regions. Yet finding reliable trail partners
             and accurate route information can be difficult.
@@ -112,10 +116,10 @@ const About: React.FC = () => {
         </div>
         <div className="grid gap-4 grid-cols-2 reveal reveal-right delay-200">
           {[
-            { label: "Hikes Listed", value: stats ? stats.hikeCount.toString() : "…", delay: "delay-100" },
-            { label: "Active Hikers", value: stats ? stats.userCount.toString() : "…", delay: "delay-200" },
-            { label: "Trip Photos", value: stats ? stats.photoCount.toString() : "…", delay: "delay-300" },
-            { label: "Upcoming Hikes", value: stats ? stats.upcomingHikes.toString() : "…", delay: "delay-400" },
+            { label: "Hikes Listed", value: stats ? stats.hikeCount.toString() : "�", delay: "delay-100" },
+            { label: "Active Hikers", value: stats ? stats.userCount.toString() : "�", delay: "delay-200" },
+            { label: "Trip Photos", value: stats ? stats.photoCount.toString() : "�", delay: "delay-300" },
+            { label: "Upcoming Hikes", value: stats ? stats.upcomingHikes.toString() : "�", delay: "delay-400" },
           ].map(({ label, value, delay }) => (
             <div
               key={label}
@@ -128,7 +132,7 @@ const About: React.FC = () => {
         </div>
       </section>
 
-      {/* ── Features ─────────────────────────────────────────────── */}
+      {/* -- Features ----------------------------------------------- */}
       <section className="space-y-6">
         <h2 className="text-2xl sm:text-3xl font-bold text-white text-center reveal reveal-up">
           Everything you need for your next hike
@@ -143,7 +147,7 @@ const About: React.FC = () => {
           <FeatureCard
             icon={<Ruler className="w-5 h-5" />}
             title="Trail Distance Calculator"
-            desc="Measure real walking distances along actual paths — not straight lines. Powered by OSRM foot-routing, so you know exactly how far you'll hike."
+            desc="Measure real walking distances along actual paths � not straight lines. Powered by OSRM foot-routing, so you know exactly how far you'll hike."
             delay="delay-200"
           />
           <FeatureCard
@@ -185,7 +189,7 @@ const About: React.FC = () => {
         </div>
       </section>
 
-      {/* ── Community Reviews ─────────────────────────────────────── */}
+      {/* -- Community Reviews --------------------------------------- */}
       <section className="space-y-6">
         <div className="flex items-end justify-between flex-wrap gap-4 reveal reveal-up">
           <div>
@@ -205,12 +209,12 @@ const About: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-12 text-gray-300">Loading reviews…</div>
+          <div className="text-center py-12 text-gray-300">Loading reviews�</div>
         ) : error ? (
           <div className="text-center py-12 text-red-300">{error}</div>
         ) : reviews.length === 0 ? (
           <div className="glass-card rounded-xl p-10 text-center text-gray-300">
-            No reviews yet — join a hike and be the first to share your experience!
+            No reviews yet � join a hike and be the first to share your experience!
           </div>
         ) : (
           <>
@@ -276,4 +280,6 @@ const About: React.FC = () => {
   );
 };
 
+// #region Exports
 export default About;
+// #endregion Exports

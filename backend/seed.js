@@ -1,8 +1,14 @@
-// Direct database seeding script
+﻿// backend/seed.js
+// Standalone CLI script that seeds the database with sample data.
+// Clears existing records and inserts dummy admin user, hotels, packages, hikes, and products.
+// Usage: node seed.js
+
+// #region Imports
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 
+// #endregion Imports
 dotenv.config();
 
 const User = require("./models/User");
@@ -14,9 +20,11 @@ const Product = require("./models/Product");
 const MONGO_URI = process.env.MONGO_URI;
 const MONGO_DB_NAME = process.env.MONGO_DB_NAME;
 
+// Main seeding function — connects to DB, wipes collections, inserts sample records
 async function seedDatabase() {
   try {
     const connectOptions = {};
+    // Fall back to explicit dbName when the URI doesn't embed one
     if (!MONGO_URI.includes("travelbuddy")) {
       connectOptions.dbName = MONGO_DB_NAME || "travelbuddy";
     }
@@ -24,7 +32,7 @@ async function seedDatabase() {
     await mongoose.connect(MONGO_URI, connectOptions);
     console.log("✅ Connected to MongoDB");
 
-    // Clear existing data
+    // Clear existing data from all seeded collections
     console.log("🧹 Clearing existing data...");
     await User.deleteMany({});
     await Hotel.deleteMany({});
@@ -32,7 +40,7 @@ async function seedDatabase() {
     await Hike.deleteMany({});
     await Product.deleteMany({});
 
-    // Create a dummy admin user for hikes
+    // Create a dummy admin user that owns the seeded hikes
     console.log("👤 Creating dummy user...");
     const hashedPassword = await bcrypt.hash("password123", 10);
     const adminUser = new User({
@@ -47,7 +55,6 @@ async function seedDatabase() {
 
     // Seed Hotels with Packages
     console.log("🏨 Seeding hotels...");
-    
     const hotelsData = [
       {
         name: "Himalayan Horizon Hotel",

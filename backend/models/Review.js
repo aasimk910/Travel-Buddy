@@ -1,5 +1,10 @@
+﻿// backend/models/Review.js
+// Mongoose schema for travel location reviews. Users rate locations 1-5 with optional comments.
+
+// #region Imports
 const mongoose = require("mongoose");
 
+// #endregion Imports
 const ReviewSchema = new mongoose.Schema(
   {
     userId: {
@@ -34,5 +39,7 @@ const ReviewSchema = new mongoose.Schema(
   }
 );
 
+// #region Exports
 module.exports = mongoose.model("Review", ReviewSchema);
 
+// #endregion Exports

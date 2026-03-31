@@ -1,3 +1,6 @@
+// src/components/homepage/ReviewCard.tsx
+// Card for submitting and displaying location reviews with star ratings.
+// #region Imports
 import React, { useState, useRef } from "react";
 import { useToast } from "../../context/ToastContext";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +9,7 @@ import DOMPurify from "dompurify";
 import { MapPin, PenLine, RefreshCw, Star } from "lucide-react";
 import { submitReview } from "../../services/reviews";
 
+// #endregion Imports
 const FEATURED_LOCATIONS = [
   "Chamlang Central",
   "Nagarkot View Tower",
@@ -15,6 +19,7 @@ const FEATURED_LOCATIONS = [
   "Shivapuri Peak",
 ];
 
+// Handles getRandomLocation logic.
 const getRandomLocation = (current?: string) => {
   const filtered = FEATURED_LOCATIONS.filter((loc) => loc !== current);
   const list = filtered.length ? filtered : FEATURED_LOCATIONS;
@@ -35,6 +40,7 @@ const ReviewCard: React.FC = () => {
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [reviewMessage, setReviewMessage]     = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // Handles handleSubmit logic.
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -82,6 +88,7 @@ const ReviewCard: React.FC = () => {
     }
   };
 
+  // Handles handleShowAnother logic.
   const handleShowAnother = () => {
     setReviewLocation(getRandomLocation(reviewLocation));
     setLocationTouched(false);
@@ -121,7 +128,7 @@ const ReviewCard: React.FC = () => {
           </div>
           {!locationTouched && (
             <p className="text-center text-white/35 text-xs mt-1.5">
-              Suggested Â· <button type="button" onClick={handleShowAnother} className="underline hover:text-white/60 transition-colors">try another</button>
+              Suggested · <button type="button" onClick={handleShowAnother} className="underline hover:text-white/60 transition-colors">try another</button>
             </p>
           )}
         </div>
@@ -146,7 +153,7 @@ const ReviewCard: React.FC = () => {
                 }`}
                 aria-pressed={reviewRating === star}
               >
-                â˜…
+                ?
               </button>
             ))}
           </div>
@@ -159,7 +166,7 @@ const ReviewCard: React.FC = () => {
         <textarea
           value={reviewComment}
           onChange={(e) => setReviewComment(e.target.value)}
-          placeholder="Share your experience â€” what did you love? Any tips for others?"
+          placeholder="Share your experience — what did you love? Any tips for others?"
           className="w-full px-4 py-3 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white/40 resize-none mb-4 text-white placeholder-gray-400"
           rows={4}
         />
@@ -192,4 +199,6 @@ const ReviewCard: React.FC = () => {
   );
 };
 
+// #region Exports
 export default ReviewCard;
+// #endregion Exports

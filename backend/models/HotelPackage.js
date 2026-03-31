@@ -1,5 +1,11 @@
+﻿// backend/models/HotelPackage.js
+// Mongoose schema for hotel room packages. Defines room type, pricing, capacity,
+// amenities, stay constraints (min/max nights), and cancellation policy.
+
+// #region Imports
 const mongoose = require("mongoose");
 
+// #endregion Imports
 const HotelPackageSchema = new mongoose.Schema(
   {
     hotelId: {
@@ -70,4 +76,6 @@ const HotelPackageSchema = new mongoose.Schema(
   }
 );
 
+// #region Exports
 module.exports = mongoose.model("HotelPackage", HotelPackageSchema);
+// #endregion Exports

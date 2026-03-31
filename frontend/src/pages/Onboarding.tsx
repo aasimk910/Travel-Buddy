@@ -1,9 +1,13 @@
+// src/pages/Onboarding.tsx
+// Multi-step hiking preference questionnaire that powers personalized recommendations.
+// #region Imports
 import React, { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { completeOnboarding } from "../services/onboarding";
 import { getRecommendedHikes, type Hike } from "../services/hikes";
 
+// #endregion Imports
 type LocationState = {
   from?: string;
 };
@@ -53,6 +57,7 @@ const Onboarding: React.FC = () => {
   const [recommendations, setRecommendations] = useState<Hike[]>([]);
   const [isDone, setIsDone] = useState(false);
 
+  // Handles handleSubmit logic.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -327,7 +332,7 @@ const Onboarding: React.FC = () => {
           {isDone && (
             <div className="mt-8">
               <div className="rounded-md bg-emerald-500/20 border border-emerald-400/30 px-4 py-3 mb-6 text-sm text-emerald-200">
-                ✓ Your preferences have been saved successfully!
+                ? Your preferences have been saved successfully!
               </div>
               
               <h2 className="text-xl font-semibold text-white">Recommended for you</h2>
@@ -369,4 +374,6 @@ const Onboarding: React.FC = () => {
   );
 };
 
+// #region Exports
 export default Onboarding;
+// #endregion Exports

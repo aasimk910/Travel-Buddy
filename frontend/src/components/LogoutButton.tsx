@@ -1,9 +1,11 @@
-// src/components/LogoutButton.tsx
+﻿// src/components/LogoutButton.tsx
+// #region Imports
 import React from "react";
 import { LogOut } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
+// #endregion Imports
 interface LogoutButtonProps {
   className?: string;
   showText?: boolean;
@@ -16,6 +18,7 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
   const { logout } = useAuth();
   const navigate = useNavigate();
 
+  // Handles handleLogout logic.
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -32,6 +35,8 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
   );
 };
 
+// #region Exports
 export default LogoutButton;
 
 
+// #endregion Exports

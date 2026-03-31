@@ -1,5 +1,11 @@
+﻿// backend/models/HotelBooking.js
+// Mongoose schema for hotel bookings. Tracks check-in/out dates, pricing, guest info,
+// booking status (pending/confirmed/cancelled), and Khalti payment details.
+
+// #region Imports
 const mongoose = require("mongoose");
 
+// #endregion Imports
 const HotelBookingSchema = new mongoose.Schema(
   {
     userId: {
@@ -124,4 +130,6 @@ HotelBookingSchema.index({ userId: 1, createdAt: -1 });
 HotelBookingSchema.index({ hotelId: 1, checkInDate: 1 });
 HotelBookingSchema.index({ hikeId: 1 });
 
+// #region Exports
 module.exports = mongoose.model("HotelBooking", HotelBookingSchema);
+// #endregion Exports

@@ -1,8 +1,16 @@
-// backend/controllers/userController.js
+﻿// backend/controllers/userController.js
+// Manages user profiles: onboarding questionnaire, profile updates, and E2E public key storage.
+
+// #region Imports
 const User = require("../models/User");
 const OnboardingProfile = require("../models/OnboardingProfile");
 const { buildUserResponse } = require("../utils/userUtils");
 
+// #endregion Imports
+
+// Saves the user's hiking onboarding preferences.
+// Validates all fields against allowed enum values, then upserts the OnboardingProfile
+// and sets User.onboardingCompleted = true. This enables personalized hike recommendations.
 const saveOnboarding = async (req, res) => {
   try {
     console.log("[Onboarding Endpoint] User:", req.user?.email, "Received payload:", JSON.stringify(req.body, null, 2));
@@ -117,6 +125,8 @@ const saveOnboarding = async (req, res) => {
   }
 };
 
+// Updates basic user profile fields (name, email, country, travelStyle, etc.).
+// Checks for email uniqueness if the email is changed.
 const updateProfile = async (req, res) => {
   try {
     const { name, email, country, travelStyle, budgetRange, interests, avatarUrl } = req.body;
@@ -165,6 +175,7 @@ const updateProfile = async (req, res) => {
   }
 };
 
+// Stores the user's ECDH P-256 public key (as JWK) for end-to-end encrypted chat.
 const storePublicKey = async (req, res) => {
   try {
     const { publicKeyJwk } = req.body;
@@ -181,4 +192,6 @@ const storePublicKey = async (req, res) => {
   }
 };
 
+// #region Exports
 module.exports = { saveOnboarding, updateProfile, storePublicKey };
+// #endregion Exports

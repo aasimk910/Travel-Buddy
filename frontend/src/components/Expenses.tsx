@@ -1,6 +1,11 @@
+// src/components/Expenses.tsx
+// Expense tracker UI for hike groups. Supports adding, editing, deleting expenses
+// with equal/share/custom splits and shows settlement summary.
+// #region Imports
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+// #endregion Imports
   DollarSign,
   Plus,
   Edit2,
@@ -49,6 +54,7 @@ interface HikeParticipant {
   email: string;
 }
 
+// Handles Expenses logic.
 const Expenses = ({ roomId }: ExpensesProps) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -83,6 +89,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
     }
   }, [roomId]);
 
+  // Handles fetchParticipants logic.
   const fetchParticipants = async () => {
     if (!roomId) return;
     try {
@@ -109,6 +116,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
     }
   };
 
+  // Handles fetchExpenses logic.
   const fetchExpenses = async () => {
     if (!roomId) return;
     setIsLoading(true);
@@ -122,6 +130,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
     }
   };
 
+  // Handles fetchSummary logic.
   const fetchSummary = async () => {
     if (!roomId) return;
     try {
@@ -132,6 +141,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
     }
   };
 
+  // Handles handleAuthError logic.
   const handleAuthError = (error: any) => {
     if (error instanceof Error && error.message === "AUTH_EXPIRED") {
       logout();
@@ -142,6 +152,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
     }
   };
 
+  // Handles openModal logic.
   const openModal = (expense?: Expense) => {
     if (expense) {
       setEditingExpense(expense);
@@ -177,11 +188,13 @@ const Expenses = ({ roomId }: ExpensesProps) => {
     setShowModal(true);
   };
 
+  // Handles closeModal logic.
   const closeModal = () => {
     setShowModal(false);
     setEditingExpense(null);
   };
 
+  // Handles toggleParticipant logic.
   const toggleParticipant = (participant: HikeParticipant) => {
     const exists = selectedParticipants.find((p) => p.userId === participant._id);
     if (exists) {
@@ -196,6 +209,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
     }
   };
 
+  // Handles updateParticipantShare logic.
   const updateParticipantShare = (userId: string, value: number) => {
     setSelectedParticipants(
       selectedParticipants.map((p) =>
@@ -204,6 +218,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
     );
   };
 
+  // Handles updateParticipantAmount logic.
   const updateParticipantAmount = (userId: string, value: number) => {
     setSelectedParticipants(
       selectedParticipants.map((p) =>
@@ -212,6 +227,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
     );
   };
 
+  // Handles handleSubmit logic.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!roomId) return;
@@ -257,6 +273,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
     }
   };
 
+  // Handles handleDelete logic.
   const handleDelete = async (expenseId: string) => {
     if (!roomId) return;
     if (!confirm("Are you sure you want to delete this expense?")) return;
@@ -271,6 +288,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
     }
   };
 
+  // Handles exportToCSV logic.
   const exportToCSV = () => {
     if (!expenses.length) return;
 
@@ -437,7 +455,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                     {expense.description}
                   </h4>
                   <p className="text-sm text-glass-dim">
-                    {new Date(expense.date).toLocaleDateString()} â€¢{" "}
+                    {new Date(expense.date).toLocaleDateString()} •{" "}
                     {expense.category}
                   </p>
                 </div>
@@ -462,7 +480,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
               <div className="text-sm">
                 <p className="text-glass-dim mb-1">
                   Paid by <span className="text-glass font-medium">{expense.paidBy.name}</span>
-                  {" â€¢ "}
+                  {" • "}
                   <span className="capitalize">{expense.splitType} split</span>
                 </p>
                 <div className="flex flex-wrap gap-2 mt-2">
@@ -706,4 +724,6 @@ const Expenses = ({ roomId }: ExpensesProps) => {
   );
 };
 
+// #region Exports
 export default Expenses;
+// #endregion Exports

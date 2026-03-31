@@ -1,7 +1,9 @@
-// src/components/Toast.tsx
+﻿// src/components/Toast.tsx
+// #region Imports
 import React, { useEffect } from "react";
 import { CheckCircle, XCircle, Info, AlertTriangle, X as XIcon } from "lucide-react";
 
+// #endregion Imports
 export type ToastType = "success" | "error" | "info" | "warning";
 
 export interface Toast {
@@ -54,6 +56,8 @@ const ToastComponent: React.FC<ToastProps> = ({ toast, onClose }) => {
   );
 };
 
+// #region Exports
 export default ToastComponent;
 
 
+// #endregion Exports

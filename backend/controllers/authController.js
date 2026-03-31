@@ -1,4 +1,8 @@
-// backend/controllers/authController.js
+﻿// backend/controllers/authController.js
+// Handles all authentication flows: local signup/login, Google OAuth, password reset.
+// Passwords are hashed with bcrypt; sessions are managed via JWT tokens.
+
+// #region Imports
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
@@ -8,11 +12,15 @@ const User = require("../models/User");
 const { sendWelcomeEmail, sendPasswordResetEmail } = require("../utils/email");
 const { buildUserResponse } = require("../utils/userUtils");
 
+// #endregion Imports
+
+// JWT signing secret — must be set or the server won't start
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is not set in the environment.");
 }
 
+// Google OAuth client ID — optional, but Google login won't work without it
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 
@@ -22,10 +30,13 @@ if (!GOOGLE_CLIENT_ID) {
   );
 }
 
+// Creates the Google OAuth client only if credentials are configured
 const googleClient = GOOGLE_CLIENT_ID
   ? new OAuth2Client(GOOGLE_CLIENT_ID)
   : null;
 
+// Registers a new user with email/password after reCAPTCHA verification.
+// Hashes the password, sends a welcome email, and returns a JWT.
 const signup = async (req, res) => {
   try {
     const {
@@ -48,6 +59,7 @@ const signup = async (req, res) => {
       return res.status(400).json({ message: "reCAPTCHA is required." });
     }
 
+    // Verify reCAPTCHA token with Google (skipped in dev for test tokens)
     const isTestToken = recaptchaToken === "test" || recaptchaToken === "dev_token";
     if (!isTestToken || process.env.NODE_ENV === "production") {
       try {
@@ -67,13 +79,16 @@ const signup = async (req, res) => {
       return res.status(400).json({ message: "reCAPTCHA verification failed." });
     }
 
+    // Ensure email isn't already registered
     const existing = await User.findOne({ email });
     if (existing) {
       return res.status(400).json({ message: "Email is already registered." });
     }
 
+    // Hash password with bcrypt (cost factor 10)
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Persist the new user record
     const user = await User.create({
       name,
       email,
@@ -85,8 +100,10 @@ const signup = async (req, res) => {
       provider: "password",
     });
 
+    // Send async welcome email (non-blocking — failure is logged, not thrown)
     await sendWelcomeEmail({ name, email });
 
+    // Issue JWT valid for 7 days
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "7d" });
 
     return res.status(201).json({
@@ -100,6 +117,8 @@ const signup = async (req, res) => {
   }
 };
 
+// Authenticates a user via email/password.
+// Compares the hashed password and returns a JWT on success.
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -131,6 +150,8 @@ const login = async (req, res) => {
   }
 };
 
+// Authenticates a user via Google ID token.
+// Creates a new account on first login; updates avatar on subsequent logins.
 const googleAuth = async (req, res) => {
   const { credential } = req.body;
 
@@ -190,6 +211,8 @@ const googleAuth = async (req, res) => {
   }
 };
 
+// Initiates password reset by generating a time-limited reset token.
+// Sends a reset link via email. Always returns the same message to prevent email enumeration.
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -226,6 +249,7 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+// Completes password reset by verifying the hashed token and updating the password.
 const resetPassword = async (req, res) => {
   try {
     const { password } = req.body;
@@ -255,4 +279,6 @@ const resetPassword = async (req, res) => {
   }
 };
 
+// #region Exports
 module.exports = { signup, login, googleAuth, forgotPassword, resetPassword };
+// #endregion Exports
