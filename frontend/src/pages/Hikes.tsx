@@ -4,7 +4,6 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { Link, useNavigate } from "react-router-dom";
 import {
-// #endregion Imports
   Map,
   Globe2,
   Search,
@@ -18,7 +17,9 @@ import { useAuth } from "../context/AuthContext";
 import { getHikes } from "../services/hikes";
 import ConnectModal from "../components/hikes/ConnectModal";
 import CreateHikeModal from "../components/homepage/CreateHikeModal";
+// #endregion Imports
 
+// #region Types
 type Hike = {
   _id: string;
   title: string;
@@ -38,7 +39,9 @@ type Hike = {
   createdAt?: string;
   updatedAt?: string;
 };
+// #endregion Types
 
+// #region Helpers
 // Helper function to format date
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -62,7 +65,9 @@ const extractPlace = (location: string): string => {
 
 // Handles difficultyLabel logic.
 const difficultyLabel = (value: number) => `Difficulty: ${value}/5`;
+// #endregion Helpers
 
+// #region Component
 const Hikes: React.FC = () => {
   const revealRef = useScrollReveal();
   const navigate = useNavigate();
@@ -395,6 +400,8 @@ const Hikes: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default Hikes;

@@ -2,9 +2,12 @@
 // Celebratory popup modal shown after a successful Khalti payment.
 // Uses the project's glassmorphism design system (glass-card, glass-dark, glass-button-dark, text-glass-*).
 
+// #region Imports
 import { useEffect } from "react";
 import { CheckCircle, X, PartyPopper } from "lucide-react";
+// #endregion Imports
 
+// #region Types
 interface PaymentSuccessModalProps {
   /** Whether the modal is visible */
   open: boolean;
@@ -19,7 +22,9 @@ interface PaymentSuccessModalProps {
   /** Optional callback for the action button (defaults to onClose) */
   onAction?: () => void;
 }
+// #endregion Types
 
+// #region Component
 export default function PaymentSuccessModal({
   open,
   onClose,
@@ -129,3 +134,4 @@ export default function PaymentSuccessModal({
     </div>
   );
 }
+// #endregion Component

@@ -8,6 +8,7 @@ const { buildUserResponse } = require("../utils/userUtils");
 
 // #endregion Imports
 
+// #region Onboarding
 // Saves the user's hiking onboarding preferences.
 // Validates all fields against allowed enum values, then upserts the OnboardingProfile
 // and sets User.onboardingCompleted = true. This enables personalized hike recommendations.
@@ -124,7 +125,9 @@ const saveOnboarding = async (req, res) => {
     return res.status(500).json({ message: "Unable to save onboarding preferences: " + err.message });
   }
 };
+// #endregion Onboarding
 
+// #region Profile
 // Updates basic user profile fields (name, email, country, travelStyle, etc.).
 // Checks for email uniqueness if the email is changed.
 const updateProfile = async (req, res) => {
@@ -174,7 +177,9 @@ const updateProfile = async (req, res) => {
     return res.status(500).json({ message: "Unable to update profile. Please try again." });
   }
 };
+// #endregion Profile
 
+// #region Public Key
 // Stores the user's ECDH P-256 public key (as JWK) for end-to-end encrypted chat.
 const storePublicKey = async (req, res) => {
   try {
@@ -191,6 +196,7 @@ const storePublicKey = async (req, res) => {
     res.status(500).json({ message: "Unable to store public key." });
   }
 };
+// #endregion Public Key
 
 // #region Exports
 module.exports = { saveOnboarding, updateProfile, storePublicKey };

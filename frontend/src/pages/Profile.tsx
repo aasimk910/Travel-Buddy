@@ -13,8 +13,12 @@ import { getUserTrips } from "../services/trips";
 import { getToken } from "../services/auth";
 
 // #endregion Imports
-const MAX_PHOTO_SIZE_BYTES = 6 * 1024 * 1024;
 
+// #region Constants
+const MAX_PHOTO_SIZE_BYTES = 6 * 1024 * 1024;
+// #endregion Constants
+
+// #region Types
 type PhotoItem = {
   _id: string;
   userName: string;
@@ -32,7 +36,9 @@ type Trip = {
 };
 
 type Tab = "edit" | "trips" | "photos";
+// #endregion Types
 
+// #region Helpers
 const convertFileToBase64 = (file: File): Promise<string> =>
   new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -58,7 +64,9 @@ const getTripStatus = (dateString: string): "Upcoming" | "Ongoing" | "Completed"
   if (d.getTime() === today.getTime()) return "Ongoing";
   return "Completed";
 };
+// #endregion Helpers
 
+// #region Component
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const { user, loginWithProfile } = useAuth();
@@ -553,6 +561,8 @@ const Profile: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default Profile;

@@ -4,7 +4,6 @@
 import React, { useEffect, useState } from "react";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import {
-// #endregion Imports
   Map,
   Users,
   Navigation,
@@ -17,14 +16,18 @@ import {
 } from "lucide-react";
 import { getReviews, Review } from "../services/reviews";
 import { API_BASE_URL } from "../config/env";
+// #endregion Imports
 
+// #region Types
 type SiteStats = {
   hikeCount: number;
   userCount: number;
   photoCount: number;
   upcomingHikes: number;
 };
+// #endregion Types
 
+// #region Sub-components
 // --- Star renderer ------------------------------------------------
 const Stars: React.FC<{ rating: number }> = ({ rating }) => (
   <div className="flex items-center gap-0.5">
@@ -53,6 +56,9 @@ const FeatureCard: React.FC<{
   </div>
 );
 
+// #endregion Sub-components
+
+// #region Component
 // --- Main page ----------------------------------------------------
 const RATING_LABELS = ["", "Poor", "Fair", "Good", "Very Good", "Excellent"];
 
@@ -378,6 +384,8 @@ const About: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default About;

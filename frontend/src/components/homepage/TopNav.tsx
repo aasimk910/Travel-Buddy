@@ -7,6 +7,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 // #endregion Imports
+
+// #region Component
 const TopNav: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -113,6 +115,8 @@ const TopNav: React.FC = () => {
     </header>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default TopNav;

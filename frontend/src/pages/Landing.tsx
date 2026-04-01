@@ -8,6 +8,8 @@ import { getSiteStats, getUpcomingHikes, type SiteStats, type Hike } from "../se
 import { useScrollReveal } from "../hooks/useScrollReveal";
 
 // #endregion Imports
+
+// #region Component
 const Landing: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
@@ -720,6 +722,8 @@ const Landing: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default Landing;

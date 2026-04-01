@@ -6,6 +6,8 @@
 const mongoose = require("mongoose");
 
 // #endregion Imports
+
+// #region Schema
 const PhotoSchema = new mongoose.Schema(
   {
     userId: {
@@ -36,10 +38,13 @@ const PhotoSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+// #endregion Schema
 
+// #region Indexes
 // Common query patterns
 PhotoSchema.index({ createdAt: -1 });     // getLatestPhotos sorts by createdAt
 PhotoSchema.index({ userName: 1 });       // getPhotos filters by userName
+// #endregion Indexes
 
 // #region Exports
 module.exports = mongoose.model("Photo", PhotoSchema);

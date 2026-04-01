@@ -4,11 +4,15 @@
 import React from 'react';
 
 // #endregion Imports
+
+// #region Types
 interface DashboardNavProps {
   activeView: string;
   setActiveView: (view: string) => void;
 }
+// #endregion Types
 
+// #region Component
 const DashboardNav: React.FC<DashboardNavProps> = ({ activeView, setActiveView }) => {
   return (
     <div className="glass-card rounded-lg p-4">
@@ -24,6 +28,8 @@ const DashboardNav: React.FC<DashboardNavProps> = ({ activeView, setActiveView }
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default DashboardNav;

@@ -18,6 +18,8 @@ import { getToken } from "../services/auth";
  
 
 // #endregion Imports
+
+// #region Component
 const Homepage: React.FC = () => {
   const { user } = useAuth();
   const revealRef = useScrollReveal();
@@ -231,6 +233,7 @@ const Homepage: React.FC = () => {
     </>
   );
 };
+// #endregion Component
 
 // #region Exports
 export default Homepage;

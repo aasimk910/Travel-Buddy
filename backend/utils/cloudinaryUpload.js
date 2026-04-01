@@ -6,6 +6,8 @@
 const cloudinary = require('../config/cloudinary');
 
 // #endregion Imports
+
+// #region Upload
 /**
  * Upload a Base64 image to Cloudinary
  * @param {string} base64Image - Base64 encoded image string
@@ -64,7 +66,9 @@ const uploadMultipleBase64Images = async (base64Images, folder = 'travel-buddy')
     throw new Error('Failed to upload images to Cloudinary');
   }
 };
+// #endregion Upload
 
+// #region Delete
 /**
  * Delete an image from Cloudinary
  * @param {string} publicId - Cloudinary public ID
@@ -94,12 +98,13 @@ const deleteMultipleImages = async (publicIds) => {
     throw new Error('Failed to delete images from Cloudinary');
   }
 };
+// #endregion Delete
 
 // #region Exports
 module.exports = {
-// #endregion Exports
   uploadBase64Image,
   uploadMultipleBase64Images,
   deleteImage,
   deleteMultipleImages,
 };
+// #endregion Exports

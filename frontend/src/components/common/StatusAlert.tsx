@@ -4,10 +4,14 @@
 import React from "react";
 
 // #endregion Imports
+
+// #region Types
 type StatusAlertProps = {
   message?: string | null;
 };
+// #endregion Types
 
+// #region Component
 const StatusAlert: React.FC<StatusAlertProps> = ({ message }) => {
   if (!message) return null;
   return (
@@ -16,6 +20,8 @@ const StatusAlert: React.FC<StatusAlertProps> = ({ message }) => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default StatusAlert;

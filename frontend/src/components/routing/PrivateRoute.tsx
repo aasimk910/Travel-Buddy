@@ -6,10 +6,14 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 // #endregion Imports
+
+// #region Types
 type PrivateRouteProps = {
   children: React.ReactElement;
 };
+// #endregion Types
 
+// #region Component
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
   const { isAuthenticated, isAdmin, user } = useAuth();
   const location = useLocation();
@@ -43,6 +47,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
 
   return children;
 };
+// #endregion Component
 
 // #region Exports
 export default PrivateRoute;

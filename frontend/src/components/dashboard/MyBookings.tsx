@@ -8,6 +8,8 @@ import { getUserBookings, HotelBooking } from '../../services/hikes';
 import { getToken } from "../../services/auth";
 
 // #endregion Imports
+
+// #region Constants
 const STATUS_CONFIG = {
   confirmed: {
     label: 'Confirmed',
@@ -34,7 +36,9 @@ const PAYMENT_CONFIG: Record<string, { label: string; cls: string }> = {
   partial: { label: 'Partial', cls: 'text-amber-400'   },
   unpaid:  { label: 'Unpaid',  cls: 'text-red-400'     },
 };
+// #endregion Constants
 
+// #region Component
 const MyBookings: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const token = getToken();
@@ -192,6 +196,8 @@ const MyBookings: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default MyBookings;

@@ -9,6 +9,8 @@ import { Camera, Upload, CloudUpload } from "lucide-react";
 import { getToken } from "../../services/auth";
 
 // #endregion Imports
+
+// #region Helpers
 const MAX_PHOTO_SIZE_BYTES = 6 * 1024 * 1024;
 
 const convertFileToBase64 = (file: File): Promise<string> =>
@@ -30,6 +32,9 @@ const convertFileToBase64 = (file: File): Promise<string> =>
     reader.onerror = (error) => reject(error);
   });
 
+// #endregion Helpers
+
+// #region Component
 type PhotoUploadCardProps = {
   onUploaded: () => Promise<void> | void;
 };
@@ -180,6 +185,8 @@ const PhotoUploadCard: React.FC<PhotoUploadCardProps> = ({ onUploaded }) => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default PhotoUploadCard;

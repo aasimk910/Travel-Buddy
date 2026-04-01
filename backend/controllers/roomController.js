@@ -10,6 +10,7 @@ const Hike = require("../models/Hike");
 
 // #endregion Imports
 
+// #region Get Room Key
 // Returns the E2E room key for the authenticated user in a specific hike room.
 const getMyKey = async (req, res) => {
   try {
@@ -33,7 +34,9 @@ const getMyKey = async (req, res) => {
     res.status(500).json({ message: "Unable to fetch room key." });
   }
 };
+// #endregion Get Room Key
 
+// #region Store Room Keys
 // Stores (upserts) wrapped room keys for multiple participants in a hike.
 // Each key entry contains the wrapped AES key, IV, and sender's public key.
 // Only hike participants are allowed to store keys.
@@ -89,7 +92,9 @@ const storeRoomKeys = async (req, res) => {
     res.status(500).json({ message: "Unable to store room keys." });
   }
 };
+// #endregion Store Room Keys
 
+// #region Participant Public Keys
 // Returns the ECDH public keys of all participants in a hike room.
 // Used by clients to wrap the room key for new/existing members.
 const getParticipantsPublicKeys = async (req, res) => {
@@ -128,6 +133,7 @@ const getParticipantsPublicKeys = async (req, res) => {
     res.status(500).json({ message: "Unable to fetch participant keys." });
   }
 };
+// #endregion Participant Public Keys
 
 // #region Exports
 module.exports = { getMyKey, storeRoomKeys, getParticipantsPublicKeys };

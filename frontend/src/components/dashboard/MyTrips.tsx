@@ -6,6 +6,8 @@ import { getUserTrips } from '../../services/trips';
 import { useToast } from '../../context/ToastContext';
 
 // #endregion Imports
+
+// #region Types
 interface Hike {
   _id: string;
   title: string;
@@ -36,7 +38,9 @@ const getStatus = (dateString: string): 'Upcoming' | 'Ongoing' | 'Completed' => 
   if (hikeDate.getTime() === today.getTime()) return 'Ongoing';
   return 'Completed';
 };
+// #endregion Types
 
+// #region Component
 const MyTrips: React.FC = () => {
   const { showError } = useToast();
   const [hikes, setHikes] = useState<Hike[]>([]);
@@ -96,6 +100,7 @@ const MyTrips: React.FC = () => {
     </div>
   );
 };
+// #endregion Component
 
 // #region Exports
 export default MyTrips;

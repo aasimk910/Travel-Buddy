@@ -9,13 +9,17 @@ import { useToast } from '../../context/ToastContext';
 import { CalendarDays } from 'lucide-react';
 
 // #endregion Imports
+
+// #region Types
 interface Trip {
   _id: string;
   title: string;
   location: string;
   date: string;
 }
+// #endregion Types
 
+// #region Component
 const UpcomingTrips: React.FC = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -93,6 +97,8 @@ const UpcomingTrips: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default UpcomingTrips;

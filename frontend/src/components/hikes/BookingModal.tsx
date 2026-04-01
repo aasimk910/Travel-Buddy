@@ -12,6 +12,8 @@ import KhaltiPaymentButton from "./KhaltiPaymentButton";
 import { getToken } from "../../services/auth";
 
 // #endregion Imports
+
+// #region Types
 type BookingModalProps = {
   open: boolean;
   hotel: Hotel;
@@ -20,7 +22,9 @@ type BookingModalProps = {
   hikeDate: string;
   onClose: () => void;
 };
+// #endregion Types
 
+// #region Component
 const BookingModal: React.FC<BookingModalProps> = ({
   open,
   hotel,
@@ -386,6 +390,8 @@ const BookingModal: React.FC<BookingModalProps> = ({
 
   return createPortal(modalContent, document.body);
 };
+
+// #endregion Component
 
 // #region Exports
 export default BookingModal;

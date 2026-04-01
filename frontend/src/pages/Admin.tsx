@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Polyline, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import {
-// #endregion Imports
   Users, Mountain, ShieldCheck, Trash2, ChevronLeft, ChevronRight,
   Search, RefreshCw, Plus, Pencil, X, LogOut, MapPin, CalendarDays,
   Navigation, Eye, CheckCircle2, Flag, Hotel, BookOpen, Package,
@@ -17,7 +16,9 @@ import { API_BASE_URL } from "../config/env";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { getToken } from "../services/auth";
+// #endregion Imports
 
+// #region Leaflet Helpers
 // -- Leaflet helpers -----------------------------------------------------
 const adminStartIcon = L.divIcon({
   className: '',
@@ -35,7 +36,9 @@ const AdminLocationPicker: React.FC<{ onSelect: (lat: number, lng: number) => vo
   useMapEvents({ click: (e) => onSelect(e.latlng.lat, e.latlng.lng) });
   return null;
 };
+// #endregion Leaflet Helpers
 
+// #region Types
 interface AdminUser {
   _id: string;
   name: string;
@@ -153,7 +156,9 @@ interface AdminPackageFull extends AdminHotelPackage {
   hotelId: { _id: string; name: string; location: string } | null;
   createdAt: string;
 }
+// #endregion Types
 
+// #region Constants
 const PRODUCT_CATEGORIES = ["Backpacks", "Camping", "Photography", "Footwear", "Navigation", "Safety"];
 
 const defaultUserForm = { name: "", email: "", password: "", role: "user" as "user" | "admin", country: "", travelStyle: "", budgetRange: "", interests: "", avatarUrl: "" };
@@ -161,7 +166,9 @@ const defaultHikeForm = { title: "", location: "", date: "", difficulty: "1", sp
 const defaultHotelForm = { name: "", location: "", description: "", contactPhone: "", email: "", website: "", imageUrl: "", rating: "4.0", amenities: "" };
 const defaultPackageForm = { name: "", roomType: "double", pricePerNight: "", capacity: "2", amenities: "", availableRooms: "5", minStayNights: "1", maxStayNights: "", cancellationPolicy: "free" };
 const defaultProductForm = { name: "", category: "Backpacks", price: "", description: "", badge: "", img: "", images: "", inStock: true, featured: false };
+// #endregion Constants
 
+// #region Component
 const Admin: React.FC = () => {
   const { logout } = useAuth();
   const { showSuccess, showError } = useToast();
@@ -2399,6 +2406,8 @@ const Admin: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default Admin;

@@ -7,6 +7,8 @@ import { useAuth } from "../../context/AuthContext";
 import { MapPin } from "lucide-react";
 
 // #endregion Imports
+
+// #region Component
 const ProfileSummaryCard: React.FC = () => {
   const { user } = useAuth();
 
@@ -57,6 +59,8 @@ const ProfileSummaryCard: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default ProfileSummaryCard;

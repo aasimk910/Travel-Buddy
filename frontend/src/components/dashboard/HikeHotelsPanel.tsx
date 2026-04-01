@@ -7,10 +7,14 @@ import { getHike, Hotel } from "../../services/hikes";
 import HotelDetails from "../hikes/HotelDetails";
 
 // #endregion Imports
+
+// #region Types
 type HikeHotelsPanelProps = {
   hikeId?: string;
 };
+// #endregion Types
 
+// #region Component
 const HikeHotelsPanel: React.FC<HikeHotelsPanelProps> = ({ hikeId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +98,8 @@ const HikeHotelsPanel: React.FC<HikeHotelsPanelProps> = ({ hikeId }) => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default HikeHotelsPanel;

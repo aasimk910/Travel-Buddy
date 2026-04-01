@@ -9,6 +9,7 @@ const { uploadMultipleBase64Images, deleteMultipleImages } = require("../utils/c
 
 // #endregion Imports
 
+// #region Read Photos
 // Returns all photos, optionally filtered by userName query param.
 const getPhotos = async (req, res) => {
   try {
@@ -41,7 +42,9 @@ const getLatestPhotos = async (req, res) => {
     res.status(500).json({ message: "Unable to fetch latest photos." });
   }
 };
+// #endregion Read Photos
 
+// #region Create Photo
 // Uploads one or more base64-encoded images to Cloudinary and creates a Photo record.
 // Validates image format before upload. Supports both single (imageData) and batch (images[]) inputs.
 const createPhoto = async (req, res) => {
@@ -89,7 +92,9 @@ const createPhoto = async (req, res) => {
     res.status(500).json({ message: "Unable to upload photo." });
   }
 };
+// #endregion Create Photo
 
+// #region Delete Photo
 // Deletes a photo owned by the authenticated user.
 // Also removes the image(s) from Cloudinary to free storage.
 const deletePhoto = async (req, res) => {
@@ -122,6 +127,7 @@ const deletePhoto = async (req, res) => {
     res.status(500).json({ message: "Unable to delete photo." });
   }
 };
+// #endregion Delete Photo
 
 // #region Exports
 module.exports = { getPhotos, getLatestPhotos, createPhoto, deletePhoto };

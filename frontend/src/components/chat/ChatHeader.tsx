@@ -5,6 +5,8 @@ import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../../config/env';
 
 // #endregion Imports
+
+// #region Types
 interface ChatHeaderProps {
   hikeId?: string;
   activeTab: string;
@@ -17,7 +19,9 @@ interface HikeDetails {
   date: string;
   participants?: string[];
 }
+// #endregion Types
 
+// #region Component
 // Handles formatDate logic.
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -104,6 +108,8 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ hikeId, activeTab, onTabChange 
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default ChatHeader;

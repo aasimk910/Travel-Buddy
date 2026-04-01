@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 // #endregion Imports
 
+// #region Constants
 const EXAMPLE_PROMPTS = [
   "Plan a 5-day budget trek to Poon Hill starting from Kathmandu. I love photography and local food. Total budget Rs 25,000.",
   "I want a luxury 3-day trip to Pokhara with my partner. Include boat rides, paragliding, and fine dining.",
@@ -67,7 +68,9 @@ const DESTINATION_SUGGESTIONS = [
   "Solu Trek, Nepal","Pokhara, Nepal","Kathmandu, Nepal","Chitwan, Nepal",
   "Lumbini, Nepal","Bandipur, Nepal","Bhaktapur, Nepal","Patan, Nepal","Ilam, Nepal",
 ];
+// #endregion Constants
 
+// #region Component
 const ItineraryGenerator: React.FC = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -558,6 +561,8 @@ const ItineraryGenerator: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default ItineraryGenerator;

@@ -7,12 +7,16 @@ import { Hotel, HotelPackage } from "../../services/hikes";
 import BookingModal from "./BookingModal";
 
 // #endregion Imports
+
+// #region Types
 type HotelDetailsProps = {
   hotels: Hotel[];
   hikeId: string;
   hikeDate: string;
 };
+// #endregion Types
 
+// #region Component
 const HotelDetails: React.FC<HotelDetailsProps> = ({ hotels, hikeId, hikeDate }) => {
   const [expandedHotelId, setExpandedHotelId] = useState<string | null>(null);
   const [expandedPackageId, setExpandedPackageId] = useState<string | null>(null);
@@ -319,6 +323,8 @@ const HotelDetails: React.FC<HotelDetailsProps> = ({ hotels, hikeId, hikeDate })
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default HotelDetails;

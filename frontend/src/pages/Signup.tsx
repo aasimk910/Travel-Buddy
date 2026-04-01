@@ -14,6 +14,8 @@ import StatusAlert from "../components/common/StatusAlert";
 import { signup as signupRequest, googleAuth, storeToken } from "../services/auth";
 
 // #endregion Imports
+
+// #region Types
 type SignupFormValues = {
   name: string;
   email: string;
@@ -29,7 +31,9 @@ type SignupFormValues = {
 type LocationState = {
   from?: string;
 };
+// #endregion Types
 
+// #region Component
 const Signup: React.FC = () => {
   const revealRef = useScrollReveal();
   const navigate = useNavigate();
@@ -459,6 +463,8 @@ const Signup: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default Signup;

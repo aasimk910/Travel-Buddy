@@ -6,11 +6,15 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 // #endregion Imports
+
+// #region Types
 interface LogoutButtonProps {
   className?: string;
   showText?: boolean;
 }
+// #endregion Types
 
+// #region Component
 const LogoutButton: React.FC<LogoutButtonProps> = ({
   className = "",
   showText = true,
@@ -34,6 +38,7 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
     </button>
   );
 };
+// #endregion Component
 
 // #region Exports
 export default LogoutButton;

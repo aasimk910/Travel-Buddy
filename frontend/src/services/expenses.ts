@@ -5,6 +5,8 @@ import { API_BASE_URL } from "../config/env";
 import { getToken, clearToken } from "./auth";
 
 // #endregion Imports
+
+// #region Types
 export interface Expense {
   _id: string;
   hikeId: string;
@@ -40,7 +42,9 @@ export interface ExpenseSummary {
     balance: number;
   }>;
 }
+// #endregion Types
 
+// #region Helpers
 // Handles handleResponse logic.
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
@@ -61,7 +65,9 @@ const handleResponse = async (response: Response) => {
   }
   return response.json();
 };
+// #endregion Helpers
 
+// #region CRUD
 export const getExpenses = async (hikeId: string): Promise<Expense[]> => {
   const token = getToken();
   if (!token) {
@@ -163,4 +169,4 @@ export const getExpenseSummary = async (
   );
 
   return handleResponse(response);
-};
+};// #endregion CRUD

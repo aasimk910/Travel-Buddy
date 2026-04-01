@@ -11,6 +11,7 @@ const User = require("../models/User");
 
 // #endregion Imports
 
+// #region Create Booking
 // Creates a new hotel booking for the authenticated user.
 // Validates package availability, date constraints, and decrements available rooms.
 const createBooking = async (req, res) => {
@@ -103,7 +104,9 @@ const createBooking = async (req, res) => {
     res.status(500).json({ message: "Unable to create booking" });
   }
 };
+// #endregion Create Booking
 
+// #region Read Bookings
 // Returns all bookings for the authenticated user, optionally filtered by status.
 const getUserBookings = async (req, res) => {
   try {
@@ -154,7 +157,9 @@ const getBookingById = async (req, res) => {
     res.status(500).json({ message: "Unable to fetch booking" });
   }
 };
+// #endregion Read Bookings
 
+// #region Update Booking
 // Updates booking status/notes. Enforces valid state transitions (pending→confirmed/cancelled, confirmed→cancelled).
 const updateBooking = async (req, res) => {
   try {
@@ -198,7 +203,9 @@ const updateBooking = async (req, res) => {
     res.status(500).json({ message: "Unable to update booking" });
   }
 };
+// #endregion Update Booking
 
+// #region Cancel & Admin
 // Cancels a booking and restores the available room count on the package.
 const cancelBooking = async (req, res) => {
   try {
@@ -252,6 +259,7 @@ const getHotelBookings = async (req, res) => {
     res.status(500).json({ message: "Unable to fetch bookings" });
   }
 };
+// #endregion Cancel & Admin
 
 // #region Exports
 module.exports = { createBooking, getUserBookings, getBookingById, updateBooking, cancelBooking, getHotelBookings };

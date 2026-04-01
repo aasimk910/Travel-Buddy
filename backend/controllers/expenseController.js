@@ -8,6 +8,7 @@ const Hike = require("../models/Hike");
 
 // #endregion Imports
 
+// #region CRUD
 // Returns all expenses for a given hike. Only hike participants can view.
 const getExpenses = async (req, res) => {
   try {
@@ -151,7 +152,9 @@ const deleteExpense = async (req, res) => {
     res.status(500).json({ message: "Unable to delete expense." });
   }
 };
+// #endregion CRUD
 
+// #region Summary
 // Computes a summary of all expenses for a hike:
 // total spent, per-category breakdown, and settlement balances (who owes whom).
 const getExpenseSummary = async (req, res) => {
@@ -204,6 +207,7 @@ const getExpenseSummary = async (req, res) => {
     res.status(500).json({ message: "Unable to fetch expense summary." });
   }
 };
+// #endregion Summary
 
 // #region Exports
 module.exports = { getExpenses, createExpense, updateExpense, deleteExpense, getExpenseSummary };

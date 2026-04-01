@@ -8,6 +8,8 @@ import { CreditCard, Loader2 } from "lucide-react";
 import { getToken } from "../../services/auth";
 
 // #endregion Imports
+
+// #region Types
 interface KhaltiPaymentButtonProps {
   bookingId: string;
   amount: number;
@@ -15,9 +17,10 @@ interface KhaltiPaymentButtonProps {
   onPaymentFailure?: () => void;
 }
 
-// #region Exports
+// #endregion Types
+
+// #region Component
 export default function KhaltiPaymentButton({
-// #endregion Exports
   bookingId,
   amount,
   onPaymentSuccess,
@@ -85,4 +88,4 @@ export default function KhaltiPaymentButton({
       )}
     </button>
   );
-}
+}// #endregion Component

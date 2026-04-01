@@ -13,6 +13,8 @@ const http = require("http");
 const { Server } = require("socket.io"); // Real-time bidirectional communication
 
 // #endregion Imports
+
+// #region Config
 dotenv.config(); // loads .env from backend folder
 
 const app = express();
@@ -71,7 +73,9 @@ app.use(express.json({ limit: "10mb" })); // Parse JSON bodies up to 10 MB
 // Apply global rate limiting to all /api/* endpoints
 const { apiLimiter } = require("./middleware/rateLimiter");
 app.use("/api/", apiLimiter);
+// #endregion Middlewares
 
+// #region Routes
 // === Routes ===
 // Health-check root endpoint
 app.get("/", (req, res) => {
@@ -109,12 +113,16 @@ app.use((err, req, res, next) => {
   console.error("💥 Server error:", err);
   res.status(500).json({ error: "Something went wrong on the server" });
 });
+// #endregion Routes
 
+// #region Socket.IO
 // === Socket.IO ===
 // Initialize real-time chat and E2E key exchange via socket events
 const { initSocket } = require("./utils/socket");
 initSocket(io);
+// #endregion Socket.IO
 
+// #region Database
 // === DB helpers ===
 // Checks if the MongoDB URI already includes a database name after the host
 function mongoUriHasDbName(uri) {
@@ -146,7 +154,9 @@ async function startServer() {
     process.exit(1);
   }
 }
+// #endregion Database
 
+// #region Error Handling
 // === Handle unhandled promise rejections ===
 // Prevents silent failures from unhandled async errors
 process.on("unhandledRejection", (reason, promise) => {
@@ -158,5 +168,6 @@ process.on("uncaughtException", (err) => {
   console.error("❌ Uncaught Exception:", err);
   process.exit(1);
 });
+// #endregion Error Handling
 
 startServer();

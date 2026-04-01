@@ -7,10 +7,14 @@ const axios = require("axios");
 const HotelBooking = require("../models/HotelBooking");
 
 // #endregion Imports
+
+// #region Config
 const KHALTI_SECRET_KEY = process.env.KHALTI_SANDBOX_SECRET; // Khalti sandbox/live secret key
 const KHALTI_API_URL = "https://dev.khalti.com/api/v2";      // Khalti sandbox API base URL
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+// #endregion Config
 
+// #region Initiate Payment
 // Initiates a Khalti payment for a hotel booking.
 // Validates ownership, prevents double-payment, and redirects user to Khalti checkout.
 const initiateHotelBookingPayment = async (req, res) => {
@@ -76,7 +80,9 @@ const initiateHotelBookingPayment = async (req, res) => {
     res.status(500).json({ message: "Failed to initiate payment", error: error.message });
   }
 };
+// #endregion Initiate Payment
 
+// #region Verify Payment
 // Verifies a completed Khalti payment by looking up the pidx.
 // Updates booking status to confirmed and paymentStatus to paid on success.
 const verifyHotelBookingPayment = async (req, res) => {
@@ -141,7 +147,9 @@ const verifyHotelBookingPayment = async (req, res) => {
     res.status(500).json({ message: "Payment verification failed" });
   }
 };
+// #endregion Verify Payment
 
+// #region Payment Status
 // Returns the current payment and booking status for a given booking ID.
 const getPaymentStatus = async (req, res) => {
   try {
@@ -167,6 +175,7 @@ const getPaymentStatus = async (req, res) => {
     res.status(500).json({ message: "Failed to get payment status" });
   }
 };
+// #endregion Payment Status
 
 // #region Exports
 module.exports = { initiateHotelBookingPayment, verifyHotelBookingPayment, getPaymentStatus };

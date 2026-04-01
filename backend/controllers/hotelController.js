@@ -9,6 +9,7 @@ const Hike = require("../models/Hike");
 
 // #endregion Imports
 
+// #region Hotels
 // Returns all hotels with their populated packages, newest first.
 const getHotels = async (req, res) => {
   try {
@@ -96,7 +97,9 @@ const deleteHotel = async (req, res) => {
     res.status(500).json({ message: "Unable to delete hotel." });
   }
 };
+// #endregion Hotels
 
+// #region Packages
 // Creates a new room package under a specific hotel and links it to the hotel.
 const createHotelPackage = async (req, res) => {
   try {
@@ -192,7 +195,9 @@ const deleteHotelPackage = async (req, res) => {
     res.status(500).json({ message: "Unable to delete package." });
   }
 };
+// #endregion Packages
 
+// #region Hike Associations
 // Links a hotel to a hike using $addToSet (prevents duplicates).
 const addHotelToHike = async (req, res) => {
   try {
@@ -228,10 +233,10 @@ const removeHotelFromHike = async (req, res) => {
     res.status(500).json({ message: "Unable to remove hotel from hike." });
   }
 };
+// #endregion Hike Associations
 
 // #region Exports
 module.exports = {
-  // #endregion Exports
   getHotels,
   getHotelById,
   createHotel,
@@ -244,3 +249,4 @@ module.exports = {
   addHotelToHike,
   removeHotelFromHike,
 };
+// #endregion Exports

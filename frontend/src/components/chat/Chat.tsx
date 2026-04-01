@@ -10,6 +10,8 @@ import { Paperclip, FileText, X, Send, Loader2 } from "lucide-react";
 import { getToken } from "../../services/auth";
 
 // #endregion Imports
+
+// #region Types
 interface ChatProps {
   roomId?: string;
 }
@@ -32,6 +34,9 @@ interface Message {
   attachment?: Attachment;
 }
 
+// #endregion Types
+
+// #region Component
 // Fetch previous messages from the API
 const fetchMessages = async (
   hikeId: string,
@@ -377,6 +382,8 @@ const Chat = ({ roomId }: ChatProps) => {
     </div>
   );
 }
+
+// #endregion Component
 
 // #region Exports
 export default Chat;

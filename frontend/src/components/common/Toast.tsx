@@ -4,6 +4,8 @@ import React, { useEffect } from "react";
 import { CheckCircle, XCircle, Info, AlertTriangle, X as XIcon } from "lucide-react";
 
 // #endregion Imports
+
+// #region Types
 export type ToastType = "success" | "error" | "info" | "warning";
 
 export interface Toast {
@@ -16,7 +18,9 @@ interface ToastProps {
   toast: Toast;
   onClose: (id: string) => void;
 }
+// #endregion Types
 
+// #region Component
 const ToastComponent: React.FC<ToastProps> = ({ toast, onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -55,6 +59,7 @@ const ToastComponent: React.FC<ToastProps> = ({ toast, onClose }) => {
     </div>
   );
 };
+// #endregion Component
 
 // #region Exports
 export default ToastComponent;

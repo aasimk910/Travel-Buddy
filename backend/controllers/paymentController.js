@@ -6,14 +6,20 @@
 const axios = require("axios");
 
 // #endregion Imports
+
+// #region Config
 const KHALTI_SANDBOX_API = "https://dev.khalti.com/api/v2";   // Khalti sandbox base URL
 const KHALTI_SANDBOX_SECRET = process.env.KHALTI_SANDBOX_SECRET || "test_secret_key";
+// #endregion Config
 
+// #region Health Check
 // Health check: returns OK status and the active Khalti API URL.
 const getHealth = (req, res) => {
   res.json({ status: "ok", mode: "sandbox", khaltiApi: KHALTI_SANDBOX_API });
 };
+// #endregion Health Check
 
+// #region Initiate Payment
 // Initiates a Khalti e-payment for a shop order.
 // Sends the order details to Khalti and returns the payment URL for redirect.
 const initiateKhalti = async (req, res) => {
@@ -58,7 +64,9 @@ const initiateKhalti = async (req, res) => {
     });
   }
 };
+// #endregion Initiate Payment
 
+// #region Verify Payment
 // Verifies a Khalti payment by looking up the pidx token.
 // Returns the transaction status, ID, amount, and fee.
 const verifyKhalti = async (req, res) => {
@@ -94,6 +102,7 @@ const verifyKhalti = async (req, res) => {
     });
   }
 };
+// #endregion Verify Payment
 
 // #region Exports
 module.exports = { getHealth, initiateKhalti, verifyKhalti };

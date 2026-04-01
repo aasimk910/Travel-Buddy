@@ -17,6 +17,7 @@ const Expense = require("../models/Expense");
 const Photo = require("../models/Photo");
 
 // #endregion Imports
+// #region Users
 // ─── Users ────────────────────────────────────────────────────────────────────
 
 // Handles listUsers logic.
@@ -136,7 +137,9 @@ const deleteUser = async (req, res) => {
     res.status(500).json({ message: "Unable to delete user." });
   }
 };
+// #endregion Users
 
+// #region Hikes
 // ─── Hikes ────────────────────────────────────────────────────────────────────
 
 // Handles listHikes logic.
@@ -290,7 +293,9 @@ const clearHikes = async (req, res) => {
     res.status(500).json({ message: "Unable to clear hikes.", error: err.message });
   }
 };
+// #endregion Hikes
 
+// #region Hotels
 // ─── Hotels ───────────────────────────────────────────────────────────────────
 
 // Handles listHotelsAdmin logic.
@@ -379,7 +384,9 @@ const deleteHotelAdmin = async (req, res) => {
     res.status(500).json({ message: "Unable to delete hotel." });
   }
 };
+// #endregion Hotels
 
+// #region Packages
 // ─── Packages ─────────────────────────────────────────────────────────────────
 
 // Handles listPackagesAdmin logic.
@@ -458,7 +465,9 @@ const deletePackageAdmin = async (req, res) => {
     res.status(500).json({ message: "Unable to delete package." });
   }
 };
+// #endregion Packages
 
+// #region Bookings
 // ─── Bookings ─────────────────────────────────────────────────────────────────
 
 // Handles listBookingsAdmin logic.
@@ -524,10 +533,14 @@ const deleteBookingAdmin = async (req, res) => {
     res.status(500).json({ message: "Unable to delete booking." });
   }
 };
+// #endregion Bookings
 
+// #region Products
 // ─── Products (delegated to productController) ───────────────────────────────
 const { listProducts, createProduct, updateProduct, deleteProduct } = require("./productController");
+// #endregion Products
 
+// #region Stats
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
 // Handles getStats logic.
@@ -550,7 +563,9 @@ const getStats = async (req, res) => {
     res.status(500).json({ message: "Unable to fetch stats." });
   }
 };
+// #endregion Stats
 
+// #region Seed / Clear Hotels
 // ─── Seed / Clear Hotels ──────────────────────────────────────────────────────
 
 // Handles seedHotels logic.
@@ -641,13 +656,15 @@ const clearHotels = async (req, res) => {
     res.status(500).json({ message: "Unable to clear hotels.", error: err.message });
   }
 };
+// #endregion Seed / Clear Hotels
 
+// #region Orders
 // ─── Orders (delegated to orderController) ───────────────────────────────────
 const { createOrder, listOrders, updateOrderStatus, deleteOrder } = require("./orderController");
+// #endregion Orders
 
 // #region Exports
 module.exports = {
-// #endregion Exports
   listUsers, createUser, updateUser, updateUserRole, deleteUser,
   listHikes, createHikeAdmin, updateHikeAdmin, deleteHikeAdmin, seedHikes, clearHikes,
   listHotelsAdmin, getHotelAdmin, createHotelAdmin, updateHotelAdmin, deleteHotelAdmin,
@@ -657,3 +674,4 @@ module.exports = {
   createOrder, listOrders, updateOrderStatus, deleteOrder,
   getStats, seedHotels, clearHotels,
 };
+// #endregion Exports

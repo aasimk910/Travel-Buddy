@@ -1,5 +1,6 @@
 // src/utils/imageCompression.ts
 
+// #region Helpers
 const isHeic = (file: File): boolean => {
   const name = file.name.toLowerCase();
   return (
@@ -9,7 +10,9 @@ const isHeic = (file: File): boolean => {
     name.endsWith(".heif")
   );
 };
+// #endregion Helpers
 
+// #region compressImage
 /**
  * Compresses an image file to reduce its size.
  * HEIC/HEIF files are returned as-is since browsers can't decode them
@@ -86,5 +89,6 @@ export const compressImage = async (
     reader.onerror = () => reject(new Error("Failed to read file"));
   });
 };
+// #endregion compressImage
 
 

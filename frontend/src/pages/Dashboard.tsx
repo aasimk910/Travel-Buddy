@@ -17,6 +17,8 @@ import HikeHotelsPanel from '../components/dashboard/HikeHotelsPanel';
 import MyBookings from '../components/dashboard/MyBookings';
 
 // #endregion Imports
+
+// #region Component
 const Dashboard: React.FC = () => {
   const { hikeId } = useParams<{ hikeId: string }>();
   const [activeView, setActiveView] = useState('chat');
@@ -58,6 +60,8 @@ const Dashboard: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default Dashboard;

@@ -6,6 +6,7 @@ const Order = require("../models/Order");
 
 // #endregion Imports
 
+// #region Create Order
 // POST /api/orders — create order on checkout (public, optional auth)
 const createOrder = async (req, res) => {
   try {
@@ -33,7 +34,9 @@ const createOrder = async (req, res) => {
     res.status(500).json({ message: "Unable to create order." });
   }
 };
+// #endregion Create Order
 
+// #region User Orders
 // GET /api/orders/mine — fetch orders for the logged-in user
 const getMyOrders = async (req, res) => {
   try {
@@ -47,7 +50,9 @@ const getMyOrders = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch orders" });
   }
 };
+// #endregion User Orders
 
+// #region Admin Orders
 // GET /api/admin/orders — list all orders (admin, paginated)
 const listOrders = async (req, res) => {
   try {
@@ -102,6 +107,7 @@ const deleteOrder = async (req, res) => {
     res.status(500).json({ message: "Unable to delete order." });
   }
 };
+// #endregion Admin Orders
 
 // #region Exports
 module.exports = { createOrder, getMyOrders, listOrders, updateOrderStatus, deleteOrder };

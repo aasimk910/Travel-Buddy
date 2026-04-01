@@ -7,6 +7,8 @@
 const mongoose = require("mongoose");
 
 // #endregion Imports
+
+// #region Schema
 const onboardingProfileSchema = new mongoose.Schema(
   {
     userId: {
@@ -79,6 +81,7 @@ const onboardingProfileSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+// #endregion Schema
 
 // #region Exports
 module.exports = mongoose.model("OnboardingProfile", onboardingProfileSchema);

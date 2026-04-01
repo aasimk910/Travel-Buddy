@@ -5,7 +5,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-// #endregion Imports
   DollarSign,
   Plus,
   Edit2,
@@ -28,11 +27,21 @@ import {
 } from "../../services/expenses";
 import { API_BASE_URL } from "../../config/env";
 import { getToken } from "../../services/auth";
+// #endregion Imports
 
+// #region Types
 interface ExpensesProps {
   roomId?: string;
 }
 
+interface HikeParticipant {
+  _id: string;
+  name: string;
+  email: string;
+}
+// #endregion Types
+
+// #region Constants
 const CATEGORIES = [
   "Food",
   "Transport",
@@ -48,13 +57,9 @@ const SPLIT_TYPES = [
   { value: "shares", label: "By Shares" },
   { value: "custom", label: "Custom Amount" },
 ];
+// #endregion Constants
 
-interface HikeParticipant {
-  _id: string;
-  name: string;
-  email: string;
-}
-
+// #region Component
 // Handles Expenses logic.
 const Expenses = ({ roomId }: ExpensesProps) => {
   const navigate = useNavigate();
@@ -724,6 +729,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
     </div>
   );
 };
+// #endregion Component
 
 // #region Exports
 export default Expenses;

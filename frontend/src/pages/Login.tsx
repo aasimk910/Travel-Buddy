@@ -14,6 +14,8 @@ import { login as loginRequest, googleAuth, storeToken } from "../services/auth"
 
 
 // #endregion Imports
+
+// #region Types
 interface LoginFormValues {
   email: string;
   password: string;
@@ -23,7 +25,9 @@ interface LoginFormValues {
 type LocationState = {
   from?: string;
 };
+// #endregion Types
 
+// #region Component
 const Login: React.FC = () => {
   const revealRef = useScrollReveal();
   const { loginWithProfile, isAuthenticated, isAdmin } = useAuth();
@@ -306,6 +310,8 @@ const Login: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default Login;

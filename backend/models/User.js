@@ -6,6 +6,8 @@
 const mongoose = require("mongoose");
 
 // #endregion Imports
+
+// #region Schema
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -88,6 +90,7 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+// #endregion Schema
 
 // #region Exports
 module.exports = mongoose.model("User", userSchema);

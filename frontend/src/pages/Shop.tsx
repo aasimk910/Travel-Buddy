@@ -4,7 +4,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
-// #endregion Imports
   ShoppingCart, Star, Search, SlidersHorizontal, Backpack, Tent,
   Camera, Mountain, Compass, Shield, X, Plus, Minus, Trash2,
   Package, ChevronRight, Tag, User, Phone, Mail, MapPin, Loader2,
@@ -15,11 +14,15 @@ import { useAuth } from '../context/AuthContext';
 import { initiateKhaltiPayment } from '../services/payment';
 import PaymentSuccessModal from '../components/common/PaymentSuccessModal';
 import { getToken } from "../services/auth";
+// #endregion Imports
 
+// #region Helpers
 const LS_ORDERS_KEY = 'tb_saved_orders';
 // Handles ordersKey logic.
 const ordersKey = (userId?: string) => userId ? `${LS_ORDERS_KEY}_${userId}` : LS_ORDERS_KEY;
+// #endregion Helpers
 
+// #region Types
 // -- Types --------------------------------------------------------------------
 interface Product {
   _id: string; name: string; category: string;
@@ -45,7 +48,9 @@ interface OrderSnapshot {
   paymentMethod: 'cod' | 'khalti';
   status: 'placed' | 'processing' | 'out_for_delivery' | 'delivered';
 }
+// #endregion Types
 
+// #region Data
 const ORDER_STATUSES: { key: OrderSnapshot['status']; label: string; desc: string }[] = [
   { key: 'placed',           label: 'Order Placed',     desc: 'We received your order' },
   { key: 'processing',      label: 'Processing',       desc: 'Preparing your gear' },
@@ -347,7 +352,9 @@ const BADGE_COLORS: Record<string, string> = {
 
 const SHIPPING_THRESHOLD = 10000;
 const SHIPPING_FEE       = 350;
+// #endregion Data
 
+// #region Component
 // -- Component ----------------------------------------------------------------
 const Shop: React.FC = () => {
   const [products, setProducts]             = useState<Product[]>(STATIC_PRODUCTS);
@@ -1635,8 +1642,8 @@ const Shop: React.FC = () => {
     </div>
   );
 };
+// #endregion Component
 
 // #region Exports
 export default Shop;
-
 // #endregion Exports

@@ -1,7 +1,6 @@
 // frontend/src/types/index.ts
 // Centralised TypeScript interfaces for the Travel Buddy application.
-
-// ─── Auth / User ────────────────────────────────────────────────────────────
+// #region Auth / User// ─── Auth / User ────────────────────────────────────────────────────────────
 
 export type HikingProfile = {
   experienceLevel?: "beginner" | "intermediate" | "advanced";
@@ -55,7 +54,9 @@ export type SignupPayload = {
   budgetRange?: string;
   interests?: string;
 };
+// #endregion Auth / User
 
+// #region Hotels & Packages
 // ─── Hotels & Packages ──────────────────────────────────────────────────────
 
 export type HotelPackage = {
@@ -90,7 +91,9 @@ export type Hotel = {
   amenities: string[];
   packages: HotelPackage[];
 };
+// #endregion Hotels & Packages
 
+// #region Hikes
 // ─── Hikes ──────────────────────────────────────────────────────────────────
 
 export type Hike = {
@@ -110,7 +113,9 @@ export type Hike = {
   createdAt?: string;
   updatedAt?: string;
 };
+// #endregion Hikes
 
+// #region Bookings
 // ─── Bookings ───────────────────────────────────────────────────────────────
 
 export type HotelBooking = {
@@ -137,7 +142,9 @@ export type HotelBooking = {
   createdAt?: string;
   updatedAt?: string;
 };
+// #endregion Bookings
 
+// #region Expenses
 // ─── Expenses ───────────────────────────────────────────────────────────────
 
 export type ExpenseParticipant = {
@@ -179,7 +186,9 @@ export type ExpenseSummary = {
   categoryTotals: Record<string, number>;
   settlements: ExpenseSettlement[];
 };
+// #endregion Expenses
 
+// #region Photos
 // ─── Photos ─────────────────────────────────────────────────────────────────
 
 export type PhotoItem = {
@@ -190,7 +199,9 @@ export type PhotoItem = {
   imageData?: string;
   createdAt?: string;
 };
+// #endregion Photos
 
+// #region Reviews
 // ─── Reviews ────────────────────────────────────────────────────────────────
 
 export type Review = {
@@ -202,7 +213,9 @@ export type Review = {
   comment?: string;
   createdAt: string;
 };
+// #endregion Reviews
 
+// #region Itinerary
 // ─── Itinerary ──────────────────────────────────────────────────────────────
 
 export type ItineraryRequest = {
@@ -231,7 +244,9 @@ export type ItineraryResponse = {
   itinerary: string;
   details: ItineraryDetails;
 };
+// #endregion Itinerary
 
+// #region Payments
 // ─── Payments ───────────────────────────────────────────────────────────────
 
 export type KhaltiPaymentPayload = {
@@ -252,7 +267,9 @@ export type KhaltiPaymentResponse = {
   expires_at: string;
   expires_in: number;
 };
+// #endregion Payments
 
+// #region Pagination
 // ─── Pagination ─────────────────────────────────────────────────────────────
 
 export type PaginationMeta = {
@@ -266,3 +283,4 @@ export type PaginatedResponse<T> = {
   data: T[];
   pagination: PaginationMeta;
 };
+// #endregion Pagination

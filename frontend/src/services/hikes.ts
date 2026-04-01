@@ -5,6 +5,8 @@ import { API_BASE_URL } from "../config/env";
 import { clearToken } from "./auth";
 
 // #endregion Imports
+
+// #region Types
 export type HotelPackage = {
   _id: string;
   hotelId: string;
@@ -80,7 +82,9 @@ export type HotelBooking = {
   createdAt?: string;
   updatedAt?: string;
 };
+// #endregion Types
 
+// #region Hike Queries
 export const getHikes = async (): Promise<Hike[]> => {
   const res = await fetch(`${API_BASE_URL}/api/hikes`);
   const data = await res.json();
@@ -123,7 +127,9 @@ export const getHike = async (id: string): Promise<Hike> => {
   if (!res.ok) throw new Error(data?.message || "Unable to fetch hike.");
   return data;
 };
+// #endregion Hike Queries
 
+// #region Hike Mutations
 export type CreateHikePayload = {
   title: string;
   location: string;
@@ -194,7 +200,9 @@ export const joinHike = async (hikeId: string, token: string) => {
   const data = await res.json();
   return data;
 };
+// #endregion Hike Mutations
 
+// #region Bookings
 // Booking Service Functions
 export const createBooking = async (payload: {
   hikeId: string;
@@ -288,6 +296,9 @@ export const cancelBooking = async (bookingId: string, token: string): Promise<H
   const data = await res.json();
   return data.booking;
 };
+// #endregion Bookings
+
+// #region Stats
 export type SiteStats = {
   hikeCount: number;
   userCount: number;
@@ -300,3 +311,4 @@ export const getSiteStats = async (): Promise<SiteStats> => {
   if (!res.ok) throw new Error("Failed to fetch stats");
   return res.json();
 };
+// #endregion Stats

@@ -6,6 +6,8 @@
 const nodemailer = require("nodemailer");
 
 // #endregion Imports
+
+// #region Config
 const {
   SMTP_HOST,
   SMTP_PORT,
@@ -32,7 +34,9 @@ if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
     "⚠️ SMTP settings are incomplete. Signup emails will not be sent until SMTP_HOST, SMTP_USER, and SMTP_PASS are configured."
   );
 }
+// #endregion Config
 
+// #region Send Helpers
 // Handles sendMail logic.
 const sendMail = async ({ to, subject, html }) => {
   if (!transporter) {
@@ -153,11 +157,12 @@ const sendPasswordResetEmail = async ({ name, email, resetUrl }) => {
     console.error("Failed to send password reset email:", err.message);
   }
 };
+// #endregion Send Helpers
 
 // #region Exports
 module.exports = {
-// #endregion Exports
   sendWelcomeEmail,
   sendPasswordResetEmail,
 };
+// #endregion Exports
 

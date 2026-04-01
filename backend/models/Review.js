@@ -5,6 +5,8 @@
 const mongoose = require("mongoose");
 
 // #endregion Imports
+
+// #region Schema
 const ReviewSchema = new mongoose.Schema(
   {
     userId: {
@@ -38,6 +40,7 @@ const ReviewSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+// #endregion Schema
 
 // #region Exports
 module.exports = mongoose.model("Review", ReviewSchema);

@@ -6,6 +6,8 @@
 const mongoose = require("mongoose");
 
 // #endregion Imports
+
+// #region Schema
 const HikeSchema = new mongoose.Schema(
   {
     userId: {
@@ -72,11 +74,14 @@ const HikeSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+// #endregion Schema
 
+// #region Indexes
 // Common query patterns
 HikeSchema.index({ date: 1 });            // getHikes sorts/filters by date
 HikeSchema.index({ participants: 1 });    // getUserTrips & joinHike queries
 HikeSchema.index({ userId: 1 });          // filter hikes by creator
+// #endregion Indexes
 
 // #region Exports
 module.exports = mongoose.model("Hike", HikeSchema);

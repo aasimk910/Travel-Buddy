@@ -7,6 +7,8 @@ import { Download, X, Loader2, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-
 import { getToken } from "../../services/auth";
 
 // #endregion Imports
+
+// #region Types
 interface FilesProps {
   roomId?: string;
 }
@@ -26,7 +28,9 @@ interface Message {
   createdAt: string;
   attachment?: Attachment;
 }
+// #endregion Types
 
+// #region Component
 // Handles Files logic.
 const Files = ({ roomId }: FilesProps) => {
   const [images, setImages] = useState<Array<{ url: string; name: string; date: string; sender: string }>>([]);
@@ -247,6 +251,8 @@ const Files = ({ roomId }: FilesProps) => {
     </>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default Files;

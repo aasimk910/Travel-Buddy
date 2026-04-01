@@ -4,7 +4,6 @@
 
 // #region Imports
 import React, {
-// #endregion Imports
   createContext,
   useContext,
   useState,
@@ -12,7 +11,9 @@ import React, {
 } from "react";
 import { socket } from '../utils/socket';
 import { clearToken } from '../services/auth';
+// #endregion Imports
 
+// #region Types
 export type AuthUser = {
   id?: string;
   name: string;
@@ -51,7 +52,9 @@ interface AuthContextType {
   loginWithProfile: (user: AuthUser) => void;
   logout: () => void;
 }
+// #endregion Types
 
+// #region AuthProvider
 const STORAGE_KEY = "travelBuddyUser";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -158,7 +161,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+// #endregion AuthProvider
 
+// #region Hook
 export const useAuth = (): AuthContextType => {
   const ctx = useContext(AuthContext);
   if (!ctx) {
@@ -166,3 +171,4 @@ export const useAuth = (): AuthContextType => {
   }
   return ctx;
 };
+// #endregion Hook

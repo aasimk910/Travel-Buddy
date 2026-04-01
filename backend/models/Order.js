@@ -6,6 +6,8 @@
 const mongoose = require("mongoose");
 
 // #endregion Imports
+
+// #region Schema
 const orderItemSchema = new mongoose.Schema(
   {
     productId: { type: String, required: true },
@@ -48,10 +50,13 @@ const orderSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+// #endregion Schema
 
+// #region Indexes
 orderSchema.index({ userId: 1, createdAt: -1 });
 orderSchema.index({ status: 1 });
 orderSchema.index({ createdAt: -1 });
+// #endregion Indexes
 
 // #region Exports
 module.exports = mongoose.model("Order", orderSchema);

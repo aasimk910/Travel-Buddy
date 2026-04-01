@@ -11,6 +11,8 @@ import L from 'leaflet';
 import { getToken } from "../../services/auth";
 
 // #endregion Imports
+
+// #region Setup
 // Fix for default marker icons in React-Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -32,7 +34,9 @@ const endIcon = L.divIcon({
   iconSize: [18, 18],
   iconAnchor: [9, 9],
 });
+// #endregion Setup
 
+// #region Types
 type CreateHikeModalProps = {
   open: boolean;
   onClose: () => void;
@@ -49,7 +53,9 @@ const LocationPicker: React.FC<{ onLocationSelect: (lat: number, lng: number) =>
 };
 
 type LatLng = { lat: number; lng: number };
+// #endregion Types
 
+// #region Component
 const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -322,6 +328,8 @@ const CreateHikeModal: React.FC<CreateHikeModalProps> = ({ open, onClose }) => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default CreateHikeModal;

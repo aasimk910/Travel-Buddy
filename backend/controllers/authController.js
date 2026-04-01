@@ -14,6 +14,7 @@ const { buildUserResponse } = require("../utils/userUtils");
 
 // #endregion Imports
 
+// #region Config
 // JWT signing secret — must be set or the server won't start
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
@@ -34,7 +35,9 @@ if (!GOOGLE_CLIENT_ID) {
 const googleClient = GOOGLE_CLIENT_ID
   ? new OAuth2Client(GOOGLE_CLIENT_ID)
   : null;
+// #endregion Config
 
+// #region Authentication
 // Registers a new user with email/password after reCAPTCHA verification.
 // Hashes the password, sends a welcome email, and returns a JWT.
 const signup = async (req, res) => {
@@ -210,7 +213,9 @@ const googleAuth = async (req, res) => {
     return res.status(500).json({ message: "Server error during Google login." });
   }
 };
+// #endregion Authentication
 
+// #region Password Reset
 // Initiates password reset by generating a time-limited reset token.
 // Sends a reset link via email. Always returns the same message to prevent email enumeration.
 const forgotPassword = async (req, res) => {
@@ -278,6 +283,7 @@ const resetPassword = async (req, res) => {
     return res.status(500).json({ message: "Server error." });
   }
 };
+// #endregion Password Reset
 
 // #region Exports
 module.exports = { signup, login, googleAuth, forgotPassword, resetPassword };

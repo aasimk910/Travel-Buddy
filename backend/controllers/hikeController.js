@@ -8,6 +8,7 @@ const OnboardingProfile = require("../models/OnboardingProfile");
 
 // #endregion Imports
 
+// #region Helpers
 // Utility: determines the season (spring/summer/autumn/winter) from a Date value
 function getSeasonFromDate(dateValue) {
   const month = new Date(dateValue).getMonth() + 1;
@@ -16,7 +17,9 @@ function getSeasonFromDate(dateValue) {
   if (month >= 9 && month <= 11) return "autumn";
   return "winter";
 }
+// #endregion Helpers
 
+// #region Listing
 // Returns a paginated list of all hikes, sorted by date ascending.
 const getHikes = async (req, res) => {
   try {
@@ -182,7 +185,9 @@ const getRecommendedHikes = async (req, res) => {
     return res.status(500).json({ message: "Unable to fetch recommended hikes." });
   }
 };
+// #endregion Listing
 
+// #region CRUD
 // Returns a single hike by ID, populated with creator, participants, and linked hotels/packages.
 const getHikeById = async (req, res) => {
   try {
@@ -247,7 +252,9 @@ const createHike = async (req, res) => {
     res.status(500).json({ message: "Unable to create hike." });
   }
 };
+// #endregion CRUD
 
+// #region Participation
 // Adds the authenticated user to a hike's participant list.
 // Uses atomic findOneAndUpdate to prevent race conditions on spotsLeft.
 const joinHike = async (req, res) => {
@@ -307,7 +314,9 @@ const leaveHike = async (req, res) => {
     res.status(500).json({ message: "Unable to leave hike." });
   }
 };
+// #endregion Participation
 
+// #region User Trips
 // GET /api/user-trips - hikes the authenticated user has joined
 const getUserTrips = async (req, res) => {
   try {
@@ -318,6 +327,7 @@ const getUserTrips = async (req, res) => {
     res.status(500).json({ message: "Unable to fetch user trips." });
   }
 };
+// #endregion User Trips
 
 // #region Exports
 module.exports = { getHikes, getRecommendedHikes, getHikeById, createHike, joinHike, leaveHike, getUserTrips };

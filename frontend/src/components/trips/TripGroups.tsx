@@ -9,6 +9,8 @@ import { useToast } from '../../context/ToastContext';
 import { LogOut, Search } from 'lucide-react';
 
 // #endregion Imports
+
+// #region Types
 interface Hike {
   _id: string;
   title: string;
@@ -19,7 +21,9 @@ interface Hike {
 interface TripGroupsProps {
   selectedHikeId?: string;
 }
+// #endregion Types
 
+// #region Component
 const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -126,6 +130,8 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default TripGroups;

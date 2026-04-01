@@ -6,10 +6,14 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 // #endregion Imports
+
+// #region Types
 type AdminRouteProps = {
   children: React.ReactElement;
 };
+// #endregion Types
 
+// #region Component
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   const { isAuthenticated, isAdmin } = useAuth();
   const location = useLocation();
@@ -30,6 +34,8 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
 
   return children;
 };
+
+// #endregion Component
 
 // #region Exports
 export default AdminRoute;

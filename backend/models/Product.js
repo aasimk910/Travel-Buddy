@@ -6,6 +6,8 @@
 const mongoose = require("mongoose");
 
 // #endregion Imports
+
+// #region Schema
 const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -26,6 +28,7 @@ const productSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+// #endregion Schema
 
 // #region Exports
 module.exports = mongoose.model("Product", productSchema);

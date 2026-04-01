@@ -6,6 +6,8 @@
 const rateLimit = require("express-rate-limit");
 
 // #endregion Imports
+
+// #region Limiters
 const isDev = process.env.NODE_ENV !== "production";
 
 // General API rate limiter — applied globally to /api/* routes.
@@ -43,13 +45,14 @@ const createContentLimiter = rateLimit({
     res.status(429).json({ error: "Too many content submissions, please try again later." });
   },
 });
+// #endregion Limiters
 
 // #region Exports
 module.exports = {
-// #endregion Exports
   apiLimiter,
   authLimiter,
   createContentLimiter,
 };
+// #endregion Exports
 
 

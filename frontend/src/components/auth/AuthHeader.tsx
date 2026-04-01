@@ -5,11 +5,15 @@ import React from "react";
 import { Map } from "lucide-react";
 
 // #endregion Imports
+
+// #region Types
 type AuthHeaderProps = {
   title: string;
   subtitle?: string;
 };
+// #endregion Types
 
+// #region Component
 const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
   return (
     <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -30,6 +34,8 @@ const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default AuthHeader;

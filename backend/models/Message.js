@@ -6,6 +6,8 @@
 const mongoose = require("mongoose");
 
 // #endregion Imports
+
+// #region Schema
 const AttachmentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   type: { type: String, required: true },
@@ -43,9 +45,12 @@ const MessageSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+// #endregion Schema
 
+// #region Indexes
 // Index for faster queries by hikeId
 MessageSchema.index({ hikeId: 1, createdAt: 1 });
+// #endregion Indexes
 
 // #region Exports
 module.exports = mongoose.model("Message", MessageSchema);

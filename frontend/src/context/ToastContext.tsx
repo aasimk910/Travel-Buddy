@@ -7,6 +7,8 @@ import React, { createContext, useContext, useState, useCallback } from "react";
 import ToastComponent, { Toast, ToastType } from "../components/common/Toast";
 
 // #endregion Imports
+
+// #region Types
 interface ToastContextType {
   showToast: (message: string, type?: ToastType) => void;
   showSuccess: (message: string) => void;
@@ -15,6 +17,9 @@ interface ToastContextType {
   showWarning: (message: string) => void;
 }
 
+// #endregion Types
+
+// #region ToastProvider
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -67,7 +72,9 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
     </ToastContext.Provider>
   );
 };
+// #endregion ToastProvider
 
+// #region Hook
 export const useToast = (): ToastContextType => {
   const context = useContext(ToastContext);
   if (!context) {
@@ -75,5 +82,6 @@ export const useToast = (): ToastContextType => {
   }
   return context;
 };
+// #endregion Hook
 
 

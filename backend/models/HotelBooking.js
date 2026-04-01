@@ -6,6 +6,8 @@
 const mongoose = require("mongoose");
 
 // #endregion Imports
+
+// #region Schema
 const HotelBookingSchema = new mongoose.Schema(
   {
     userId: {
@@ -112,7 +114,9 @@ const HotelBookingSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+// #endregion Schema
 
+// #region Hooks
 // Generate booking reference before saving
 HotelBookingSchema.pre("save", async function (next) {
   if (!this.bookingReference) {
@@ -124,11 +128,14 @@ HotelBookingSchema.pre("save", async function (next) {
   }
   next();
 });
+// #endregion Hooks
 
+// #region Indexes
 // Common query patterns
 HotelBookingSchema.index({ userId: 1, createdAt: -1 });
 HotelBookingSchema.index({ hotelId: 1, checkInDate: 1 });
 HotelBookingSchema.index({ hikeId: 1 });
+// #endregion Indexes
 
 // #region Exports
 module.exports = mongoose.model("HotelBooking", HotelBookingSchema);

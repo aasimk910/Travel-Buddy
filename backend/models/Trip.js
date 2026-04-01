@@ -6,6 +6,8 @@
 const mongoose = require("mongoose");
 
 // #endregion Imports
+
+// #region Schema
 const TripSchema = new mongoose.Schema(
   {
     name: {
@@ -55,6 +57,7 @@ const TripSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+// #endregion Schema
 
 // #region Exports
 module.exports = mongoose.model("Trip", TripSchema);

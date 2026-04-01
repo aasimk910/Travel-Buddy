@@ -8,10 +8,14 @@ import Footer from './SiteFooter';
 import { useAuth } from '../../context/AuthContext';
 
 // #endregion Imports
+
+// #region Types
 interface MainLayoutProps {
   children: React.ReactNode;
 }
+// #endregion Types
 
+// #region Component
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [scrollY, setScrollY] = useState(0);
   const navigate = useNavigate();
@@ -57,6 +61,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default MainLayout;

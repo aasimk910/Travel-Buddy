@@ -5,6 +5,8 @@ import { API_BASE_URL } from "../config/env";
 import type { AuthUser } from "../context/AuthContext";
 
 // #endregion Imports
+
+// #region Types
 export type AuthResponse = {
   token?: string;
   user?: AuthUser;
@@ -26,7 +28,9 @@ export type SignupPayload = {
   budgetRange?: string;
   interests?: string;
 };
+// #endregion Types
 
+// #region Helpers
 const postJson = async (path: string, body: unknown): Promise<AuthResponse> => {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
@@ -47,7 +51,9 @@ const postJson = async (path: string, body: unknown): Promise<AuthResponse> => {
   }
   return data;
 };
+// #endregion Helpers
 
+// #region Auth API
 // Handles login logic.
 export const login = (payload: LoginPayload) => postJson("/api/auth/login", payload);
 
@@ -56,7 +62,9 @@ export const signup = (payload: SignupPayload) => postJson("/api/auth/signup", p
 
 // Handles googleAuth logic.
 export const googleAuth = (credential: string) => postJson("/api/auth/google", { credential });
+// #endregion Auth API
 
+// #region Token Management
 // Key used to remember whether the user chose "Remember me"
 const REMEMBER_KEY = "travelBuddyRemember";
 const TOKEN_KEY = "travelBuddyToken";
@@ -94,7 +102,9 @@ export const clearToken = () => {
   localStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(TOKEN_KEY);
 };
+// #endregion Token Management
 
+// #region Password Reset
 // Handles forgotPassword logic.
 export const forgotPassword = (email: string) =>
   postJson("/api/auth/forgot-password", { email }) as Promise<{ message: string; provider?: string }>;
@@ -102,3 +112,4 @@ export const forgotPassword = (email: string) =>
 // Handles resetPassword logic.
 export const resetPassword = (token: string, password: string) =>
   postJson(`/api/auth/reset-password/${token}`, { password });
+// #endregion Password Reset

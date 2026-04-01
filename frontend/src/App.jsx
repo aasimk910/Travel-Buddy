@@ -27,6 +27,7 @@ import Shop from "./pages/Shop";
 
 // #endregion Imports
 
+// #region Component
 const App = () => {
   return (
     <ErrorBoundary>
@@ -154,6 +155,8 @@ const App = () => {
     </ErrorBoundary>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default App;

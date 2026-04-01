@@ -9,12 +9,15 @@ const User = require("../models/User");
 
 // #endregion Imports
 
+// #region Config
 // JWT secret — required at startup; crashes immediately if missing
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is not set in the environment.");
 }
+// #endregion Config
 
+// #region authenticateToken
 // Verifies the JWT from the Authorization header and loads the user document.
 // Attaches the user (minus password) to req.user for downstream handlers.
 // Returns 401 for missing/invalid/expired tokens, 500 for unexpected errors.
@@ -50,7 +53,9 @@ const authenticateToken = async (req, res, next) => {
     return res.status(500).json({ message: "Authentication error." });
   }
 };
+// #endregion authenticateToken
 
+// #region adminOnly
 // Role gate: only allows requests from admin users.
 // Must be used after authenticateToken so req.user is available.
 const adminOnly = (req, res, next) => {
@@ -59,7 +64,9 @@ const adminOnly = (req, res, next) => {
   }
   next();
 };
+// #endregion adminOnly
 
+// #region optionalAuth
 // Optional auth: attaches user if token is present, but doesn't block unauthenticated requests.
 // Use for endpoints that work for both guests and logged-in users.
 const optionalAuth = async (req, res, next) => {
@@ -74,6 +81,7 @@ const optionalAuth = async (req, res, next) => {
   }
   next();
 };
+// #endregion optionalAuth
 
 // #region Exports
 module.exports = { authenticateToken, adminOnly, optionalAuth };

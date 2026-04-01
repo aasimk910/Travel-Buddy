@@ -7,6 +7,7 @@ const axios = require("axios");
 
 // #endregion Imports
 
+// #region Helpers
 // Calculates a daily budget breakdown by category based on travel style.
 // Returns an object with transport, accommodation, food, activities, misc, and total.
 function calculateDayBudget(dailyBudget, travelStyle) {
@@ -97,7 +98,9 @@ function generateDemoItinerary(destination, days, budget, travelStyle, interests
 
   return itinerary;
 }
+// #endregion Helpers
 
+// #region Generate Itinerary
 // POST handler: generates a travel itinerary.
 // If GROQ_API_KEY is set, calls the Groq LLM API; otherwise returns the demo itinerary.
 // Accepts either a custom freeform prompt or structured trip parameters.
@@ -276,6 +279,7 @@ const generateItinerary = async (req, res) => {
     res.status(500).json({ error: "Failed to generate itinerary. Please try again.", details: error.message });
   }
 };
+// #endregion Generate Itinerary
 
 // #region Exports
 module.exports = { generateItinerary };

@@ -9,6 +9,8 @@ import L from 'leaflet';
 import ConnectModal from '../components/hikes/ConnectModal';
 
 // #endregion Imports
+
+// #region Setup
 // Fix for default marker icons in React-Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -16,7 +18,9 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
+// #endregion Setup
 
+// #region Types
 interface Hike {
   _id: string;
   title: string;
@@ -60,7 +64,9 @@ interface Hike {
     }>;
   }>;
 }
+// #endregion Types
 
+// #region Helpers
 // Component to handle map center changes
 const ChangeMapView: React.FC<{ center: [number, number]; zoom: number; focusPoints?: [number, number][] }> = ({
   center,
@@ -188,7 +194,9 @@ const getStableIndexFromId = (id: string, length: number) => {
   }
   return Math.abs(hash) % length;
 };
+// #endregion Helpers
 
+// #region Component
 const Maps: React.FC = () => {
   const [hikes, setHikes] = useState<Hike[]>([]);
   const [selectedHike, setSelectedHike] = useState<Hike | null>(null);
@@ -824,6 +832,8 @@ const Maps: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default Maps;

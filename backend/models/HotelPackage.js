@@ -6,6 +6,8 @@
 const mongoose = require("mongoose");
 
 // #endregion Imports
+
+// #region Schema
 const HotelPackageSchema = new mongoose.Schema(
   {
     hotelId: {
@@ -75,6 +77,7 @@ const HotelPackageSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+// #endregion Schema
 
 // #region Exports
 module.exports = mongoose.model("HotelPackage", HotelPackageSchema);

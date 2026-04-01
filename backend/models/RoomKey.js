@@ -6,6 +6,8 @@
 const mongoose = require("mongoose");
 
 // #endregion Imports
+
+// #region Schema
 /**
  * Stores a per-user, per-room wrapped (encrypted) copy of the symmetric
  * AES-256-GCM room key.  The key material is encrypted client-side using
@@ -34,9 +36,12 @@ const RoomKeySchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+// #endregion Schema
 
+// #region Indexes
 // Unique: one wrapped-key entry per user per room
 RoomKeySchema.index({ hikeId: 1, userId: 1 }, { unique: true });
+// #endregion Indexes
 
 // #region Exports
 module.exports = mongoose.model("RoomKey", RoomKeySchema);

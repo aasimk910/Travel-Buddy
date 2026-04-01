@@ -8,6 +8,8 @@ import { deletePhoto } from "../../services/photos";
 import { getToken } from "../../services/auth";
 
 // #endregion Imports
+
+// #region Types
 type PhotoFeedProps = {
   photos: PhotoItem[];
   isLoading: boolean;
@@ -16,6 +18,9 @@ type PhotoFeedProps = {
   onDeleted?: (id: string) => void;
 };
 
+// #endregion Types
+
+// #region Component
 const PhotoFeed: React.FC<PhotoFeedProps> = ({ photos, isLoading, error, currentUserName, onDeleted }) => {
   const { showSuccess, showError } = useToast();
   const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
@@ -183,6 +188,8 @@ const PhotoFeed: React.FC<PhotoFeedProps> = ({ photos, isLoading, error, current
     </>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default PhotoFeed;

@@ -9,10 +9,14 @@ import { getRecommendedHikes, type Hike } from "../services/hikes";
 import { getToken } from "../services/auth";
 
 // #endregion Imports
+
+// #region Types
 type LocationState = {
   from?: string;
 };
+// #endregion Types
 
+// #region Component
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -374,6 +378,8 @@ const Onboarding: React.FC = () => {
     </section>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default Onboarding;

@@ -5,6 +5,8 @@ import React from "react";
 import { Map } from "lucide-react";
 
 // #endregion Imports
+
+// #region Component
 const SiteFooter: React.FC = () => {
   return (
     <footer className="glass-nav">
@@ -67,6 +69,8 @@ const SiteFooter: React.FC = () => {
     </footer>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default SiteFooter;

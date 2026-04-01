@@ -9,8 +9,12 @@ const Message = require("../models/Message");
 const { uploadBase64Image } = require("./cloudinaryUpload");
 
 // #endregion Imports
-const JWT_SECRET = process.env.JWT_SECRET;
 
+// #region Config
+const JWT_SECRET = process.env.JWT_SECRET;
+// #endregion Config
+
+// #region Socket Handler
 // Initializes all Socket.IO event handlers and JWT-based connection authentication.
 function initSocket(io) {
   // Middleware: authenticate every socket connection using the JWT from handshake auth
@@ -113,6 +117,7 @@ function initSocket(io) {
     });
   });
 }
+// #endregion Socket Handler
 
 // #region Exports
 module.exports = { initSocket };

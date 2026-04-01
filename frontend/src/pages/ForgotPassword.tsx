@@ -9,6 +9,8 @@ import { forgotPassword } from "../services/auth";
 import { CheckCircle } from "lucide-react";
 
 // #endregion Imports
+
+// #region Component
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -101,6 +103,8 @@ const ForgotPassword: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default ForgotPassword;

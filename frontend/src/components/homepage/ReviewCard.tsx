@@ -11,6 +11,8 @@ import { submitReview } from "../../services/reviews";
 import { getToken } from "../../services/auth";
 
 // #endregion Imports
+
+// #region Constants
 const FEATURED_LOCATIONS = [
   "Chamlang Central",
   "Nagarkot View Tower",
@@ -26,7 +28,9 @@ const getRandomLocation = (current?: string) => {
   const list = filtered.length ? filtered : FEATURED_LOCATIONS;
   return list[Math.floor(Math.random() * list.length)];
 };
+// #endregion Constants
 
+// #region Component
 const ReviewCard: React.FC = () => {
   const { logout } = useAuth();
   const { showSuccess, showError } = useToast();
@@ -199,6 +203,8 @@ const ReviewCard: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default ReviewCard;

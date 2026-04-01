@@ -9,6 +9,8 @@ import { resetPassword } from "../services/auth";
 import { Eye, EyeOff, CheckCircle } from "lucide-react";
 
 // #endregion Imports
+
+// #region Component
 const ResetPassword: React.FC = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
@@ -152,6 +154,8 @@ const ResetPassword: React.FC = () => {
     </div>
   );
 };
+
+// #endregion Component
 
 // #region Exports
 export default ResetPassword;

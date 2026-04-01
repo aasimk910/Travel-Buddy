@@ -3,6 +3,8 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 
 // #endregion Imports
+
+// #region Types
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
@@ -12,7 +14,9 @@ interface State {
   hasError: boolean;
   error: Error | null;
 }
+// #endregion Types
 
+// #region Component
 class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
@@ -59,6 +63,7 @@ class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+// #endregion Component
 
 // #region Exports
 export default ErrorBoundary;

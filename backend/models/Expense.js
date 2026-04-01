@@ -6,6 +6,8 @@
 const mongoose = require("mongoose");
 
 // #endregion Imports
+
+// #region Schema
 const ExpenseSchema = new mongoose.Schema(
   {
     hikeId: {
@@ -88,9 +90,12 @@ const ExpenseSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+// #endregion Schema
 
+// #region Indexes
 // Index for efficient queries
 ExpenseSchema.index({ hikeId: 1, createdAt: -1 });
+// #endregion Indexes
 
 const Expense = mongoose.model("Expense", ExpenseSchema);
 

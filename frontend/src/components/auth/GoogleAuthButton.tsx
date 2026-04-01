@@ -5,6 +5,8 @@ import React, { useEffect, useRef } from "react";
 import { GOOGLE_CLIENT_ID } from "../../config/env";
 
 // #endregion Imports
+
+// #region Types
 type RenderOptions = {
   theme?: "outline" | "filled_blue" | "filled_black";
   size?: "large" | "medium" | "small";
@@ -19,7 +21,9 @@ type GoogleAuthButtonProps = {
   renderOptions?: RenderOptions;
   className?: string;
 };
+// #endregion Types
 
+// #region Component
 const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
   onCredential,
   clientId = GOOGLE_CLIENT_ID,
@@ -79,6 +83,8 @@ const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
 
   return <div ref={buttonRef} className={className} />;
 };
+
+// #endregion Component
 
 // #region Exports
 export default GoogleAuthButton;
