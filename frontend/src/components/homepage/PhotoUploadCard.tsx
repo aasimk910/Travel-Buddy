@@ -15,7 +15,18 @@ const convertFileToBase64 = (file: File): Promise<string> =>
   new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
+    reader.onload = () => {
+      let result = reader.result as string;
+      // HEIC/HEIF files often get "application/octet-stream" MIME type from FileReader.
+      // Normalize to "image/heic" so backend validation accepts it.
+      if (!result.startsWith("data:image/")) {
+        const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+        if (ext === ".heic" || ext === ".heif") {
+          result = result.replace(/^data:[^;]*;/, "data:image/heic;");
+        }
+      }
+      resolve(result);
+    };
     reader.onerror = (error) => reject(error);
   });
 
@@ -48,7 +59,12 @@ const PhotoUploadCard: React.FC<PhotoUploadCardProps> = ({ onUploaded }) => {
       return;
     }
 
-    const invalidFiles = files.filter((file) => !file.type.startsWith("image/"));
+    const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif", ".bmp", ".tiff"];
+    const invalidFiles = files.filter((file) => {
+      if (file.type.startsWith("image/")) return false;
+      const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+      return !imageExtensions.includes(ext);
+    });
     if (invalidFiles.length > 0) {
       showError("Please select only image files.");
       return;

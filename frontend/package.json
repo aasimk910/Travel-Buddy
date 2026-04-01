@@ -16,6 +16,7 @@
     "axios": "^1.13.5",
     "dompurify": "^3.3.0",
     "formik": "^2.4.9",
+    "heic2any": "^0.0.4",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.0",
     "leaflet": "^1.9.4",

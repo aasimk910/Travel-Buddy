@@ -154,7 +154,7 @@ const ReviewCard: React.FC = () => {
                 }`}
                 aria-pressed={reviewRating === star}
               >
-                ?
+                ★
               </button>
             ))}
           </div>

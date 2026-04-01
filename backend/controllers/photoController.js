@@ -59,7 +59,7 @@ const createPhoto = async (req, res) => {
     }
 
     for (const img of imageArray) {
-      if (typeof img !== "string" || !img.startsWith("data:image/")) {
+      if (typeof img !== "string" || (!img.startsWith("data:image/") && !img.startsWith("data:application/octet-stream"))) {
         return res.status(400).json({
           message: "Invalid image format. Images must be base64 encoded.",
         });

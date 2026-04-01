@@ -20,6 +20,7 @@ const PhotoFeed: React.FC<PhotoFeedProps> = ({ photos, isLoading, error, current
   const { showSuccess, showError } = useToast();
   const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
   const [photoIndices, setPhotoIndices] = useState<Record<string, number>>({});
+  const [lightbox, setLightbox] = useState<{ src: string; alt: string; userName: string; caption?: string } | null>(null);
 
   // Handles handleDelete logic.
   const handleDelete = async (id: string) => {
@@ -60,6 +61,7 @@ const PhotoFeed: React.FC<PhotoFeedProps> = ({ photos, isLoading, error, current
   }
 
   return (
+    <>
     <section className="mb-8">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-white">Latest trail photos</h2>
@@ -112,7 +114,8 @@ const PhotoFeed: React.FC<PhotoFeedProps> = ({ photos, isLoading, error, current
                   <img
                     src={imageList[currentIndex]}
                     alt={photo.caption || `Trail photo shared by ${photo.userName}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover cursor-zoom-in"
+                    onClick={() => setLightbox({ src: imageList[currentIndex], alt: photo.caption || `Trail photo shared by ${photo.userName}`, userName: photo.userName, caption: photo.caption })}
                   />
                 )}
               </div>
@@ -129,6 +132,55 @@ const PhotoFeed: React.FC<PhotoFeedProps> = ({ photos, isLoading, error, current
         })}
       </div>
     </section>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <div
+            className="relative w-full max-w-[480px] glass-card rounded-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header – avatar + username */}
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-white/15">
+              <div className="h-9 w-9 rounded-full glass-strong flex items-center justify-center text-white font-bold text-sm shrink-0">
+                {lightbox!.userName.charAt(0).toUpperCase()}
+              </div>
+              <span className="font-semibold text-sm text-white truncate">{lightbox!.userName}</span>
+              <button
+                type="button"
+                onClick={() => setLightbox(null)}
+                className="ml-auto text-gray-300 hover:text-white text-xl leading-none"
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Image */}
+            <div className="w-full bg-black/30 flex items-center justify-center max-h-[65vh]">
+              <img
+                src={lightbox!.src}
+                alt={lightbox!.alt}
+                className="w-full max-h-[65vh] object-contain"
+              />
+            </div>
+
+            {/* Caption */}
+            {lightbox!.caption && (
+              <div className="px-4 py-3 border-t border-white/15">
+                <p className="text-sm text-gray-200">
+                  <span className="font-semibold text-white mr-1">{lightbox!.userName}</span>
+                  {lightbox!.caption}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

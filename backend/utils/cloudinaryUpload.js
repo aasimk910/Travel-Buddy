@@ -14,9 +14,17 @@ const cloudinary = require('../config/cloudinary');
  */
 const uploadBase64Image = async (base64Image, folder = 'travel-buddy') => {
   try {
+    // Verify Cloudinary is configured before attempting upload
+    const config = cloudinary.config();
+    if (!config.cloud_name || !config.api_key || !config.api_secret) {
+      throw new Error('Cloudinary credentials are missing. Check CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in .env');
+    }
+
+    console.log(`Uploading image to Cloudinary (folder: ${folder}, size: ${Math.round(base64Image.length / 1024)}KB)...`);
+
     const result = await cloudinary.uploader.upload(base64Image, {
       folder: folder,
-      resource_type: 'auto', // Support images and other file types
+      resource_type: 'auto',
       transformation: [
         { width: 1920, height: 1920, crop: 'limit' },
         { quality: 'auto' },
@@ -24,6 +32,7 @@ const uploadBase64Image = async (base64Image, folder = 'travel-buddy') => {
       ]
     });
 
+    console.log(`Cloudinary upload success: ${result.public_id}`);
     return {
       url: result.secure_url,
       publicId: result.public_id,
@@ -31,8 +40,12 @@ const uploadBase64Image = async (base64Image, folder = 'travel-buddy') => {
       height: result.height,
     };
   } catch (error) {
-    console.error('Error uploading to Cloudinary:', error);
-    throw new Error('Failed to upload image to Cloudinary');
+    console.error('Cloudinary upload failed:', {
+      message: error.message,
+      httpCode: error.http_code,
+      name: error.name,
+    });
+    throw new Error(`Failed to upload image to Cloudinary: ${error.message || 'Unknown error'}`);
   }
 };
 

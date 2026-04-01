@@ -1,19 +1,31 @@
 // src/utils/imageCompression.ts
 
+const isHeic = (file: File): boolean => {
+  const name = file.name.toLowerCase();
+  return (
+    file.type === "image/heic" ||
+    file.type === "image/heif" ||
+    name.endsWith(".heic") ||
+    name.endsWith(".heif")
+  );
+};
+
 /**
- * Compresses an image file to reduce its size
- * @param file - The image file to compress
- * @param maxWidth - Maximum width (default: 1920)
- * @param maxHeight - Maximum height (default: 1920)
- * @param quality - JPEG quality 0-1 (default: 0.8)
- * @returns Promise<File> - Compressed image file
+ * Compresses an image file to reduce its size.
+ * HEIC/HEIF files are returned as-is since browsers can't decode them
+ * on a canvas — Cloudinary handles the conversion server-side.
  */
-export const compressImage = (
+export const compressImage = async (
   file: File,
   maxWidth: number = 1920,
   maxHeight: number = 1920,
   quality: number = 0.8
 ): Promise<File> => {
+  // HEIC/HEIF: skip client-side compression, Cloudinary converts them server-side
+  if (isHeic(file)) {
+    return file;
+  }
+
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -49,23 +61,27 @@ export const compressImage = (
 
         ctx.drawImage(img, 0, 0, width, height);
 
+        // Always output as JPEG — canvas doesn't support HEIC/HEIF
+        const outputType = "image/jpeg";
+        const outputName = file.name.replace(/\.[^.]+$/, ".jpg");
+
         canvas.toBlob(
           (blob) => {
             if (!blob) {
               reject(new Error("Compression failed"));
               return;
             }
-            const compressedFile = new File([blob], file.name, {
-              type: file.type,
+            const compressedFile = new File([blob], outputName, {
+              type: outputType,
               lastModified: Date.now(),
             });
             resolve(compressedFile);
           },
-          file.type,
+          outputType,
           quality
         );
       };
-      img.onerror = () => reject(new Error("Failed to load image"));
+      img.onerror = () => reject(new Error("Failed to load image."));
     };
     reader.onerror = () => reject(new Error("Failed to read file"));
   });
