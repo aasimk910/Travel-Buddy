@@ -7,9 +7,9 @@ import { useAuth } from "../context/AuthContext";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { GOOGLE_CLIENT_ID } from "../config/env";
-import GoogleAuthButton from "../components/GoogleAuthButton";
-import AuthHeader from "../components/AuthHeader";
-import StatusAlert from "../components/StatusAlert";
+import GoogleAuthButton from "../components/auth/GoogleAuthButton";
+import AuthHeader from "../components/auth/AuthHeader";
+import StatusAlert from "../components/common/StatusAlert";
 import { login as loginRequest, googleAuth, storeToken } from "../services/auth";
 
 

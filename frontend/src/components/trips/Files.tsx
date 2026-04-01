@@ -2,9 +2,9 @@
 // Photo gallery/lightbox component for viewing hike group photos with zoom and navigation.
 // #region Imports
 import { useEffect, useState } from 'react';
-import { API_BASE_URL } from '../config/env';
+import { API_BASE_URL } from '../../config/env';
 import { Download, X, Loader2, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
-import { getToken } from "../services/auth";
+import { getToken } from "../../services/auth";
 
 // #endregion Imports
 interface FilesProps {

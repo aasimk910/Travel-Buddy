@@ -3,9 +3,9 @@
 // #region Imports
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserTrips, leaveHike } from '../services/trips';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
+import { getUserTrips, leaveHike } from '../../services/trips';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { LogOut, Search } from 'lucide-react';
 
 // #endregion Imports

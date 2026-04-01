@@ -2,7 +2,7 @@
 // Displays hike title and participant count at the top of the chat panel.
 // #region Imports
 import React, { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config/env';
+import { API_BASE_URL } from '../../config/env';
 
 // #endregion Imports
 interface ChatHeaderProps {

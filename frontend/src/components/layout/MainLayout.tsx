@@ -3,9 +3,9 @@
 // #region Imports
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import TopNav from './homepage/TopNav';
+import TopNav from '../homepage/TopNav';
 import Footer from './SiteFooter';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 // #endregion Imports
 interface MainLayoutProps {

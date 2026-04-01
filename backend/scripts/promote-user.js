@@ -3,12 +3,13 @@
 // Usage: node scripts/promote-user.js <user-email>
 
 // #region Imports
+const path = require("path");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const User = require("../models/User");
 
 // #endregion Imports
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
 // Promotes the user whose email is passed as a CLI argument to the "admin" role.
 async function main() {

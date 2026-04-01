@@ -8,9 +8,9 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { GOOGLE_CLIENT_ID, VITE_RECAPTCHA_SITE_KEY } from "../config/env";
 import ReCAPTCHA from "react-google-recaptcha";
-import GoogleAuthButton from "../components/GoogleAuthButton";
-import AuthHeader from "../components/AuthHeader";
-import StatusAlert from "../components/StatusAlert";
+import GoogleAuthButton from "../components/auth/GoogleAuthButton";
+import AuthHeader from "../components/auth/AuthHeader";
+import StatusAlert from "../components/common/StatusAlert";
 import { signup as signupRequest, googleAuth, storeToken } from "../services/auth";
 
 // #endregion Imports

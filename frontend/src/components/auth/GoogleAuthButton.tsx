@@ -2,7 +2,7 @@
 // Renders the Google One Tap / Sign-In button using the Google Identity Services SDK.
 // #region Imports
 import React, { useEffect, useRef } from "react";
-import { GOOGLE_CLIENT_ID } from "../config/env";
+import { GOOGLE_CLIENT_ID } from "../../config/env";
 
 // #endregion Imports
 type RenderOptions = {

@@ -3,8 +3,8 @@
 // #region Imports
 import React, { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import AuthHeader from "../components/AuthHeader";
-import StatusAlert from "../components/StatusAlert";
+import AuthHeader from "../components/auth/AuthHeader";
+import StatusAlert from "../components/common/StatusAlert";
 import { resetPassword } from "../services/auth";
 import { Eye, EyeOff, CheckCircle } from "lucide-react";
 

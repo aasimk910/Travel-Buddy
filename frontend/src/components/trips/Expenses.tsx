@@ -15,8 +15,8 @@ import {
   Users,
   TrendingUp,
 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-import { useToast } from "../context/ToastContext";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 import {
   getExpenses,
   createExpense,
@@ -25,9 +25,9 @@ import {
   getExpenseSummary,
   Expense,
   ExpenseSummary,
-} from "../services/expenses";
-import { API_BASE_URL } from "../config/env";
-import { getToken } from "../services/auth";
+} from "../../services/expenses";
+import { API_BASE_URL } from "../../config/env";
+import { getToken } from "../../services/auth";
 
 interface ExpensesProps {
   roomId?: string;

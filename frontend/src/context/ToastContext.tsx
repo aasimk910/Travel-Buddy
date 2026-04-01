@@ -4,7 +4,7 @@
 
 // #region Imports
 import React, { createContext, useContext, useState, useCallback } from "react";
-import ToastComponent, { Toast, ToastType } from "../components/Toast";
+import ToastComponent, { Toast, ToastType } from "../components/common/Toast";
 
 // #endregion Imports
 interface ToastContextType {

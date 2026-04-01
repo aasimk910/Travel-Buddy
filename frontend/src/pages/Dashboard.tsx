@@ -3,11 +3,11 @@
 // #region Imports
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import TripGroups from '../components/TripGroups';
-import ChatHeader from '../components/ChatHeader';
-import Chat from '../components/Chat';
-import Files from '../components/Files';
-import Expenses from '../components/Expenses';
+import TripGroups from '../components/trips/TripGroups';
+import ChatHeader from '../components/chat/ChatHeader';
+import Chat from '../components/chat/Chat';
+import Files from '../components/trips/Files';
+import Expenses from '../components/trips/Expenses';
 import UserProfile from '../components/dashboard/UserProfile';
 import DashboardNav from '../components/dashboard/DashboardNav';
 import UpcomingTrips from '../components/dashboard/UpcomingTrips';

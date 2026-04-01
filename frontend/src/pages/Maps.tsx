@@ -34,7 +34,31 @@ interface Hike {
     name: string;
     location: string;
     coordinates?: { lat: number; lng: number };
-  } | string>;
+    description?: string;
+    contactPhone?: string;
+    email?: string;
+    website?: string;
+    imageUrl?: string;
+    rating: number;
+    reviewCount: number;
+    amenities: string[];
+    packages: Array<{
+      _id: string;
+      hotelId: string;
+      name: string;
+      description?: string;
+      roomType: string;
+      pricePerNight: number;
+      currency: string;
+      capacity: number;
+      amenities: string[];
+      image?: string;
+      availableRooms: number;
+      maxStayNights?: number;
+      minStayNights: number;
+      cancellationPolicy: string;
+    }>;
+  }>;
 }
 
 // Component to handle map center changes
@@ -310,14 +334,7 @@ const Maps: React.FC = () => {
     }>;
 
     const normalizedHotels = selectedHike.hotels.filter(
-      (
-        hotel
-      ): hotel is {
-        _id: string;
-        name: string;
-        location: string;
-        coordinates?: { lat: number; lng: number };
-      } => typeof hotel === 'object' && hotel !== null
+      (hotel) => typeof hotel === 'object' && hotel !== null
     );
 
     if (!normalizedHotels.length) return [];
@@ -551,17 +568,17 @@ const Maps: React.FC = () => {
       {/* Map Area */}
       <div className="flex-1 relative m-3 rounded-xl overflow-hidden glass-card">
         {/* Measure Distance Toolbar */}
-        <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 items-end">
+        <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2 items-end">
           <button
             onClick={() => {
               const next = !measureActive;
               setMeasureActive(next);
               if (!next) clearMeasurement();
             }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm shadow-lg transition ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm shadow-lg transition border ${
               measureActive
-                ? 'bg-indigo-600 text-white'
-                : 'glass text-white hover:opacity-90'
+                ? 'bg-indigo-600 text-white border-indigo-400'
+                : 'bg-gray-900/80 backdrop-blur-md text-white border-white/20 hover:bg-gray-800/90'
             }`}
           >
             <Ruler className="w-4 h-4" />
@@ -569,7 +586,7 @@ const Maps: React.FC = () => {
           </button>
 
           {measureActive && (
-            <div className="glass-strong rounded-xl p-4 min-w-[220px]">
+            <div className="bg-gray-900/90 backdrop-blur-md border border-white/20 rounded-xl p-4 min-w-[220px] shadow-xl">
               <p className="text-xs text-gray-300 mb-2">
                 {!pointA
                   ? '1. Click the map to set Point A'

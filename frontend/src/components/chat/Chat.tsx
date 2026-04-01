@@ -3,11 +3,11 @@
 // and supports file attachments uploaded to Cloudinary.
 // #region Imports
 import { useEffect, useState, useRef } from "react";
-import { socket } from "../utils/socket";
-import { useAuth } from "../context/AuthContext";
-import { API_BASE_URL } from "../config/env";
+import { socket } from "../../utils/socket";
+import { useAuth } from "../../context/AuthContext";
+import { API_BASE_URL } from "../../config/env";
 import { Paperclip, FileText, X, Send, Loader2 } from "lucide-react";
-import { getToken } from "../services/auth";
+import { getToken } from "../../services/auth";
 
 // #endregion Imports
 interface ChatProps {

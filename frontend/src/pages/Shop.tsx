@@ -13,7 +13,7 @@ import {
 import { API_BASE_URL } from '../config/env';
 import { useAuth } from '../context/AuthContext';
 import { initiateKhaltiPayment } from '../services/payment';
-import PaymentSuccessModal from '../components/PaymentSuccessModal';
+import PaymentSuccessModal from '../components/common/PaymentSuccessModal';
 import { getToken } from "../services/auth";
 
 const LS_ORDERS_KEY = 'tb_saved_orders';
@@ -435,15 +435,15 @@ const Shop: React.FC = () => {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => r.ok ? r.json() : null)
-      .then((data: { orders: Array<{ orderId: string; status: string; paymentStatus: string }> } | null) => {
+      .then((data: { orders: Array<{ orderId: string; status: string; paymentStatus: string; paymentMethod?: 'cod' | 'khalti' }> } | null) => {
         if (!data?.orders?.length) return;
-        const statusMap = new Map(data.orders.map(o => [o.orderId, o.status]));
+        const orderMap = new Map(data.orders.map(o => [o.orderId, o]));
         setSavedOrders(prev => {
-          const updated = prev.map(o =>
-            statusMap.has(o.orderId)
-              ? { ...o, status: statusMap.get(o.orderId) as OrderSnapshot['status'] }
-              : o
-          );
+          const updated = prev.map(o => {
+            const backend = orderMap.get(o.orderId);
+            if (!backend) return o;
+            return { ...o, status: backend.status as OrderSnapshot['status'], ...(backend.paymentMethod ? { paymentMethod: backend.paymentMethod } : {}) };
+          });
           localStorage.setItem(userOrdersKey, JSON.stringify(updated));
           return updated;
         });
@@ -1014,8 +1014,12 @@ const Shop: React.FC = () => {
                     <div className="text-left">
                       <div className="flex items-center gap-2">
                         <p className="text-white font-semibold text-sm">{order.orderId}</p>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full border font-semibold bg-emerald-500/15 border-emerald-400/30 text-emerald-300">
-                          COD
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${
+                          order.paymentMethod === 'khalti'
+                            ? 'bg-purple-500/15 border-purple-400/30 text-purple-300'
+                            : 'bg-emerald-500/15 border-emerald-400/30 text-emerald-300'
+                        }`}>
+                          {order.paymentMethod === 'khalti' ? 'Khalti' : 'COD'}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5">

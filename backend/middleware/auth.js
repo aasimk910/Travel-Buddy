@@ -60,6 +60,21 @@ const adminOnly = (req, res, next) => {
   next();
 };
 
+// Optional auth: attaches user if token is present, but doesn't block unauthenticated requests.
+// Use for endpoints that work for both guests and logged-in users.
+const optionalAuth = async (req, res, next) => {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) return next();
+  try {
+    const decoded = jwt.verify(header.slice(7), JWT_SECRET);
+    const user = await User.findById(decoded.userId).select("_id").lean();
+    if (user) req.user = user;
+  } catch {
+    // Invalid token is non-fatal for optional auth
+  }
+  next();
+};
+
 // #region Exports
-module.exports = { authenticateToken, adminOnly };
+module.exports = { authenticateToken, adminOnly, optionalAuth };
 // #endregion Exports

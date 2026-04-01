@@ -525,73 +525,8 @@ const deleteBookingAdmin = async (req, res) => {
   }
 };
 
-// ─── Products ─────────────────────────────────────────────────────────────────
-
-// Handles listProducts logic.
-const listProducts = async (req, res) => {
-  try {
-    const { page = 1, limit = 20, search = "", category = "" } = req.query;
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const query = {};
-    if (search) query.name = { $regex: search, $options: "i" };
-    if (category) query.category = category;
-    const [products, total] = await Promise.all([
-      Product.find(query).sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit)),
-      Product.countDocuments(query),
-    ]);
-    res.json({ products, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) } });
-  } catch (err) {
-    console.error("Admin list products error:", err);
-    res.status(500).json({ message: "Unable to fetch products." });
-  }
-};
-
-// Handles createProduct logic.
-const createProduct = async (req, res) => {
-  try {
-    const { name, category, price, description, badge, img, images, inStock, featured } = req.body;
-    if (!name || !category || price === undefined) {
-      return res.status(400).json({ message: "Name, category, and price are required." });
-    }
-    const product = await Product.create({ name, category, price, description, badge: badge || null, img, images: images || [], inStock, featured });
-    res.status(201).json({ message: "Product created.", product });
-  } catch (err) {
-    console.error("Admin create product error:", err);
-    res.status(500).json({ message: "Unable to create product." });
-  }
-};
-
-// Handles updateProduct logic.
-const updateProduct = async (req, res) => {
-  try {
-    const { name, category, price, description, badge, img, images, inStock, featured } = req.body;
-    if (!name || !category || price === undefined) {
-      return res.status(400).json({ message: "Name, category, and price are required." });
-    }
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      { name, category, price, description, badge: badge || null, img, images: images || [], inStock, featured },
-      { new: true, runValidators: true }
-    );
-    if (!product) return res.status(404).json({ message: "Product not found." });
-    res.json({ message: "Product updated.", product });
-  } catch (err) {
-    console.error("Admin update product error:", err);
-    res.status(500).json({ message: "Unable to update product." });
-  }
-};
-
-// Handles deleteProduct logic.
-const deleteProduct = async (req, res) => {
-  try {
-    const product = await Product.findByIdAndDelete(req.params.id);
-    if (!product) return res.status(404).json({ message: "Product not found." });
-    res.json({ message: "Product deleted." });
-  } catch (err) {
-    console.error("Admin delete product error:", err);
-    res.status(500).json({ message: "Unable to delete product." });
-  }
-};
+// ─── Products (delegated to productController) ───────────────────────────────
+const { listProducts, createProduct, updateProduct, deleteProduct } = require("./productController");
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
@@ -707,90 +642,8 @@ const clearHotels = async (req, res) => {
   }
 };
 
-// ─── Orders ───────────────────────────────────────────────────────────────────
-
-// Handles createOrder logic.
-const createOrder = async (req, res) => {
-  try {
-    const { orderId, items, customer, subtotal, shipping, total, paymentMethod } = req.body;
-    if (!orderId || !items?.length || !customer || !total || !paymentMethod) {
-      return res.status(400).json({ message: "Missing required order fields." });
-    }
-    const existing = await Order.findOne({ orderId });
-    if (existing) return res.json({ order: existing }); // idempotent — same orderId → return existing
-    const order = await Order.create({
-      orderId,
-      userId: req.user?._id || null,
-      items,
-      customer,
-      subtotal,
-      shipping: shipping || 0,
-      total,
-      paymentMethod,
-      paymentStatus: paymentMethod === "khalti" ? "paid" : "unpaid",
-      status: "placed",
-    });
-    res.status(201).json({ order });
-  } catch (err) {
-    console.error("Create order error:", err);
-    res.status(500).json({ message: "Unable to create order." });
-  }
-};
-
-// Handles listOrders logic.
-const listOrders = async (req, res) => {
-  try {
-    const { page = 1, limit = 15, search = "", status = "", paymentMethod = "" } = req.query;
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const query = {};
-    if (status) query.status = status;
-    if (paymentMethod) query.paymentMethod = paymentMethod;
-    if (search) {
-      query.$or = [
-        { orderId: { $regex: search, $options: "i" } },
-        { "customer.name": { $regex: search, $options: "i" } },
-        { "customer.phone": { $regex: search, $options: "i" } },
-        { "customer.city": { $regex: search, $options: "i" } },
-      ];
-    }
-    const [orders, total] = await Promise.all([
-      Order.find(query).sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit)).lean(),
-      Order.countDocuments(query),
-    ]);
-    res.json({ orders, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) } });
-  } catch (err) {
-    console.error("List orders error:", err);
-    res.status(500).json({ message: "Unable to fetch orders." });
-  }
-};
-
-// Handles updateOrderStatus logic.
-const updateOrderStatus = async (req, res) => {
-  try {
-    const { status, paymentStatus } = req.body;
-    const update = {};
-    if (status) update.status = status;
-    if (paymentStatus) update.paymentStatus = paymentStatus;
-    const order = await Order.findByIdAndUpdate(req.params.id, update, { new: true });
-    if (!order) return res.status(404).json({ message: "Order not found." });
-    res.json({ message: "Order updated.", order });
-  } catch (err) {
-    console.error("Update order status error:", err);
-    res.status(500).json({ message: "Unable to update order." });
-  }
-};
-
-// Handles deleteOrder logic.
-const deleteOrder = async (req, res) => {
-  try {
-    const order = await Order.findByIdAndDelete(req.params.id);
-    if (!order) return res.status(404).json({ message: "Order not found." });
-    res.json({ message: "Order deleted." });
-  } catch (err) {
-    console.error("Delete order error:", err);
-    res.status(500).json({ message: "Unable to delete order." });
-  }
-};
+// ─── Orders (delegated to orderController) ───────────────────────────────────
+const { createOrder, listOrders, updateOrderStatus, deleteOrder } = require("./orderController");
 
 // #region Exports
 module.exports = {

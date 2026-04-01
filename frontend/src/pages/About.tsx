@@ -54,6 +54,8 @@ const FeatureCard: React.FC<{
 );
 
 // --- Main page ----------------------------------------------------
+const RATING_LABELS = ["", "Poor", "Fair", "Good", "Very Good", "Excellent"];
+
 const About: React.FC = () => {
   const revealRef = useScrollReveal();
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -61,6 +63,7 @@ const About: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(6);
   const [stats, setStats] = useState<SiteStats | null>(null);
+  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -222,7 +225,9 @@ const About: React.FC = () => {
               {reviews.slice(0, visibleCount).map((review, idx) => (
                 <div
                   key={review._id}
-                  className={`glass-card rounded-xl p-5 flex flex-col gap-3 reveal reveal-scale ${["delay-100","delay-200","delay-300","delay-400","delay-500","delay-600"][idx % 6]}`}
+                  onClick={() => setSelectedReview(review)}
+                  className="glass-card rounded-xl p-5 flex flex-col gap-3 cursor-pointer hover:ring-1 hover:ring-white/20 transition-all animate-fade-in"
+                  style={{ animationDelay: `${idx * 0.1}s` }}
                 >
                   {/* Header */}
                   <div className="flex items-start justify-between gap-3">
@@ -243,7 +248,12 @@ const About: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    <Stars rating={review.rating} />
+                    <div className="flex flex-col items-end gap-1">
+                      <Stars rating={review.rating} />
+                      <span className="text-xs text-yellow-400/80 font-medium">
+                        {RATING_LABELS[review.rating]}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Location */}
@@ -254,9 +264,16 @@ const About: React.FC = () => {
 
                   {/* Comment */}
                   {review.comment && (
-                    <p className="text-sm text-gray-200 leading-relaxed line-clamp-4">
+                    <p className="text-sm text-gray-200 leading-relaxed line-clamp-3">
                       {review.comment}
                     </p>
+                  )}
+
+                  {/* Read more hint */}
+                  {review.comment && review.comment.length > 120 && (
+                    <span className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors">
+                      Read more →
+                    </span>
                   )}
                 </div>
               ))}
@@ -276,6 +293,88 @@ const About: React.FC = () => {
           </>
         )}
       </section>
+
+      {/* -- Review Detail Modal ------------------------------------- */}
+      {selectedReview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => setSelectedReview(null)}
+        >
+          <div
+            className="glass-card rounded-2xl w-full max-w-lg p-6 space-y-5 border border-white/15 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedReview(null)}
+              className="absolute top-4 right-4 text-white/60 hover:text-white text-xl transition-colors"
+            >
+              ✕
+            </button>
+
+            {/* User info */}
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-400 flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
+                {selectedReview.userName.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">
+                  {selectedReview.userName}
+                </h3>
+                <p className="text-sm text-gray-400">
+                  {new Date(selectedReview.createdAt).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+            </div>
+
+            {/* Rating */}
+            <div className="glass-strong rounded-xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Stars rating={selectedReview.rating} />
+                <span className="text-yellow-400 font-bold text-lg">
+                  {selectedReview.rating}.0
+                </span>
+              </div>
+              <span className="text-sm font-semibold text-yellow-400/80 bg-yellow-400/10 px-3 py-1 rounded-full">
+                {RATING_LABELS[selectedReview.rating]}
+              </span>
+            </div>
+
+            {/* Location */}
+            <div className="flex items-center gap-2 text-emerald-300">
+              <Map className="w-4 h-4" />
+              <span className="font-medium">{selectedReview.locationName}</span>
+            </div>
+
+            {/* Full comment */}
+            {selectedReview.comment ? (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Review</p>
+                <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">
+                  {selectedReview.comment}
+                </p>
+              </div>
+            ) : (
+              <p className="text-gray-400 italic text-sm">No written review provided.</p>
+            )}
+
+            {/* Close action */}
+            <div className="pt-2 text-center">
+              <button
+                onClick={() => setSelectedReview(null)}
+                className="px-6 py-2 glass-button-dark rounded-full text-white text-sm font-medium hover:opacity-90 transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

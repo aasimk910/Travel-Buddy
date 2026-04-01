@@ -6,7 +6,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { CheckCircle, AlertCircle, Loader } from "lucide-react";
 import { useToast } from "../context/ToastContext";
 import { API_BASE_URL } from "../config/env";
-import PaymentSuccessModal from "../components/PaymentSuccessModal";
+import PaymentSuccessModal from "../components/common/PaymentSuccessModal";
 import { getToken } from "../services/auth";
 
 // #endregion Imports

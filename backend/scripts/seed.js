@@ -1,21 +1,22 @@
-﻿// backend/seed.js
+﻿// backend/scripts/seed.js
 // Standalone CLI script that seeds the database with sample data.
 // Clears existing records and inserts dummy admin user, hotels, packages, hikes, and products.
-// Usage: node seed.js
+// Usage: node scripts/seed.js  (run from backend/)
 
 // #region Imports
+const path = require("path");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 
 // #endregion Imports
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
-const User = require("./models/User");
-const Hotel = require("./models/Hotel");
-const HotelPackage = require("./models/HotelPackage");
-const Hike = require("./models/Hike");
-const Product = require("./models/Product");
+const User = require("../models/User");
+const Hotel = require("../models/Hotel");
+const HotelPackage = require("../models/HotelPackage");
+const Hike = require("../models/Hike");
+const Product = require("../models/Product");
 
 const MONGO_URI = process.env.MONGO_URI;
 const MONGO_DB_NAME = process.env.MONGO_DB_NAME;
