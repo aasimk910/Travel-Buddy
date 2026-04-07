@@ -307,7 +307,7 @@ const listHotelsAdmin = async (req, res) => {
       ? { $or: [{ name: { $regex: search, $options: "i" } }, { location: { $regex: search, $options: "i" } }] }
       : {};
     const [hotels, total] = await Promise.all([
-      Hotel.find(query).sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit)),
+      Hotel.find(query).populate("packages").sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit)),
       Hotel.countDocuments(query),
     ]);
     res.json({ hotels, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) } });

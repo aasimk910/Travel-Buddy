@@ -46,7 +46,7 @@ interface OrderSnapshot {
   shipping: number;
   total: number;
   paymentMethod: 'cod' | 'khalti';
-  status: 'placed' | 'processing' | 'out_for_delivery' | 'delivered';
+  status: 'placed' | 'processing' | 'out_for_delivery' | 'delivered' | 'cancelled';
 }
 // #endregion Types
 
@@ -1034,15 +1034,17 @@ const Shop: React.FC = () => {
                           order.status === 'delivered'        ? 'bg-emerald-400' :
                           order.status === 'out_for_delivery' ? 'bg-amber-400 animate-pulse' :
                           order.status === 'processing'       ? 'bg-blue-400 animate-pulse' :
+                          order.status === 'cancelled'        ? 'bg-red-400' :
                                                                 'bg-indigo-400 animate-pulse'
                         }`} />
                         <p className={`text-xs font-medium ${
                           order.status === 'delivered'        ? 'text-emerald-400' :
                           order.status === 'out_for_delivery' ? 'text-amber-400' :
                           order.status === 'processing'       ? 'text-blue-400' :
+                          order.status === 'cancelled'        ? 'text-red-400' :
                                                                 'text-indigo-400'
                         }`}>
-                          {ORDER_STATUSES.find(s => s.key === order.status)?.label ?? 'Order Placed'}
+                          {order.status === 'cancelled' ? 'Cancelled' : (ORDER_STATUSES.find(s => s.key === order.status)?.label ?? 'Order Placed')}
                         </p>
                         <span className="text-white/25 text-xs">&middot;</span>
                         <p className="text-white/40 text-xs">
@@ -1107,6 +1109,13 @@ const Shop: React.FC = () => {
                       {/* Delivery Status Tracker */}
                       <div className="border-t border-white/10 pt-3">
                         <p className="text-white/40 text-[10px] uppercase tracking-widest mb-3">Delivery Status</p>
+                        {order.status === 'cancelled' ? (
+                          <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20">
+                            <div className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
+                            <p className="text-red-400 text-xs font-semibold">Order Cancelled</p>
+                            <p className="text-white/35 text-xs">This order has been cancelled.</p>
+                          </div>
+                        ) : (
                         <div className="flex flex-col gap-0">
                           {ORDER_STATUSES.map((step, idx) => {
                             const activeIdx = ORDER_STATUSES.findIndex(s => s.key === order.status);
@@ -1148,6 +1157,7 @@ const Shop: React.FC = () => {
                             );
                           })}
                         </div>
+                        )}
                       </div>
 
                       {/* Delivery details */}

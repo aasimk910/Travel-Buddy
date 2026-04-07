@@ -645,6 +645,7 @@ const Admin: React.FC = () => {
   // Handles savePackage logic.
   const savePackage = async () => {
     if (!pkgForm.name.trim() || !pkgForm.pricePerNight) { showError("Name and price are required."); return; }
+    if (!editingPkg && !pkgHotelId) { showError("Please select a hotel."); return; }
     setPkgSaving(true);
     try {
       const body = {
@@ -1119,7 +1120,7 @@ const Admin: React.FC = () => {
                             <div key={pkg._id} className="flex items-center justify-between glass rounded-lg p-2 text-xs">
                               <div>
                                 <span className="font-medium text-glass-light">{pkg.name}</span>
-                                <span className="text-glass-dim ml-2">{pkg.roomType} ? NPR {pkg.pricePerNight?.toLocaleString()}/night</span>
+                                <span className="text-glass-dim ml-2">{pkg.roomType} · NPR {pkg.pricePerNight?.toLocaleString()}/night</span>
                                 <span className="text-glass-dim ml-2">{pkg.availableRooms} rooms</span>
                               </div>
                               <div className="flex items-center gap-1">
@@ -1442,9 +1443,14 @@ const Admin: React.FC = () => {
                           <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${order.paymentMethod === "khalti" ? "bg-purple-500/20 text-purple-300" : "bg-amber-500/20 text-amber-300"}`}>
                             {order.paymentMethod === "khalti" ? "Khalti" : "COD"}
                           </span>
-                          <span className={`ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs ${order.paymentStatus === "paid" ? "bg-emerald-500/20 text-emerald-300" : "bg-red-500/20 text-red-300"}`}>
-                            {order.paymentStatus}
-                          </span>
+                          <select
+                            value={order.paymentStatus}
+                            onChange={e => handleOrderPaymentChange(order._id, e.target.value)}
+                            className={`ml-1 glass-input text-xs rounded px-1.5 py-0.5 ${order.paymentStatus === "paid" ? "text-emerald-300" : "text-red-300"}`}
+                          >
+                            <option value="unpaid">Unpaid</option>
+                            <option value="paid">Paid</option>
+                          </select>
                         </td>
                         <td className="py-2.5 pr-3">
                           <select
@@ -2137,6 +2143,12 @@ const Admin: React.FC = () => {
             <button onClick={fetchAllPackages} className="glass-button p-2 rounded-lg" title="Refresh">
               <RefreshCw className="w-4 h-4" />
             </button>
+            <button
+              onClick={() => { setEditingPkg(null); setPkgForm(defaultPackageForm); setPkgHotelId(""); setPkgModal(true); }}
+              className="glass-button-dark px-3 py-2 rounded-lg text-sm flex items-center gap-1.5 text-white font-medium"
+            >
+              <Plus className="w-4 h-4" /> Add Package
+            </button>
             <span className="text-sm text-glass-dim">{pkgTabTotal} total</span>
           </div>
 
@@ -2252,6 +2264,22 @@ const Admin: React.FC = () => {
               <button onClick={() => setPkgModal(false)} className="p-1.5 glass-button rounded-lg"><X className="w-4 h-4" /></button>
             </div>
             <div className="space-y-4">
+              {/* Hotel selector — shown when not pre-linked to a hotel */}
+              {!editingPkg && (
+                <div>
+                  <label className="block text-xs text-glass-dim mb-1">Hotel *</label>
+                  <select
+                    value={pkgHotelId}
+                    onChange={e => setPkgHotelId(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg glass-input text-sm [color-scheme:dark]"
+                  >
+                    <option value="" className="bg-gray-900 text-white">— Select a hotel —</option>
+                    {hotels.map(h => (
+                      <option key={h._id} value={h._id} className="bg-gray-900 text-white">{h.name} — {h.location}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="block text-xs text-glass-dim mb-1">Package Name *</label>
                 <input type="text" value={pkgForm.name} onChange={e => setPkgForm({ ...pkgForm, name: e.target.value })}

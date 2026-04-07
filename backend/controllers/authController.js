@@ -8,7 +8,7 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const axios = require("axios");
-const User = require("../models/User");
+const User = require("../models/User"); 
 const { sendWelcomeEmail, sendPasswordResetEmail } = require("../utils/email");
 const { buildUserResponse } = require("../utils/userUtils");
 

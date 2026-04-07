@@ -11,12 +11,14 @@ const rateLimit = require("express-rate-limit");
 const isDev = process.env.NODE_ENV !== "production";
 
 // General API rate limiter — applied globally to /api/* routes.
-// 100 requests per 15 min in production; 5000 in development.
+// Only throttles mutating requests (POST, PUT, PATCH, DELETE); GET requests are skipped.
+// 300 mutations per 15 min in production; 5000 in development.
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15-minute sliding window
-  max: isDev ? 5000 : 100,
+  max: isDev ? 5000 : 300,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.method === "GET" || req.method === "HEAD" || req.method === "OPTIONS",
   handler: (req, res) => {
     res.status(429).json({ error: "Too many requests from this IP, please try again later." });
   },
