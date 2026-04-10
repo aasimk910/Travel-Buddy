@@ -44,6 +44,13 @@ const createBooking = async (req, res) => {
       }
     }
 
+    // Reject past check-in dates
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (checkIn < today) {
+      return res.status(400).json({ message: "Check-in date cannot be in the past" });
+    }
+
     // Basic date validation
     if (checkIn >= checkOut) {
       return res.status(400).json({ message: "Check-in date must be before check-out date" });

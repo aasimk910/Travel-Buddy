@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/env';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { initiateKhaltiPayment } from '../services/payment';
 import PaymentSuccessModal from '../components/common/PaymentSuccessModal';
 import { getToken } from "../services/auth";
@@ -30,6 +31,7 @@ interface Product {
   badge: string | null; img: string;
   images: string[];
   description: string;
+  stock?: number;
   inStock?: boolean;
 }
 interface CartItem { product: Product; qty: number; }
@@ -396,28 +398,62 @@ const Shop: React.FC = () => {
   const { isAuthenticated, user }           = useAuth();
   const userOrdersKey                       = ordersKey(user?.id || user?.email);
 
-  // Fetch products from backend on mount
-  useEffect(() => {
-    let cancelled = false;
-    // Handles fetchProducts logic.
-    const fetchProducts = async () => {
-      try {
-        setProductsLoading(true);
-        const res = await fetch(`${API_BASE_URL}/api/products?limit=100`);
-        if (!res.ok) throw new Error('Failed to fetch products');
-        const data = await res.json();
-        if (!cancelled && Array.isArray(data.products) && data.products.length > 0) {
-          setProducts(data.products);
-        }
-      } catch {
-        // Keep static fallback already set in initial state
-      } finally {
-        if (!cancelled) setProductsLoading(false);
+  // Fetch products from backend — extracted so it can be called after order placement
+  const fetchProducts = async () => {
+    try {
+      setProductsLoading(true);
+      const res = await fetch(`${API_BASE_URL}/api/products?limit=100`);
+      if (!res.ok) throw new Error('Failed to fetch products');
+      const data = await res.json();
+      if (Array.isArray(data.products) && data.products.length > 0) {
+        setProducts(data.products);
       }
-    };
+    } catch {
+      // Keep static fallback already set in initial state
+    } finally {
+      setProductsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchProducts();
-    return () => { cancelled = true; };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // -- Pre-checkout stock validator ------------------------------------------
+  // Fetches fresh product data, syncs cart quantities/status, returns false if
+  // any item is now out of stock (so checkout can be blocked).
+  const validateCartStock = async (): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/products?limit=100`);
+      if (!res.ok) return true; // allow through on network error
+      const data = await res.json();
+      if (!Array.isArray(data.products)) return true;
+
+      const freshMap = new Map<string, Product>(data.products.map((p: Product) => [p._id, p]));
+      // Update the product catalogue immediately
+      setProducts(data.products);
+
+      let blocked = false;
+      setCartItems(prev => prev.flatMap(item => {
+        const fresh = freshMap.get(item.product._id);
+        if (!fresh || !fresh.inStock || (fresh.stock !== undefined && fresh.stock === 0)) {
+          showError(`"${item.product.name}" is now out of stock and has been removed from your cart.`);
+          blocked = true;
+          return [];
+        }
+        if (fresh.stock !== undefined && item.qty > fresh.stock) {
+          showError(`Only ${fresh.stock} unit${fresh.stock === 1 ? '' : 's'} of "${fresh.name}" available. Quantity adjusted.`);
+          blocked = true;
+          return [{ ...item, product: fresh, qty: fresh.stock }];
+        }
+        return [{ ...item, product: fresh }];
+      }));
+
+      return !blocked;
+    } catch {
+      return true; // allow through on error
+    }
+  };
 
   // Load orders scoped to the current user
   const [savedOrders, setSavedOrders]       = useState<OrderSnapshot[]>([]);
@@ -465,10 +501,25 @@ const Shop: React.FC = () => {
   }, [selectedProduct]);
 
   // -- Cart helpers -----------------------------------------------------------
+  const { showError, showSuccess } = useToast();
+
   const addToCart = (product: Product) => {
+    // Block out-of-stock products
+    if (!product.inStock || product.stock === 0) {
+      showError(`"${product.name}" is out of stock.`);
+      return;
+    }
     setCartItems(prev => {
       const existing = prev.find(i => i.product._id === product._id);
-      if (existing) return prev.map(i => i.product._id === product._id ? { ...i, qty: i.qty + 1 } : i);
+      if (existing) {
+        // Enforce stock limit
+        if (product.stock !== undefined && existing.qty >= product.stock) {
+          showError(`Only ${product.stock} unit${product.stock === 1 ? '' : 's'} available for "${product.name}".`);
+          return prev;
+        }
+        return prev.map(i => i.product._id === product._id ? { ...i, qty: i.qty + 1 } : i);
+      }
+      showSuccess(`"${product.name}" added to cart.`);
       return [...prev, { product, qty: 1 }];
     });
   };
@@ -479,7 +530,13 @@ const Shop: React.FC = () => {
       prev.flatMap(i => {
         if (i.product._id !== id) return [i];
         const next = i.qty + delta;
-        return next <= 0 ? [] : [{ ...i, qty: next }];
+        if (next <= 0) return [];
+        // Enforce stock limit on increase
+        if (delta > 0 && i.product.stock !== undefined && next > i.product.stock) {
+          showError(`Only ${i.product.stock} unit${i.product.stock === 1 ? '' : 's'} available for "${i.product.name}".`);
+          return [i];
+        }
+        return [{ ...i, qty: next }];
       })
     );
   };
@@ -494,44 +551,51 @@ const Shop: React.FC = () => {
     setDetailsErrors({});
   };
 
-  // -- Persist a new order to localStorage ---------------------------------------
-  const saveOrder = (snapshot: OrderSnapshot) => {
+  // -- Persist a new order to localStorage and backend ----------------------
+  const saveOrder = async (snapshot: OrderSnapshot): Promise<void> => {
     setSavedOrders(prev => {
       const updated = [snapshot, ...prev];
       localStorage.setItem(userOrdersKey, JSON.stringify(updated));
       return updated;
     });
-    // Persist to backend (fire-and-forget; localStorage is source of truth for UI)
+    // Await backend so stock is decremented before we re-fetch product list
     const token = getToken();
-    fetch(`${API_BASE_URL}/api/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({
-        orderId: snapshot.orderId,
-        items: snapshot.items.map(i => ({
-          productId: i.product._id,
-          name: i.product.name,
-          category: i.product.category,
-          price: i.product.price,
-          qty: i.qty,
-          img: i.product.img,
-        })),
-        customer: snapshot.customer,
-        subtotal: snapshot.subtotal,
-        shipping: snapshot.shipping,
-        total: snapshot.total,
-        paymentMethod: snapshot.paymentMethod,
-      }),
-    }).catch(err => console.warn('Order sync failed:', err));
+    try {
+      await fetch(`${API_BASE_URL}/api/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          orderId: snapshot.orderId,
+          items: snapshot.items.map(i => ({
+            productId: i.product._id,
+            name: i.product.name,
+            category: i.product.category,
+            price: i.product.price,
+            qty: i.qty,
+            img: i.product.img,
+          })),
+          customer: snapshot.customer,
+          subtotal: snapshot.subtotal,
+          shipping: snapshot.shipping,
+          total: snapshot.total,
+          paymentMethod: snapshot.paymentMethod,
+        }),
+      });
+    } catch (err) {
+      console.warn('Order sync failed:', err);
+    }
   };
 
   // -- Khalti payment initiation ---------------------------------------------
   const handleKhaltiPay = async () => {
     setKhaltiLoading(true);
     try {
+      const stockOk = await validateCartStock();
+      if (!stockOk) { setKhaltiLoading(false); return; }
+
       const token = getToken();
       if (!token) {
         alert('Your session has expired. Please log in again.');
@@ -614,13 +678,17 @@ const Shop: React.FC = () => {
           setShowPaymentModal(true);
           sessionStorage.removeItem('khalti_pending');
           setSearchParams({});
+          // Refresh product list so stock counts reflect the purchase
+          fetchProducts();
         })();
       }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // -- Place COD order -------------------------------------------------------
-  const placeCodOrder = () => {
+  const placeCodOrder = async () => {
+    const stockOk = await validateCartStock();
+    if (!stockOk) return; // cart was adjusted — user sees toast, must review
     const snap: OrderSnapshot = {
       orderId:       `TB-${Date.now()}`,
       placedAt:      new Date(),
@@ -633,9 +701,11 @@ const Shop: React.FC = () => {
       status:        'placed',
     };
     setOrderSnapshot(snap);
-    saveOrder(snap);
+    await saveOrder(snap); // wait for backend to decrement stock
     setPaymentStep(false);
     setCheckedOut(true);
+    // Refresh product list AFTER backend has updated stock
+    await fetchProducts();
   };
 
   // -- Validate customer details & advance -----------------------------------
@@ -700,7 +770,7 @@ const Shop: React.FC = () => {
             )}
           </button>
           <button
-            onClick={() => setCartOpen(true)}
+            onClick={() => { setCartOpen(true); if (cartItems.length > 0) validateCartStock(); }}
             className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl glass-button-dark text-white font-semibold shadow-lg"
           >
             <ShoppingCart className="w-5 h-5" />
@@ -781,6 +851,11 @@ const Shop: React.FC = () => {
                   <span className="absolute top-3 right-3 px-2 py-0.5 rounded-lg bg-black/40 backdrop-blur-sm text-[11px] text-white/70 border border-white/10">
                     {product.category}
                   </span>
+                  {(product.inStock === false || product.stock === 0) ? (
+                    <span className="absolute bottom-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/80 text-white">Out of Stock</span>
+                  ) : product.stock !== undefined && product.stock > 0 && product.stock <= 5 ? (
+                    <span className="absolute bottom-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/80 text-white">Only {product.stock} left!</span>
+                  ) : null}
                 </div>
 
                 <div className="p-4 flex flex-col gap-3 flex-1">
@@ -801,7 +876,9 @@ const Shop: React.FC = () => {
                       {product.price.toLocaleString()}
                     </p>
 
-                    {inCart ? (
+                    {(!product.inStock || product.stock === 0) ? (
+                      <span className="px-3 py-1.5 rounded-xl bg-red-500/15 border border-red-400/30 text-red-400 text-xs font-semibold">Out of Stock</span>
+                    ) : inCart ? (
                       <div onClick={e => e.stopPropagation()} className="flex items-center gap-1 rounded-xl border border-indigo-400/40 bg-indigo-500/10 px-1 py-1">
                         <button onClick={() => changeQty(product._id, -1)}
                           className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 transition-all text-white/70">
@@ -911,11 +988,22 @@ const Shop: React.FC = () => {
                     <span className="text-xs text-white/40">({selectedProduct.reviews} reviews)</span>
                   </div>
 
-                  {/* Price */}
+                  {/* Price + Stock */}
                   <div className="flex items-baseline gap-1">
                     <span className="text-white/45 text-sm">NPR</span>
                     <span className="text-white font-bold text-3xl">{selectedProduct.price.toLocaleString()}</span>
                   </div>
+                  {(selectedProduct.inStock === false || selectedProduct.stock === 0) ? (
+                    <span className="inline-block px-3 py-1 rounded-lg bg-red-500/15 border border-red-400/30 text-red-400 text-xs font-semibold">Out of Stock</span>
+                  ) : (selectedProduct.stock !== undefined && selectedProduct.stock > 0) ? (
+                    <span className={`inline-block px-3 py-1 rounded-lg text-xs font-semibold border ${
+                      selectedProduct.stock <= 5
+                        ? 'bg-amber-500/15 border-amber-400/30 text-amber-400'
+                        : 'bg-emerald-500/15 border-emerald-400/30 text-emerald-400'
+                    }`}>
+                      {selectedProduct.stock <= 5 ? `Only ${selectedProduct.stock} left!` : `${selectedProduct.stock} in stock`}
+                    </span>
+                  ) : null}
 
                   {/* Description */}
                   <p className="text-white/60 text-sm leading-relaxed">{selectedProduct.description}</p>
@@ -938,6 +1026,11 @@ const Shop: React.FC = () => {
                   <div className="pt-2 mt-auto">
                     {(() => {
                       const inCart = cartItems.find(i => i.product._id === selectedProduct._id);
+                      if (selectedProduct.inStock === false || selectedProduct.stock === 0) return (
+                        <div className="w-full py-3.5 rounded-2xl bg-red-500/10 border border-red-400/30 text-red-400 font-semibold text-base text-center">
+                          Out of Stock
+                        </div>
+                      );
                       return inCart ? (
                         <div className="flex items-center justify-between rounded-2xl border border-indigo-400/40 bg-indigo-500/10 px-4 py-3">
                           <span className="text-white/60 text-sm">In cart</span>

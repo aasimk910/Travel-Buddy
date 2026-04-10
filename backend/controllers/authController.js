@@ -58,6 +58,21 @@ const signup = async (req, res) => {
       return res.status(400).json({ message: "Name, email, and password are required." });
     }
 
+    if (!name.trim()) {
+      return res.status(400).json({ message: "Name cannot be empty or spaces only." });
+    }
+
+    // Validate email format and reject obviously invalid TLDs (e.g. .con typo for .com)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Please enter a valid email address." });
+    }
+    const tld = email.split(".").pop().toLowerCase();
+    const invalidTlds = ["con", "cmo", "ocm", "vom", "coom", "ney", "rog", "ogr"];
+    if (invalidTlds.includes(tld)) {
+      return res.status(400).json({ message: `Invalid email domain (.${tld}). Please check your email address.` });
+    }
+
     if (!recaptchaToken) {
       return res.status(400).json({ message: "reCAPTCHA is required." });
     }

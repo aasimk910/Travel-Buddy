@@ -132,6 +132,13 @@ const BookingModal: React.FC<BookingModalProps> = ({
       return;
     }
 
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+    if (new Date(checkInDate) < todayDate) {
+      showError("Check-in date cannot be in the past");
+      return;
+    }
+
     if (hikeDate && new Date(checkInDate) > new Date(hikeDate)) {
       showError("Check-in date must be on or before the hike date");
       return;
@@ -176,6 +183,8 @@ const BookingModal: React.FC<BookingModalProps> = ({
     ? Math.ceil((new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24))
     : 0;
 
+  const today = new Date().toISOString().split("T")[0];
+
   const modalContent = (
     <div
       className="fixed inset-0 z-[70] flex items-stretch justify-end bg-black/60 backdrop-blur-sm"
@@ -215,6 +224,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
             <input
               type="date"
               value={checkInDate}
+              min={today}
               max={hikeDate ? hikeDate.slice(0, 10) : undefined}
               onChange={(e) => handleDateChange("checkIn", e.target.value)}
               className="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -231,6 +241,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
             <input
               type="date"
               value={checkOutDate}
+              min={checkInDate || today}
               onChange={(e) => handleDateChange("checkOut", e.target.value)}
               className="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />

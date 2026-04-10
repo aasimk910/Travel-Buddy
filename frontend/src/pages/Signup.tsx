@@ -72,9 +72,15 @@ const Signup: React.FC = () => {
       interests: "",
     },
     validationSchema: Yup.object({
-      name: Yup.string().required("Name is required"),
+      name: Yup.string().trim().min(1, "Name cannot be empty or spaces only").required("Name is required"),
       email: Yup.string()
         .email("Enter a valid email")
+        .test("valid-tld", "Invalid email domain. Did you mean .com?", (value) => {
+          if (!value) return true;
+          const tld = value.split(".").pop()?.toLowerCase() ?? "";
+          const invalidTlds = ["con", "cmo", "ocm", "vom", "coom", "ney", "rog", "ogr"];
+          return !invalidTlds.includes(tld);
+        })
         .required("Email is required"),
       password: Yup.string()
         .min(8, "Password must be at least 8 characters")

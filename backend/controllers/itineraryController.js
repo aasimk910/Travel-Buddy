@@ -248,16 +248,23 @@ const generateItinerary = async (req, res) => {
         if (apiError.response?.status === 429) {
           statusCode = 429;
           errorMessage = "API rate limit exceeded. Please try again later.";
+          return res.status(statusCode).json({ error: errorMessage });
         } else if (apiError.response?.status === 401 || apiError.response?.status === 403) {
-          statusCode = 401;
-          errorMessage = "Groq API authentication failed. Please verify your GROQ_API_KEY in backend/.env";
-        } else if (apiError.response?.data?.error?.message) {
-          errorMessage = apiError.response.data.error.message;
+          // Invalid/expired API key — fall back to demo itinerary silently
+          console.warn("Groq API key invalid or expired. Falling back to demo itinerary.");
+          if (customPrompt) {
+            itinerary = `[DEMO MODE — GROQ_API_KEY is invalid or expired]\n\nYour prompt:\n${customPrompt}\n\nPlease update GROQ_API_KEY in backend/.env to get real AI-generated itineraries.`;
+          } else {
+            itinerary = generateDemoItinerary(destination, days, budget, travelStyle, interests);
+          }
         } else {
-          errorMessage = apiError.message;
+          if (apiError.response?.data?.error?.message) {
+            errorMessage = apiError.response.data.error.message;
+          } else {
+            errorMessage = apiError.message;
+          }
+          return res.status(statusCode).json({ error: errorMessage });
         }
-
-        return res.status(statusCode).json({ error: errorMessage });
       }
     } else {
       if (customPrompt) {

@@ -127,6 +127,7 @@ interface AdminProduct {
   images: string[];
   rating: number;
   reviews: number;
+  stock: number;
   inStock: boolean;
   featured: boolean;
   createdAt: string;
@@ -165,7 +166,7 @@ const defaultUserForm = { name: "", email: "", password: "", role: "user" as "us
 const defaultHikeForm = { title: "", location: "", date: "", difficulty: "1", spotsLeft: "0", description: "", imageUrl: "", lat: "", lng: "" };
 const defaultHotelForm = { name: "", location: "", description: "", contactPhone: "", email: "", website: "", imageUrl: "", rating: "4.0", amenities: "" };
 const defaultPackageForm = { name: "", roomType: "double", pricePerNight: "", capacity: "2", amenities: "", availableRooms: "5", minStayNights: "1", maxStayNights: "", cancellationPolicy: "free" };
-const defaultProductForm = { name: "", category: "Backpacks", price: "", description: "", badge: "", img: "", images: "", inStock: true, featured: false };
+const defaultProductForm = { name: "", category: "Backpacks", price: "", description: "", badge: "", img: "", images: "", stock: "0", inStock: true, featured: false };
 // #endregion Constants
 
 // #region Component
@@ -740,7 +741,7 @@ const Admin: React.FC = () => {
       name: p.name, category: p.category, price: String(p.price),
       description: p.description || "", badge: p.badge || "",
       img: p.img || "", images: p.images.join(", "),
-      inStock: p.inStock, featured: p.featured,
+      stock: String(p.stock ?? 0), inStock: p.inStock, featured: p.featured,
     });
     setProductModal(true);
   };
@@ -760,6 +761,7 @@ const Admin: React.FC = () => {
         badge: (productForm.badge as string).trim() || null,
         img: (productForm.img as string).trim(),
         images: (productForm.images as string).split(",").map((s: string) => s.trim()).filter(Boolean),
+        stock: parseInt(productForm.stock as string) || 0,
         inStock: productForm.inStock,
         featured: productForm.featured,
       };
@@ -1312,6 +1314,11 @@ const Admin: React.FC = () => {
                       </div>
                     </div>
                     <p className="text-base font-bold text-emerald-400">NPR {p.price.toLocaleString()}</p>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className={`font-semibold ${(p.stock ?? 0) <= 5 && (p.stock ?? 0) > 0 ? 'text-amber-400' : (p.stock ?? 0) === 0 ? 'text-red-400' : 'text-sky-400'}`}>
+                        Stock: {p.stock ?? 0}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-3 text-xs mt-auto">
                       <button onClick={() => toggleProductField(p, "inStock")}
                         className={`flex items-center gap-1 transition-colors ${p.inStock ? "text-emerald-400" : "text-red-400"}`}>
@@ -2393,20 +2400,21 @@ const Admin: React.FC = () => {
                     onChange={e => setProductForm({ ...productForm, badge: e.target.value })}
                     className="w-full px-3 py-2 rounded-lg glass-input text-sm" placeholder="Best Seller, New..." />
                 </div>
-                <div className="flex flex-col gap-2 justify-end pb-1">
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-glass-dim">
-                    <input type="checkbox" checked={productForm.inStock as boolean}
-                      onChange={e => setProductForm({ ...productForm, inStock: e.target.checked })}
-                      className="w-4 h-4 accent-emerald-500" />
-                    In Stock
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer text-sm text-glass-dim">
-                    <input type="checkbox" checked={productForm.featured as boolean}
-                      onChange={e => setProductForm({ ...productForm, featured: e.target.checked })}
-                      className="w-4 h-4 accent-amber-500" />
-                    Featured
-                  </label>
+                <div>
+                  <label className="block text-xs text-glass-dim mb-1">Stock Quantity</label>
+                  <input type="number" min="0" value={productForm.stock as string}
+                    onChange={e => setProductForm({ ...productForm, stock: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg glass-input text-sm" placeholder="0" />
                 </div>
+              </div>
+              <div className="flex gap-4 items-center">
+                <label className="flex items-center gap-2 cursor-pointer text-sm text-glass-dim">
+                  <input type="checkbox" checked={productForm.featured as boolean}
+                    onChange={e => setProductForm({ ...productForm, featured: e.target.checked })}
+                    className="w-4 h-4 accent-amber-500" />
+                  Featured
+                </label>
+                <p className="text-xs text-glass-dim">Stock = 0 → automatically Out of Stock</p>
               </div>
               <div>
                 <label className="block text-xs text-glass-dim mb-1">Primary Image URL</label>

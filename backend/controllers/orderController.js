@@ -3,6 +3,7 @@
 
 // #region Imports
 const Order = require("../models/Order");
+const Product = require("../models/Product");
 
 // #endregion Imports
 
@@ -16,6 +17,37 @@ const createOrder = async (req, res) => {
     }
     const existing = await Order.findOne({ orderId });
     if (existing) return res.json({ order: existing }); // idempotent — same orderId → return existing
+
+    // Validate stock for every item BEFORE touching anything
+    for (const item of items) {
+      if (!item.productId) continue;
+      const product = await Product.findById(item.productId).lean();
+      if (!product) {
+        return res.status(400).json({ message: `Product not found: ${item.name || item.productId}` });
+      }
+      if (!product.inStock || product.stock <= 0) {
+        return res.status(400).json({ message: `"${product.name}" is out of stock.`, outOfStock: [product._id] });
+      }
+      if (product.stock < (item.qty || 1)) {
+        return res.status(400).json({
+          message: `Only ${product.stock} unit${product.stock === 1 ? '' : 's'} of "${product.name}" available.`,
+          insufficientStock: [{ productId: product._id, available: product.stock }],
+        });
+      }
+    }
+
+    // All stock valid — decrement now
+    for (const item of items) {
+      if (!item.productId) continue;
+      const product = await Product.findById(item.productId);
+      if (product) {
+        const newStock = Math.max(0, product.stock - (item.qty || 1));
+        product.stock = newStock;
+        if (newStock === 0) product.inStock = false;
+        await product.save();
+      }
+    }
+
     const order = await Order.create({
       orderId,
       userId: req.user?._id || null,

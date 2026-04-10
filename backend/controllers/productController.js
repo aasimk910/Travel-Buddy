@@ -36,11 +36,14 @@ const listProducts = async (req, res) => {
 // POST /api/admin/products — create a product (admin)
 const createProduct = async (req, res) => {
   try {
-    const { name, category, price, description, badge, img, images, inStock, featured } = req.body;
+    const { name, category, price, description, badge, img, images, stock, inStock, featured } = req.body;
     if (!name || !category || price === undefined) {
       return res.status(400).json({ message: "Name, category, and price are required." });
     }
-    const product = await Product.create({ name, category, price, description, badge: badge || null, img, images: images || [], inStock, featured });
+    const stockQty = Math.max(0, parseInt(stock) || 0);
+    // stock=0 always means out of stock; stock>0 always means in stock
+    const resolvedInStock = stockQty > 0;
+    const product = await Product.create({ name, category, price, description, badge: badge || null, img, images: images || [], stock: stockQty, inStock: resolvedInStock, featured });
     res.status(201).json({ message: "Product created.", product });
   } catch (err) {
     console.error("Create product error:", err);
@@ -51,13 +54,16 @@ const createProduct = async (req, res) => {
 // PUT /api/admin/products/:id — update a product (admin)
 const updateProduct = async (req, res) => {
   try {
-    const { name, category, price, description, badge, img, images, inStock, featured } = req.body;
+    const { name, category, price, description, badge, img, images, stock, inStock, featured } = req.body;
     if (!name || !category || price === undefined) {
       return res.status(400).json({ message: "Name, category, and price are required." });
     }
+    const stockQty = Math.max(0, parseInt(stock) || 0);
+    // stock=0 always means out of stock; stock>0 always means in stock
+    const resolvedInStock = stockQty > 0;
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      { name, category, price, description, badge: badge || null, img, images: images || [], inStock, featured },
+      { name, category, price, description, badge: badge || null, img, images: images || [], stock: stockQty, inStock: resolvedInStock, featured },
       { new: true, runValidators: true }
     );
     if (!product) return res.status(404).json({ message: "Product not found." });

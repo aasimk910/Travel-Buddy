@@ -51,6 +51,12 @@ const Login: React.FC = () => {
     validationSchema: Yup.object({
       email: Yup.string()
         .email("Please enter a valid email address.")
+        .test("valid-tld", "Invalid email domain. Did you mean .com?", (value) => {
+          if (!value) return true;
+          const tld = value.split(".").pop()?.toLowerCase() ?? "";
+          const invalidTlds = ["con", "cmo", "ocm", "vom", "coom", "ney", "rog", "ogr"];
+          return !invalidTlds.includes(tld);
+        })
         .required("Please enter your email."),
       password: Yup.string()
         .min(6, "Password must be at least 6 characters long.")

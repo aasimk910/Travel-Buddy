@@ -23,6 +23,7 @@ const productSchema = new mongoose.Schema(
     images: [{ type: String }],              // gallery image URLs
     rating: { type: Number, default: 0, min: 0, max: 5 },
     reviews: { type: Number, default: 0 },
+    stock: { type: Number, default: 0, min: 0 },
     inStock: { type: Boolean, default: true },
     featured: { type: Boolean, default: false },
   },
