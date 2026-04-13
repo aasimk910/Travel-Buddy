@@ -494,6 +494,21 @@ const Shop: React.FC = () => {
       .catch(() => {/* silent — localStorage copy is still shown */});
   }, [ordersOpen, userOrdersKey]);
 
+  // Lock body scroll when orders panel is open (compensate scrollbar width to prevent layout shift)
+  useEffect(() => {
+    if (ordersOpen) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, [ordersOpen]);
 
   // Reset active image whenever a new product is opened
   useEffect(() => {
@@ -1088,7 +1103,7 @@ const Shop: React.FC = () => {
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
+        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 flex flex-col gap-4">
           {savedOrders.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
               <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
@@ -1105,16 +1120,17 @@ const Shop: React.FC = () => {
             savedOrders.map((order) => {
               const expanded = expandedOrderId === order.orderId;
               return (
-                <div key={order.orderId} className="glass-card rounded-2xl overflow-hidden">
+                <div key={order.orderId} className="glass-card rounded-2xl">
                   {/* Order card header — always visible */}
                   <button
                     onClick={() => setExpandedOrderId(expanded ? null : order.orderId)}
-                    className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-white/5 transition-all"
+                    className="w-full flex items-start justify-between px-4 py-4 hover:bg-white/5 transition-all gap-3"
                   >
-                    <div className="text-left">
-                      <div className="flex items-center gap-2">
-                        <p className="text-white font-semibold text-sm">{order.orderId}</p>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${
+                    <div className="text-left min-w-0 flex-1">
+                      {/* Row 1: order ID + payment badge */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-white font-semibold text-sm truncate">{order.orderId}</p>
+                        <span className={`shrink-0 text-[11px] px-2 py-0.5 rounded-full border font-semibold ${
                           order.paymentMethod === 'khalti'
                             ? 'bg-purple-500/15 border-purple-400/30 text-purple-300'
                             : 'bg-emerald-500/15 border-emerald-400/30 text-emerald-300'
@@ -1122,15 +1138,16 @@ const Shop: React.FC = () => {
                           {order.paymentMethod === 'khalti' ? 'Khalti' : 'COD'}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <div className={`w-1.5 h-1.5 rounded-full ${
+                      {/* Row 2: status */}
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                           order.status === 'delivered'        ? 'bg-emerald-400' :
                           order.status === 'out_for_delivery' ? 'bg-amber-400 animate-pulse' :
                           order.status === 'processing'       ? 'bg-blue-400 animate-pulse' :
                           order.status === 'cancelled'        ? 'bg-red-400' :
                                                                 'bg-indigo-400 animate-pulse'
                         }`} />
-                        <p className={`text-xs font-medium ${
+                        <p className={`text-xs font-semibold ${
                           order.status === 'delivered'        ? 'text-emerald-400' :
                           order.status === 'out_for_delivery' ? 'text-amber-400' :
                           order.status === 'processing'       ? 'text-blue-400' :
@@ -1139,14 +1156,14 @@ const Shop: React.FC = () => {
                         }`}>
                           {order.status === 'cancelled' ? 'Cancelled' : (ORDER_STATUSES.find(s => s.key === order.status)?.label ?? 'Order Placed')}
                         </p>
-                        <span className="text-white/25 text-xs">&middot;</span>
-                        <p className="text-white/40 text-xs">
-                          {order.placedAt.toLocaleDateString('en-NP', { day: '2-digit', month: 'short', year: 'numeric' })}
-                        </p>
                       </div>
+                      {/* Row 3: date */}
+                      <p className="text-white/40 text-xs mt-0.5">
+                        {order.placedAt.toLocaleDateString('en-NP', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </p>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <p className="text-indigo-300 font-bold text-sm">NPR {order.total.toLocaleString()}</p>
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
+                      <p className="text-indigo-300 font-bold text-base">NPR {order.total.toLocaleString()}</p>
                       {expanded
                         ? <ChevronUp className="w-4 h-4 text-white/40" />
                         : <ChevronDown className="w-4 h-4 text-white/40" />}
