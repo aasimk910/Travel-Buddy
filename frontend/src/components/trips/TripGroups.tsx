@@ -85,46 +85,65 @@ const TripGroups: React.FC<TripGroupsProps> = ({ selectedHikeId }) => {
   );
 
   return (
-    <div className="glass-card rounded-lg p-4 h-full flex flex-col">
-      <h3 className="font-semibold mb-4 text-glass">Trip Groups</h3>
-      <div className="relative mb-4">
-        <input
-          type="text"
-          placeholder="Search groups..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full p-2 pl-10 rounded-lg glass-input"
-        />
-        <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-glass-dim" />
+    <div className="flex flex-col h-full bg-[#0D1210]">
+      {/* Header */}
+      <div className="px-4 pt-4 pb-3 border-b border-white/8">
+        <p className="section-label mb-2">Trip Groups</p>
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#8E8A81]" />
+          <input
+            type="text"
+            placeholder="Search groups…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 site-input rounded-lg text-xs"
+          />
+        </div>
       </div>
-      <ul className="flex-1 overflow-y-auto">
+
+      {/* List */}
+      <ul className="flex-1 overflow-y-auto px-3 py-3 space-y-1.5">
         {isLoading ? (
-          <p className="text-glass-dim text-center">Loading trips...</p>
+          <div className="flex items-center justify-center gap-2 py-8 text-[#B8B4AA]">
+            <div className="w-3.5 h-3.5 rounded-full border-2 border-[#C6A16E] border-t-transparent animate-spin" />
+            <span className="text-xs">Loading…</span>
+          </div>
         ) : filteredGroups.length === 0 ? (
-          <p className="text-glass-dim text-center">{tripGroups.length === 0 ? "No trip groups found." : "No groups match your search."}</p>
+          <div className="text-center py-8">
+            <p className="text-xs text-[#8E8A81]">{tripGroups.length === 0 ? 'No trip groups yet.' : 'No groups match.'}</p>
+          </div>
         ) : (
-          filteredGroups.map((group) => (
-            <li 
-              key={group._id} 
-              className={`relative p-2 mb-2 rounded-lg glass-button ${selectedHikeId === group._id ? 'glass-strong' : ''} group`}
-            >
-              <button
-                onClick={(e) => handleLeaveHike(e, group._id)}
-                disabled={leavingHikeId === group._id}
-                className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center text-red-600 hover:text-red-700 hover:bg-red-50/20 rounded-full transition-all disabled:opacity-50"
-                title="Leave this hike"
+          filteredGroups.map((group) => {
+            const isSelected = selectedHikeId === group._id;
+            return (
+              <li
+                key={group._id}
+                className={`relative rounded-xl border transition-all group ${
+                  isSelected
+                    ? 'bg-[#C6A16E]/[0.08] border-[#C6A16E]/30'
+                    : 'bg-[#161D19]/50 border-white/6 hover:border-[#C6A16E]/18'
+                }`}
               >
-                <LogOut className="w-4 h-4" />
-              </button>
-              <div 
-                className="cursor-pointer pr-10"
-                onClick={() => navigate(`/dashboard/${group._id}`)}
-              >
-                <div className="font-semibold text-glass-light">{group.title}</div>
-                <div className="text-sm text-glass-dim">{group.location}</div>
-              </div>
-            </li>
-          ))
+                <div
+                  className="cursor-pointer px-3 py-2.5 pr-10"
+                  onClick={() => navigate(`/dashboard/${group._id}`)}
+                >
+                  <p className={`text-xs font-semibold truncate ${
+                    isSelected ? 'text-[#F5F3EE]' : 'text-[#B8B4AA] group-hover:text-[#F5F3EE]'
+                  }`}>{group.title}</p>
+                  <p className="text-[10px] text-[#8E8A81] mt-0.5 truncate">{group.location}</p>
+                </div>
+                <button
+                  onClick={(e) => handleLeaveHike(e, group._id)}
+                  disabled={leavingHikeId === group._id}
+                  className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-md text-[#8E8A81] hover:text-red-400 hover:bg-red-900/20 transition-all disabled:opacity-50 opacity-0 group-hover:opacity-100"
+                  title="Leave hike"
+                >
+                  <LogOut className="w-3 h-3" />
+                </button>
+              </li>
+            );
+          })
         )}
       </ul>
     </div>

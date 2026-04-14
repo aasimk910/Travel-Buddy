@@ -91,25 +91,51 @@ const ChangeMapView: React.FC<{ center: [number, number]; zoom: number; focusPoi
 // Custom icons for distance measurement points
 const pointAIcon = L.divIcon({
   className: '',
-  html: `<div style="background:#3b82f6;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,0.5);"></div>`,
+  html: `<div style="background:#C6A16E;width:16px;height:16px;border-radius:50%;border:3px solid #0B0F0C;box-shadow:0 0 8px rgba(198,161,110,0.7);"></div>`,
   iconSize: [16, 16],
   iconAnchor: [8, 8],
 });
 
 const pointBIcon = L.divIcon({
   className: '',
-  html: `<div style="background:#ef4444;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,0.5);"></div>`,
+  html: `<div style="background:#ef4444;width:16px;height:16px;border-radius:50%;border:3px solid #0B0F0C;box-shadow:0 0 8px rgba(239,68,68,0.6);"></div>`,
   iconSize: [16, 16],
   iconAnchor: [8, 8],
 });
 
 const hotelMarkerIcon = L.divIcon({
   className: '',
-  html: `<div style="background:#0f766e;width:30px;height:30px;border-radius:8px;border:2px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;">
-    <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/><polyline points='9 22 9 12 15 12 15 22'/></svg>
+  html: `<div style="background:#8FA68E;width:32px;height:32px;border-radius:10px;border:2px solid #0B0F0C;box-shadow:0 4px 14px rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;">
+    <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#0B0F0C' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/><polyline points='9 22 9 12 15 12 15 22'/></svg>
   </div>`,
-  iconSize: [30, 30],
-  iconAnchor: [15, 15],
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+});
+
+// Custom gold hike marker icon
+const hikeMarkerIcon = L.divIcon({
+  className: '',
+  html: `<div style="position:relative;width:36px;height:44px;">
+    <div style="width:36px;height:36px;background:linear-gradient(135deg,#D4AE7A,#C6A16E);border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #0B0F0C;box-shadow:0 4px 16px rgba(198,161,110,0.6);"></div>
+    <div style="position:absolute;top:6px;left:6px;width:24px;height:24px;background:#0B0F0C;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+      <svg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='#C6A16E' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='m8 3 4 8 5-5 5 15H2L8 3z'/></svg>
+    </div>
+  </div>`,
+  iconSize: [36, 44],
+  iconAnchor: [18, 44],
+});
+
+// Selected hike marker (brighter)
+const selectedHikeMarkerIcon = L.divIcon({
+  className: '',
+  html: `<div style="position:relative;width:40px;height:50px;">
+    <div style="width:40px;height:40px;background:linear-gradient(135deg,#DDBA84,#D4AE7A);border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #0B0F0C;box-shadow:0 4px 20px rgba(198,161,110,0.85);"></div>
+    <div style="position:absolute;top:7px;left:7px;width:26px;height:26px;background:#0B0F0C;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+      <svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='#E8D5B0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='m8 3 4 8 5-5 5 15H2L8 3z'/></svg>
+    </div>
+  </div>`,
+  iconSize: [40, 50],
+  iconAnchor: [20, 50],
 });
 
 // Distance measurement click handler
@@ -492,79 +518,106 @@ const Maps: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-64px)] flex">
-      {/* Sidebar */}
-      <div className="w-96 flex flex-col overflow-hidden">
-        {/* Search and Filters */}
-        <div className="m-3 p-4 space-y-3 rounded-xl glass-card">
-          <h2 className="text-2xl font-bold text-glass flex items-center gap-2">
-            <MapPin className="w-6 h-6" />
-            Hikes Map
-          </h2>
-          
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-glass-dim" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search hikes, locations..."
-              className="w-full pl-10 pr-3 py-2 rounded-lg glass-input text-glass placeholder:text-glass-dim"
-            />
-          </div>
+    <div className="h-[calc(100vh-64px)] flex bg-[#0B0F0C]">
+      {/* ── Sidebar ────────────────────────────────────────────────────── */}
+      <div className="w-96 flex flex-col overflow-hidden bg-[#0D1210] border-r border-white/8">
 
-          {/* Difficulty Filter */}
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-glass-light" />
-            <select
-              value={difficultyFilter}
-              onChange={(e) => setDifficultyFilter(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-lg glass-input text-white [color-scheme:dark]"
-            >
-              <option value="all" className="bg-gray-900 text-white">All Difficulties</option>
-              <option value="1" className="bg-gray-900 text-white">Easy</option>
-              <option value="2" className="bg-gray-900 text-white">Moderate</option>
-              <option value="3" className="bg-gray-900 text-white">Challenging</option>
-              <option value="4" className="bg-gray-900 text-white">Hard</option>
-              <option value="5" className="bg-gray-900 text-white">Expert</option>
-            </select>
-          </div>
+        {/* Cinematic nature banner header */}
+        <div className="relative overflow-hidden">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&cs=tinysrgb&w=600')" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0B0F0C]/55 via-[#0B0F0C]/65 to-[#0D1210]" />
+          <div className="relative px-5 pt-5 pb-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-9 h-9 rounded-lg bg-[#C6A16E]/20 border border-[#C6A16E]/40 flex items-center justify-center shrink-0">
+                <MapPin className="w-4 h-4 text-[#C6A16E]" />
+              </div>
+              <div>
+                <p className="section-label">Trail Explorer</p>
+                <h2 className="text-lg font-bold text-[#F5F3EE] font-heading leading-tight">Hikes Map</h2>
+              </div>
+            </div>
 
-          <div className="text-sm text-glass-dim">
-            Showing {filteredHikes.length} of {hikes.length} hikes
+            {/* Search */}
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8A81]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search hikes or locations…"
+                className="w-full pl-10 pr-3 py-2.5 rounded-lg site-input text-sm"
+              />
+            </div>
+
+            {/* Difficulty filter */}
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-[#8E8A81] shrink-0" />
+              <select
+                value={difficultyFilter}
+                onChange={(e) => setDifficultyFilter(e.target.value)}
+                className="flex-1 px-3 py-2 rounded-lg site-input text-sm [color-scheme:dark]"
+              >
+                <option value="all" className="bg-[#161D19]">All Difficulties</option>
+                <option value="1" className="bg-[#161D19]">Easy</option>
+                <option value="2" className="bg-[#161D19]">Moderate</option>
+                <option value="3" className="bg-[#161D19]">Challenging</option>
+                <option value="4" className="bg-[#161D19]">Hard</option>
+                <option value="5" className="bg-[#161D19]">Expert</option>
+              </select>
+            </div>
+
+            <p className="mt-3 text-xs text-[#8E8A81]">
+              <span className="text-[#C6A16E] font-medium">{filteredHikes.length}</span> of {hikes.length} hikes
+            </p>
           </div>
         </div>
 
-        {/* Hikes List */}
-        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
+        {/* Hikes list */}
+        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
           {isLoading ? (
-            <div className="text-center py-8 text-glass-light">Loading hikes...</div>
+            <div className="flex items-center justify-center gap-2 py-10 text-[#B8B4AA]">
+              <div className="w-4 h-4 rounded-full border-2 border-[#C6A16E] border-t-transparent animate-spin" />
+              <span className="text-sm">Loading hikes…</span>
+            </div>
           ) : filteredHikes.length === 0 ? (
-            <div className="text-center py-8 text-glass-dim">No hikes found</div>
+            <div className="text-center py-10">
+              <Mountain className="w-8 h-8 text-[#8E8A81]/30 mx-auto mb-2" />
+              <p className="text-sm text-[#8E8A81]">No hikes found</p>
+            </div>
           ) : (
             filteredHikes.map((hike) => {
               const coords = hikeCoordinates.get(hike._id) || [27.7172, 85.324];
+              const isSelected = selectedHike?._id === hike._id;
               return (
                 <div
                   key={hike._id}
                   onClick={() => handleHikeClick(hike, coords)}
-                  className={`glass-card rounded-xl p-4 cursor-pointer transition-all ${
-                    selectedHike?._id === hike._id ? 'glass-strong' : 'glass-button hover:glass-strong'
+                  className={`rounded-xl p-3.5 cursor-pointer transition-all border group ${
+                    isSelected
+                      ? 'bg-[#C6A16E]/[0.08] border-[#C6A16E]/35'
+                      : 'bg-[#161D19]/60 border-white/8 hover:border-[#C6A16E]/20 hover:bg-[#161D19]'
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-glass">{hike.title}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs text-white ${getDifficultyColor(hike.difficulty)}`}>
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                    <h3 className={`font-semibold text-sm leading-snug ${
+                      isSelected ? 'text-[#F5F3EE]' : 'text-[#B8B4AA] group-hover:text-[#F5F3EE]'
+                    }`}>{hike.title}</h3>
+                    <span className={`shrink-0 px-2 py-0.5 rounded-md text-[10px] font-semibold text-white ${getDifficultyColor(hike.difficulty)}`}>
                       {getDifficultyLabel(hike.difficulty)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-glass-light mb-2">
-                    <MapPin className="w-3 h-3" />
-                    <span>{hike.location}</span>
+                  <div className="flex items-center gap-1.5 text-xs text-[#8E8A81] mb-1.5">
+                    <MapPin className="w-3 h-3 text-[#C6A16E] shrink-0" />
+                    <span className="truncate">{hike.location}</span>
                   </div>
-                  <div className="text-xs text-glass-dim">
-                    {new Date(hike.date).toLocaleDateString()} — {hike.spotsLeft} spots left
+                  <div className="flex items-center justify-between text-[11px] text-[#8E8A81]">
+                    <span>{new Date(hike.date).toLocaleDateString()}</span>
+                    <span className={hike.spotsLeft > 0 ? 'text-[#8FA68E]' : 'text-red-400'}>
+                      {hike.spotsLeft > 0 ? `${hike.spotsLeft} spots left` : 'Full'}
+                    </span>
                   </div>
                 </div>
               );
@@ -573,8 +626,8 @@ const Maps: React.FC = () => {
         </div>
       </div>
 
-      {/* Map Area */}
-      <div className="flex-1 relative m-3 rounded-xl overflow-hidden glass-card">
+      {/* ── Map area ───────────────────────────────────────────────────── */}
+      <div className="flex-1 relative m-2 rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 48px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06)' }}>
         {/* Measure Distance Toolbar */}
         <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2 items-end">
           <button
@@ -583,19 +636,19 @@ const Maps: React.FC = () => {
               setMeasureActive(next);
               if (!next) clearMeasurement();
             }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm shadow-lg transition border ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm shadow-lg transition-all ${
               measureActive
-                ? 'bg-indigo-600 text-white border-indigo-400'
-                : 'bg-gray-900/80 backdrop-blur-md text-white border-white/20 hover:bg-gray-800/90'
+                ? 'bg-[#C6A16E] text-[#0B0F0C] border border-[#C6A16E]'
+                : 'bg-[#0D1210]/85 text-[#F5F3EE] border border-white/15 hover:border-[#C6A16E]/40 hover:text-[#C6A16E] backdrop-blur-md'
             }`}
           >
             <Ruler className="w-4 h-4" />
-            {measureActive ? 'Measuring...' : 'Measure Distance'}
+            {measureActive ? 'Measuring…' : 'Measure Distance'}
           </button>
 
           {measureActive && (
-            <div className="bg-gray-900/90 backdrop-blur-md border border-white/20 rounded-xl p-4 min-w-[220px] shadow-xl">
-              <p className="text-xs text-gray-300 mb-2">
+            <div className="bg-[#0D1210]/92 backdrop-blur-md border border-white/12 rounded-xl p-4 min-w-[224px] shadow-2xl">
+              <p className="text-xs text-[#B8B4AA] mb-3 leading-relaxed">
                 {!pointA
                   ? '1. Click the map to set Point A'
                   : !pointB
@@ -603,47 +656,43 @@ const Maps: React.FC = () => {
                   : 'Points set — click again to reset'}
               </p>
 
-              <div className="flex gap-3 text-sm mb-3">
-                <div className="flex items-center gap-1">
-                  <span className="inline-block w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow" />
-                  <span className="text-gray-300">
-                    {pointA ? `${pointA[0].toFixed(4)}, ${pointA[1].toFixed(4)}` : '...'}
+              <div className="space-y-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow shrink-0" />
+                  <span className="text-xs text-[#B8B4AA] font-mono">
+                    {pointA ? `${pointA[0].toFixed(4)}, ${pointA[1].toFixed(4)}` : '—'}
                   </span>
                 </div>
-              </div>
-              <div className="flex gap-3 text-sm mb-3">
-                <div className="flex items-center gap-1">
-                  <span className="inline-block w-3 h-3 rounded-full bg-red-500 border-2 border-white shadow" />
-                  <span className="text-gray-300">
-                    {pointB ? `${pointB[0].toFixed(4)}, ${pointB[1].toFixed(4)}` : '...'}
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-red-500 border-2 border-white shadow shrink-0" />
+                  <span className="text-xs text-[#B8B4AA] font-mono">
+                    {pointB ? `${pointB[0].toFixed(4)}, ${pointB[1].toFixed(4)}` : '—'}
                   </span>
                 </div>
               </div>
 
               {routeLoading && (
-                <div className="bg-indigo-500/20 border border-indigo-400/40 rounded-lg px-3 py-2 text-center">
-                  <p className="text-xs text-indigo-300 font-medium uppercase tracking-wide">Calculating trail...</p>
-                  <div className="mt-1 h-5 flex items-center justify-center">
-                    <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                  </div>
+                <div className="bg-[#C6A16E]/10 border border-[#C6A16E]/25 rounded-lg px-3 py-2.5 flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-[#C6A16E] border-t-transparent rounded-full animate-spin shrink-0" />
+                  <p className="text-xs text-[#C6A16E] font-medium">Calculating trail…</p>
                 </div>
               )}
               {routeError && !routeLoading && (
-                <div className="bg-red-500/20 border border-red-400/40 rounded-lg px-3 py-2 text-center">
-                  <p className="text-xs text-red-300">{routeError}</p>
+                <div className="bg-red-900/20 border border-red-700/30 rounded-lg px-3 py-2 text-center">
+                  <p className="text-xs text-red-400">{routeError}</p>
                 </div>
               )}
               {routeDistance !== null && !routeLoading && !routeError && (
-                <div className="bg-indigo-500/20 border border-indigo-400/40 rounded-lg px-3 py-2 text-center">
-                  <p className="text-xs text-indigo-300 font-medium uppercase tracking-wide">Trail Distance</p>
-                  <p className="text-xl font-bold text-white">{formatDistance(routeDistance)}</p>
+                <div className="bg-[#C6A16E]/[0.08] border border-[#C6A16E]/25 rounded-lg px-3 py-3 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-[#C6A16E] mb-1">Trail Distance</p>
+                  <p className="text-2xl font-bold text-[#F5F3EE] font-heading">{formatDistance(routeDistance)}</p>
                 </div>
               )}
 
               {(pointA || pointB) && (
                 <button
                   onClick={clearMeasurement}
-                  className="mt-3 w-full text-xs text-gray-400 hover:text-red-400 transition"
+                  className="mt-3 w-full text-xs text-[#8E8A81] hover:text-red-400 transition py-1"
                 >
                   Clear points
                 </button>
@@ -659,9 +708,10 @@ const Maps: React.FC = () => {
           className="z-0"
         >
           <ChangeMapView center={mapCenter} zoom={mapZoom} focusPoints={selectedHikeFocusPoints} />
+          {/* Dark tile from CartoDB — matches cinematic UI */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
 
           <DistanceMeasure
@@ -687,23 +737,25 @@ const Maps: React.FC = () => {
           
           {filteredHikes.map((hike) => {
             const coords = hikeCoordinates.get(hike._id) || [27.7172, 85.324];
+            const isSelected = selectedHike?._id === hike._id;
             return (
               <Marker
                 key={hike._id}
                 position={coords}
+                icon={isSelected ? selectedHikeMarkerIcon : hikeMarkerIcon}
                 eventHandlers={{
                   click: () => handleHikeClick(hike, coords),
                 }}
               >
                 <Popup>
-                  <div className="p-2">
-                    <h3 className="font-bold text-sm mb-1">{hike.title}</h3>
-                    <p className="text-xs text-gray-600 mb-1">{hike.location}</p>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className={`px-2 py-0.5 rounded-full text-white ${getDifficultyColor(hike.difficulty)}`}>
+                  <div style={{ fontFamily: 'Inter, system-ui, sans-serif', minWidth: '180px' }}>
+                    <h3 style={{ fontWeight: 700, fontSize: '13px', marginBottom: '4px', color: '#0B0F0C' }}>{hike.title}</h3>
+                    <p style={{ fontSize: '11px', color: '#555', marginBottom: '6px' }}>{hike.location}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '99px', color: 'white', background: '#C6A16E' }}>
                         {getDifficultyLabel(hike.difficulty)}
                       </span>
-                      <span className="text-gray-600">{hike.spotsLeft} spots</span>
+                      <span style={{ fontSize: '11px', color: '#8FA68E', fontWeight: 600 }}>{hike.spotsLeft} spots</span>
                     </div>
                   </div>
                 </Popup>
@@ -740,83 +792,92 @@ const Maps: React.FC = () => {
           ))}
         </MapContainer>
 
-        {/* Selected Hike Details Popup */}
+        {/* ── Selected Hike Details Panel ──────────────────────────────── */}
         {selectedHike && (
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 max-w-md w-full mx-4 z-10"
-               style={{ filter: 'drop-shadow(0 8px 32px rgba(0,0,0,0.7))' }}>
-            <div className="glass-dark rounded-xl p-6 shadow-2xl">
-            <button
-              onClick={() => setSelectedHike(null)}
-              className="absolute top-4 right-4 p-1 rounded-full bg-white/10 hover:bg-white/25 transition"
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[420px] max-w-[calc(100%-2rem)] z-[999]">
+            <div
+              className="rounded-2xl overflow-hidden relative"
+              style={{ background: 'rgba(13,18,16,0.96)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 40px rgba(0,0,0,0.7)' }}
             >
-              <X className="w-4 h-4 text-white" />
-            </button>
-            
-            {selectedHike.imageUrl && (
-              <img 
-                src={selectedHike.imageUrl} 
-                alt={selectedHike.title}
-                className="w-full h-40 object-cover rounded-lg mb-4"
-              />
-            )}
-            
-            <div className="flex items-start justify-between mb-3 pr-6">
-              <h3 className="text-xl font-bold text-white">{selectedHike.title}</h3>
-              <span className={`ml-2 shrink-0 px-3 py-1 rounded-full text-xs font-semibold text-white ${getDifficultyColor(selectedHike.difficulty)}`}>
-                {getDifficultyLabel(selectedHike.difficulty)}
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm text-gray-300 mb-3">
-              <MapPin className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span className="text-gray-200">{selectedHike.location}</span>
-            </div>
-            
-            {selectedHike.description && (
-              <p className="text-sm text-gray-300 mb-4 leading-relaxed">{selectedHike.description}</p>
-            )}
-            
-            <div className="flex items-center justify-between text-sm py-3 border-t border-white/10">
-              <span className="text-white font-medium">
-                {new Date(selectedHike.date).toLocaleDateString('en-US', {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric'
-                })}
-              </span>
-              <span className="text-emerald-400 font-medium">{selectedHike.spotsLeft} spots left</span>
-            </div>
-            
-            {selectedHikeHotels.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-white/10">
-                <h4 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                  <BedDouble className="w-3.5 h-3.5" />
-                  Accommodation Along Trail ({selectedHikeHotels.length})
-                </h4>
-                <div className="space-y-1.5 max-h-28 overflow-y-auto pr-1">
-                  {selectedHikeHotels.map((hotel) => (
-                    <div key={hotel._id} className="glass flex items-start gap-2 rounded-lg px-2 py-1.5">
-                      <Hotel className="w-3.5 h-3.5 text-teal-400 mt-0.5 shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-xs text-white font-medium truncate">{hotel.name}</p>
-                        <p className="text-[10px] text-gray-400 truncate">{hotel.location}</p>
-                      </div>
-                      {hotel.isApproximate && (
-                        <span className="text-[9px] text-amber-400 shrink-0 mt-0.5">~</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+              {/* Close */}
+              <button
+                onClick={() => setSelectedHike(null)}
+                className="absolute top-3 right-3 z-10 w-7 h-7 flex items-center justify-center rounded-lg bg-[#0B0F0C]/70 border border-white/15 text-[#8E8A81] hover:text-[#F5F3EE] transition-all"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
 
-            <button
-              onClick={() => setConnectHike(selectedHike)}
-              className="w-full mt-3 py-2.5 px-4 rounded-lg text-white font-semibold transition"
-              style={{ background: 'linear-gradient(135deg, #2563eb, #22c55e)' }}
-            >
-              View Details
-            </button>
+              {/* Cover image */}
+              {selectedHike.imageUrl ? (
+                <div className="relative h-36 overflow-hidden">
+                  <img src={selectedHike.imageUrl} alt={selectedHike.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0D1210] via-[#0D1210]/40 to-transparent" />
+                  <span className={`absolute top-3 left-3 px-2 py-0.5 rounded-md text-[11px] font-semibold text-white ${getDifficultyColor(selectedHike.difficulty)}`}>
+                    {getDifficultyLabel(selectedHike.difficulty)}
+                  </span>
+                </div>
+              ) : (
+                <div className="h-1 w-full bg-gradient-to-r from-[#C6A16E]/60 via-[#E8D5B0]/30 to-transparent" />
+              )}
+
+              <div className="px-5 pb-5 pt-4">
+                <div className="flex items-start gap-2 mb-2">
+                  <h3 className="text-lg font-bold text-[#F5F3EE] font-heading leading-tight flex-1">
+                    {selectedHike.title}
+                  </h3>
+                  {!selectedHike.imageUrl && (
+                    <span className={`shrink-0 px-2 py-0.5 rounded-md text-[11px] font-semibold text-white ${getDifficultyColor(selectedHike.difficulty)}`}>
+                      {getDifficultyLabel(selectedHike.difficulty)}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5 text-sm text-[#B8B4AA] mb-2">
+                  <MapPin className="w-3.5 h-3.5 text-[#C6A16E] shrink-0" />
+                  {selectedHike.location}
+                </div>
+
+                {selectedHike.description && (
+                  <p className="text-xs text-[#8E8A81] leading-relaxed line-clamp-2 mb-3">{selectedHike.description}</p>
+                )}
+
+                <div className="flex items-center justify-between py-2.5 border-t border-b border-white/8 mb-3 text-sm">
+                  <span className="text-[#B8B4AA]">
+                    {new Date(selectedHike.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  </span>
+                  <span className={`font-semibold ${selectedHike.spotsLeft > 0 ? 'text-[#8FA68E]' : 'text-red-400'}`}>
+                    {selectedHike.spotsLeft > 0 ? `${selectedHike.spotsLeft} spots left` : 'Full'}
+                  </span>
+                </div>
+
+                {selectedHikeHotels.length > 0 && (
+                  <div className="mb-3">
+                    <h4 className="text-[10px] font-semibold uppercase tracking-widest text-[#C6A16E] mb-2 flex items-center gap-1.5">
+                      <BedDouble className="w-3.5 h-3.5" />
+                      Accommodation ({selectedHikeHotels.length})
+                    </h4>
+                    <div className="space-y-1.5 max-h-24 overflow-y-auto">
+                      {selectedHikeHotels.map((hotel) => (
+                        <div key={hotel._id} className="flex items-center gap-2 rounded-lg bg-[#111714] border border-white/6 px-2.5 py-1.5">
+                          <Hotel className="w-3.5 h-3.5 text-[#8FA68E] shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-[#F5F3EE] font-medium truncate">{hotel.name}</p>
+                            <p className="text-[10px] text-[#8E8A81] truncate">{hotel.location}</p>
+                          </div>
+                          {hotel.isApproximate && <span className="text-[9px] text-amber-400 shrink-0">~</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setConnectHike(selectedHike)}
+                  className="btn-primary w-full py-2.5 rounded-xl font-semibold text-sm"
+                >
+                  View Details &amp; Book
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -342,32 +342,34 @@ const Expenses = ({ roomId }: ExpensesProps) => {
   return (
     <div className="flex flex-col h-full bg-transparent">
       {/* Header */}
-      <div className="p-4 border-b border-white/20 flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-white/8 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <DollarSign className="w-5 h-5 text-emerald-400" />
-          <h3 className="font-semibold text-glass">Expenses</h3>
+          <div className="w-8 h-8 rounded-lg bg-[#C6A16E]/10 border border-[#C6A16E]/25 flex items-center justify-center">
+            <DollarSign className="w-4 h-4 text-[#C6A16E]" />
+          </div>
+          <h3 className="font-bold text-[#F5F3EE] font-heading">Expenses</h3>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setShowSummary(!showSummary)}
-            className="px-3 py-1.5 rounded-md glass-button text-glass-light text-sm flex items-center gap-2 transition-colors"
+            className="btn-outline px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5"
           >
-            <TrendingUp className="w-4 h-4" />
+            <TrendingUp className="w-3.5 h-3.5" />
             {showSummary ? "Hide" : "Show"} Summary
           </button>
           <button
             onClick={exportToCSV}
             disabled={expenses.length === 0}
-            className="px-3 py-1.5 rounded-md glass-button text-glass-light text-sm flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-outline px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 disabled:opacity-50"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3.5 h-3.5" />
             Export CSV
           </button>
           <button
             onClick={() => openModal()}
-            className="px-3 py-1.5 rounded-md glass-button-dark text-white text-sm flex items-center gap-2 transition-all"
+            className="btn-primary px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             Add Expense
           </button>
         </div>
@@ -375,55 +377,31 @@ const Expenses = ({ roomId }: ExpensesProps) => {
 
       {/* Summary Panel */}
       {showSummary && summary && (
-        <div className="p-4 bg-white/5 border-b border-white/10 backdrop-blur-sm">
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-emerald-400">
-                NPR {summary.totalExpenses.toFixed(2)}
-              </p>
-              <p className="text-sm text-glass-dim">Total Expenses</p>
+        <div className="p-4 bg-[#111714] border-b border-white/8 shrink-0">
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="bg-[#161D19] border border-white/8 rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-[#C6A16E] font-heading">NPR {summary.totalExpenses.toFixed(0)}</p>
+              <p className="text-xs text-[#8E8A81] mt-0.5 uppercase tracking-widest">Total</p>
             </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-glass">
-                {summary.expenseCount}
-              </p>
-              <p className="text-sm text-glass-dim">Transactions</p>
+            <div className="bg-[#161D19] border border-white/8 rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-[#F5F3EE] font-heading">{summary.expenseCount}</p>
+              <p className="text-xs text-[#8E8A81] mt-0.5 uppercase tracking-widest">Items</p>
             </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-glass">
-                {Object.keys(summary.categoryTotals).length}
-              </p>
-              <p className="text-sm text-glass-dim">Categories</p>
+            <div className="bg-[#161D19] border border-white/8 rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-[#8FA68E] font-heading">{Object.keys(summary.categoryTotals).length}</p>
+              <p className="text-xs text-[#8E8A81] mt-0.5 uppercase tracking-widest">Categories</p>
             </div>
           </div>
-
-          {/* Settlements */}
-          <div className="space-y-2">
-            <h4 className="font-semibold text-sm text-glass mb-2">
-              Settlements
-            </h4>
+          <p className="section-label mb-2">Settlements</p>
+          <div className="space-y-1.5">
             {summary.settlements.map((settlement) => (
-              <div
-                key={settlement.userId}
-                className="glass flex justify-between items-center p-3 rounded-lg"
-              >
-                <span className="text-sm text-glass">{settlement.name}</span>
-                <div className="flex gap-4 text-sm">
-                  <span className="text-glass-dim">
-                    Paid: NPR {settlement.paid.toFixed(2)}
-                  </span>
-                  <span className="text-glass-dim">
-                    Owes: NPR {settlement.owes.toFixed(2)}
-                  </span>
-                  <span
-                    className={`font-semibold ${
-                      settlement.balance >= 0
-                        ? "text-emerald-400"
-                        : "text-rose-400"
-                    }`}
-                  >
-                    {settlement.balance >= 0 ? "+" : ""}NPR{" "}
-                    {settlement.balance.toFixed(2)}
+              <div key={settlement.userId} className="bg-[#161D19] border border-white/8 flex justify-between items-center px-3 py-2.5 rounded-lg">
+                <span className="text-sm text-[#F5F3EE] font-medium">{settlement.name}</span>
+                <div className="flex gap-3 text-xs">
+                  <span className="text-[#8E8A81]">Paid: <span className="text-[#B8B4AA]">NPR {settlement.paid.toFixed(0)}</span></span>
+                  <span className="text-[#8E8A81]">Owes: <span className="text-[#B8B4AA]">NPR {settlement.owes.toFixed(0)}</span></span>
+                  <span className={`font-bold ${settlement.balance >= 0 ? 'text-[#8FA68E]' : 'text-red-400'}`}>
+                    {settlement.balance >= 0 ? '+' : ''}NPR {settlement.balance.toFixed(0)}
                   </span>
                 </div>
               </div>
@@ -453,11 +431,11 @@ const Expenses = ({ roomId }: ExpensesProps) => {
           expenses.map((expense) => (
             <div
               key={expense._id}
-              className="glass-card p-4 rounded-lg hover:bg-white/20 transition-all"
+              className="site-card rounded-xl p-4 hover:border-[#C6A16E]/20 transition-all"
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <h4 className="font-semibold text-glass">
+                  <h4 className="font-semibold text-[#F5F3EE] text-sm">
                     {expense.description}
                   </h4>
                   <p className="text-sm text-glass-dim">
@@ -466,26 +444,26 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold text-emerald-400">
+                  <span className="text-base font-bold text-[#C6A16E] font-heading">
                     NPR {expense.amount.toFixed(2)}
                   </span>
                   <button
                     onClick={() => openModal(expense)}
-                    className="p-1.5 rounded hover:bg-white/10 transition-colors text-glass-light"
+                    className="p-1.5 rounded-lg hover:bg-white/8 transition-colors text-[#8E8A81] hover:text-[#F5F3EE]"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(expense._id)}
-                    className="p-1.5 rounded hover:bg-white/10 text-rose-400 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-red-900/25 text-[#8E8A81] hover:text-red-400 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
               <div className="text-sm">
-                <p className="text-glass-dim mb-1">
-                  Paid by <span className="text-glass font-medium">{expense.paidBy.name}</span>
+                <p className="text-[#8E8A81] text-xs mb-2">
+                  Paid by <span className="text-[#F5F3EE] font-medium">{expense.paidBy.name}</span>
                   {" — "}
                   <span className="capitalize">{expense.splitType} split</span>
                 </p>
@@ -493,14 +471,14 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                   {expense.participants.map((p) => (
                     <span
                       key={p.userId}
-                      className="px-2 py-1 rounded bg-white/10 text-xs text-glass-light border border-white/10"
+                      className="px-2 py-1 rounded-md bg-[#111714] border border-white/8 text-[#B8B4AA] text-xs"
                     >
                       {p.name}: NPR {p.amount.toFixed(2)}
                     </span>
                   ))}
                 </div>
                 {expense.notes && (
-                  <p className="text-glass-dim mt-2 text-xs italic">
+                  <p className="text-[#8E8A81] mt-2 text-xs italic">
                     {expense.notes}
                   </p>
                 )}
@@ -513,15 +491,15 @@ const Expenses = ({ roomId }: ExpensesProps) => {
       {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="glass-card rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-white/20">
+          <div className="site-card rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-white/10">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold text-glass">
+                <h3 className="text-lg font-bold text-[#F5F3EE] font-heading">
                   {editingExpense ? "Edit Expense" : "Add Expense"}
                 </h3>
                 <button
                   onClick={closeModal}
-                  className="p-2 rounded-lg hover:bg-white/10 transition-colors text-glass-light"
+                  className="p-2 rounded-lg hover:bg-white/8 transition-colors text-[#8E8A81] hover:text-[#F5F3EE]"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -529,7 +507,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-glass mb-2">
+                  <label className="block text-xs font-semibold uppercase tracking-widest text-[#8E8A81] mb-1.5">
                     Description *
                   </label>
                   <input
@@ -539,14 +517,14 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
-                    className="glass-input w-full px-3 py-2 rounded-lg text-glass placeholder-glass-dim focus:outline-none focus:border-emerald-400 transition-colors"
+                    className="site-input w-full px-3 py-2.5 rounded-lg text-sm"
                     placeholder="e.g., Lunch at restaurant"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-glass mb-2">
+                    <label className="block text-xs font-semibold uppercase tracking-widest text-[#8E8A81] mb-1.5">
                       Amount *
                     </label>
                     <input
@@ -558,13 +536,13 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                       onChange={(e) =>
                         setFormData({ ...formData, amount: e.target.value })
                       }
-                      className="glass-input w-full px-3 py-2 rounded-lg text-glass placeholder-glass-dim focus:outline-none focus:border-emerald-400 transition-colors"
+                      className="site-input w-full px-3 py-2.5 rounded-lg text-sm"
                       placeholder="0.00"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-glass mb-2">
+                    <label className="block text-xs font-semibold uppercase tracking-widest text-[#8E8A81] mb-1.5">
                       Category
                     </label>
                     <select
@@ -584,7 +562,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-glass mb-2">
+                  <label className="block text-xs font-semibold uppercase tracking-widest text-[#8E8A81] mb-1.5">
                     Paid By *
                   </label>
                   <select
@@ -605,7 +583,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-glass mb-2">
+                  <label className="block text-xs font-semibold uppercase tracking-widest text-[#8E8A81] mb-1.5">
                     Split Type
                   </label>
                   <div className="flex gap-2">
@@ -632,7 +610,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-glass mb-2">
+                  <label className="block text-xs font-semibold uppercase tracking-widest text-[#8E8A81] mb-1.5">
                     <Users className="w-4 h-4 inline mr-1" />
                     Participants *
                   </label>
@@ -692,7 +670,7 @@ const Expenses = ({ roomId }: ExpensesProps) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-glass mb-2">
+                  <label className="block text-xs font-semibold uppercase tracking-widest text-[#8E8A81] mb-1.5">
                     Notes (Optional)
                   </label>
                   <textarea

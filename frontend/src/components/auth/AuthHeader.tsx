@@ -17,19 +17,19 @@ type AuthHeaderProps = {
 const AuthHeader: React.FC<AuthHeaderProps> = ({ title, subtitle }) => {
   return (
     <div className="sm:mx-auto sm:w-full sm:max-w-md">
-      <div className="flex items-center justify-center gap-2">
-        <div className="glass-button-dark p-2 rounded-lg shadow-sm">
-          <Map className="w-5 h-5 text-white" />
+      <div className="flex items-center justify-center gap-2.5">
+        <div className="p-2 rounded-lg bg-[#1E2820] border border-white/10">
+          <Map className="w-5 h-5 text-[#C6A16E]" />
         </div>
-        <span className="text-2xl font-semibold tracking-tight text-white">
+        <span className="text-2xl font-semibold tracking-wide text-[#F5F3EE] font-heading">
           Travel Buddy
         </span>
       </div>
-      <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-white">
+      <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-[#F5F3EE] font-heading">
         {title}
       </h2>
       {subtitle && (
-        <p className="mt-2 text-center text-sm text-gray-200">{subtitle}</p>
+        <p className="mt-2 text-center text-sm text-[#B8B4AA]">{subtitle}</p>
       )}
     </div>
   );

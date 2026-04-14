@@ -125,63 +125,91 @@ const PhotoUploadCard: React.FC<PhotoUploadCardProps> = ({ onUploaded }) => {
   };
 
   return (
-    <div className="glass-card rounded-xl shadow-sm p-8">
-      <div className="flex flex-col items-center text-center mb-6">
-        <div className="w-20 h-20 mb-4 flex items-center justify-center rounded-full bg-white/10 border border-white/20">
-          <Camera className="w-10 h-10 text-white/70" />
-        </div>
-        <h3 className="text-xl font-bold text-white mb-2">
-          Share your <span className="underline decoration-2 decoration-white">Trail Photos</span>
-        </h3>
-        <p className="text-sm text-gray-200">Upload photos from your hikes, treks, and adventures</p>
-      </div>
+    <div className="site-card rounded-xl overflow-hidden h-full flex flex-col">
+      {/* Header accent */}
+      <div className="h-1 w-full bg-gradient-to-r from-[#8FA68E]/60 via-[#8FA68E]/30 to-transparent" />
 
-      <div className="mb-4">
-        <label htmlFor="photo-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/30 rounded-lg cursor-pointer hover:border-white/50 hover:bg-white/5 transition-all glass">
-          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-            <CloudUpload className="w-10 h-10 mb-2 text-gray-300" />
-            <p className="text-sm text-gray-200 font-medium">Click to upload or drag and drop</p>
-            <p className="text-xs text-gray-300 mt-1">PNG, JPG up to 10MB</p>
+      <div className="p-6 flex-1 flex flex-col">
+        {/* Title row */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-lg bg-[#8FA68E]/10 border border-[#8FA68E]/25 flex items-center justify-center shrink-0">
+            <Camera className="w-5 h-5 text-[#8FA68E]" />
           </div>
-          <input id="photo-upload" type="file" className="hidden" accept="image/*" multiple onChange={handleChange} />
-        </label>
-        {selectedPhotos.length > 0 && (
-          <>
-            <p className="mt-2 text-xs text-gray-300 text-center">
-              Selected {selectedPhotos.length} {selectedPhotos.length === 1 ? "photo" : "photos"}
-            </p>
-            <div className="mt-3 grid grid-cols-3 gap-2">
+          <div>
+            <h3 className="text-base font-bold text-[#F5F3EE] font-heading">Share Trail Photos</h3>
+            <p className="text-xs text-[#8E8A81]">Upload photos from your hikes and adventures</p>
+          </div>
+        </div>
+
+        {/* Drop zone */}
+        <div className="mb-4">
+          <label
+            htmlFor="photo-upload"
+            className={`flex flex-col items-center justify-center w-full h-36 rounded-xl cursor-pointer transition-all border-2 border-dashed ${
+              selectedPhotos.length > 0
+                ? "border-[#8FA68E]/50 bg-[#8FA68E]/5"
+                : "border-white/12 bg-[#111714] hover:border-[#8FA68E]/40 hover:bg-[#8FA68E]/5"
+            }`}
+          >
+            {selectedPhotos.length === 0 ? (
+              <div className="flex flex-col items-center gap-2 text-center px-4">
+                <CloudUpload className="w-8 h-8 text-[#8FA68E]/70" />
+                <p className="text-sm text-[#B8B4AA] font-medium">Click to upload or drag & drop</p>
+                <p className="text-xs text-[#8E8A81]">PNG, JPG, HEIC · up to 6 MB each</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-1.5">
+                <span className="text-2xl">📷</span>
+                <p className="text-sm text-[#8FA68E] font-medium">
+                  {selectedPhotos.length} photo{selectedPhotos.length !== 1 ? "s" : ""} selected
+                </p>
+                <p className="text-xs text-[#8E8A81]">Click to change</p>
+              </div>
+            )}
+            <input id="photo-upload" type="file" className="hidden" accept="image/*" multiple onChange={handleChange} />
+          </label>
+
+          {/* Preview thumbnails */}
+          {photoPreviews.length > 0 && (
+            <div className="mt-3 grid grid-cols-4 gap-2">
               {photoPreviews.map((preview, index) => (
-                <div key={index} className="rounded-lg overflow-hidden border border-gray-200 h-20">
-                  <img src={preview} alt={`Selected trail preview ${index + 1}`} className="w-full h-full object-cover" />
+                <div key={index} className="rounded-lg overflow-hidden border border-white/10 h-16 bg-[#111714]">
+                  <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
                 </div>
               ))}
             </div>
-          </>
+          )}
+        </div>
+
+        {/* Caption */}
+        <textarea
+          value={photoCaption}
+          onChange={(e) => setPhotoCaption(e.target.value)}
+          placeholder="Add a caption — where was this?"
+          className="site-input w-full px-4 py-3 rounded-lg resize-none text-sm mb-4 flex-1"
+          rows={3}
+        />
+
+        {message && (
+          <div className={`mb-3 rounded-lg px-3 py-2 text-sm border ${
+            message.type === "success"
+              ? "bg-emerald-900/20 border-emerald-700/30 text-emerald-400"
+              : "bg-red-900/20 border-red-700/30 text-red-400"
+          }`}>
+            {message.text}
+          </div>
         )}
+
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isUploading || selectedPhotos.length === 0}
+          className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 mt-auto"
+        >
+          <Upload className="w-4 h-4" />
+          {isUploading ? "Uploading…" : "Upload Photos"}
+        </button>
       </div>
-
-      <textarea
-        value={photoCaption}
-        onChange={(e) => setPhotoCaption(e.target.value)}
-        placeholder="Add a caption or description..."
-        className="w-full px-4 py-3 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white resize-none mb-4 text-white placeholder-gray-300"
-        rows={3}
-      />
-
-      {message && (
-        <div className={`mb-3 rounded-lg px-3 py-2 text-sm ${message.type === "success" ? "glass-strong text-black" : "glass-dark text-white"}`}>{message.text}</div>
-      )}
-
-      <button
-        type="button"
-        onClick={handleSubmit}
-        disabled={isUploading}
-        className="w-full glass-button-dark font-semibold py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60 text-white"
-      >
-        <Upload className="w-4 h-4" />
-        {isUploading ? "Uploading..." : "Upload Photos"}
-      </button>
     </div>
   );
 };

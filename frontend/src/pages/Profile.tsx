@@ -236,95 +236,102 @@ const Profile: React.FC = () => {
   const upcomingCount = trips.filter((t) => getTripStatus(t.date) === "Upcoming").length;
   const completedCount = trips.filter((t) => getTripStatus(t.date) === "Completed").length;
 
+  const initials = user?.name?.split(" ").map(n => n[0]).slice(0,2).join("").toUpperCase() || "U";
+
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="w-full">
 
-        {/* ── Hero Card ── */}
-        <div className="glass-card rounded-xl shadow-sm p-6 mb-6">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+      {/* ══ CINEMATIC HERO ══════════════════════════════════════════ */}
+      <div className="relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('https://images.pexels.com/photos/1366909/pexels-photo-1366909.jpeg?auto=compress&cs=tinysrgb&w=1400')" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0B0F0C]/55 via-[#0B0F0C]/72 to-[#0B0F0C]" />
+        <div className="relative px-4 sm:px-6 lg:px-12 xl:px-16 pt-12 pb-10">
+          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center sm:items-end gap-6">
 
-            {/* Avatar with upload */}
-            <div className="relative flex-shrink-0">
-              <div className="w-28 h-28 rounded-full glass-button-dark text-white flex items-center justify-center text-3xl font-semibold overflow-hidden border-4 border-white/30">
+            {/* Avatar */}
+            <div className="relative shrink-0">
+              <div className="w-28 h-28 rounded-2xl overflow-hidden border-2 border-[#C6A16E]/50 bg-[#1E2820] flex items-center justify-center text-3xl font-bold text-[#C6A16E] shadow-2xl">
                 {profilePicturePreview ? (
                   <img src={profilePicturePreview} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                  <span>{user?.name?.[0]?.toUpperCase() || "U"}</span>
+                  <span className="font-heading">{initials}</span>
                 )}
               </div>
-              <label
-                htmlFor="profile-picture"
-                className="absolute bottom-0 right-0 glass-button-dark text-white p-2 rounded-full cursor-pointer"
-              >
-                <Camera className="w-4 h-4" />
+              <label htmlFor="profile-picture"
+                className="absolute -bottom-1 -right-1 bg-[#C6A16E] text-[#0B0F0C] p-1.5 rounded-lg cursor-pointer shadow-lg hover:bg-[#D4AE7A] transition-colors" title="Change photo">
+                <Camera className="w-3.5 h-3.5" />
               </label>
-              <input
-                id="profile-picture"
-                type="file"
-                accept="image/*"
-                onChange={handleProfilePictureChange}
-                className="hidden"
-              />
+              <input id="profile-picture" type="file" accept="image/*" onChange={handleProfilePictureChange} className="hidden" />
+              <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#0B0F0C]" />
             </div>
 
-            {/* Name / email / tags */}
+            {/* Identity */}
             <div className="flex-1 text-center sm:text-left">
               <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start mb-1">
-                <h1 className="text-2xl font-bold text-white">{user?.name || "User"}</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold text-[#F5F3EE] font-heading">{user?.name || "User"}</h1>
                 {user?.role === "admin" && (
-                  <span className="text-xs font-bold px-2 py-0.5 bg-yellow-500/40 text-yellow-200 rounded-full border border-yellow-400/30">
-                    Admin
-                  </span>
+                  <span className="text-xs font-bold px-2 py-0.5 bg-[#C6A16E]/20 text-[#C6A16E] rounded-full border border-[#C6A16E]/40">Admin</span>
                 )}
               </div>
-              <p className="text-sm text-gray-200 mb-3">{user?.email}</p>
-              <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+              <p className="text-sm text-[#8E8A81] mb-4">{user?.email}</p>
+              <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                 {user?.country && (
-                  <span className="flex items-center gap-1 text-xs text-gray-300">
-                    <MapPin className="w-3 h-3" />{user.country}
+                  <span className="inline-flex items-center gap-1.5 bg-[#161D19]/80 border border-white/10 rounded-full px-3 py-1 text-xs text-[#B8B4AA]">
+                    <MapPin className="w-3 h-3 text-[#C6A16E]" />{user.country}
                   </span>
                 )}
                 {user?.travelStyle && (
-                  <span className="flex items-center gap-1 text-xs text-gray-300">
-                    <Globe className="w-3 h-3" />{user.travelStyle}
+                  <span className="inline-flex items-center gap-1.5 bg-[#161D19]/80 border border-white/10 rounded-full px-3 py-1 text-xs text-[#B8B4AA]">
+                    <Globe className="w-3 h-3 text-[#8FA68E]" />{user.travelStyle}
                   </span>
                 )}
                 {user?.budgetRange && (
-                  <span className="flex items-center gap-1 text-xs text-gray-300">
-                    <DollarSign className="w-3 h-3" />{user.budgetRange}
+                  <span className="inline-flex items-center gap-1.5 bg-[#161D19]/80 border border-white/10 rounded-full px-3 py-1 text-xs text-[#B8B4AA]">
+                    <DollarSign className="w-3 h-3 text-[#C6A16E]" />{user.budgetRange}
+                  </span>
+                )}
+                {user?.interests && (
+                  <span className="inline-flex items-center gap-1.5 bg-[#161D19]/80 border border-white/10 rounded-full px-3 py-1 text-xs text-[#B8B4AA]">
+                    <Tag className="w-3 h-3 text-[#8FA68E]" />{user.interests}
                   </span>
                 )}
               </div>
-              {user?.interests && (
-                <p className="mt-2 text-xs text-gray-300 flex items-center gap-1"><Tag className="w-3 h-3" /> {user.interests}</p>
-              )}
             </div>
 
-            {/* Stats */}
-            <div className="flex sm:flex-col gap-3 text-center flex-shrink-0">
-              <div className="glass-button rounded-lg px-5 py-2.5">
-                <p className="text-2xl font-bold text-white">{trips.length}</p>
-                <p className="text-xs text-gray-300">Trips</p>
-              </div>
-              <div className="glass-button rounded-lg px-5 py-2.5">
-                <p className="text-2xl font-bold text-white">{userPhotos.length}</p>
-                <p className="text-xs text-gray-300">Photos</p>
-              </div>
+            {/* Stat tiles */}
+            <div className="flex gap-3 shrink-0">
+              {[
+                { val: trips.length,      label: "Trips",  color: "text-[#C6A16E]" },
+                { val: userPhotos.length, label: "Photos", color: "text-[#8FA68E]" },
+                { val: completedCount,    label: "Done",   color: "text-[#8FA68E]" },
+              ].map(({ val, label, color }) => (
+                <div key={label} className="bg-[#161D19]/70 border border-white/10 rounded-xl px-4 py-3 text-center min-w-[60px]">
+                  <p className={`text-2xl font-bold font-heading ${color}`}>{val}</p>
+                  <p className="text-[10px] text-[#8E8A81] uppercase tracking-widest mt-0.5">{label}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ══ BODY ════════════════════════════════════════════════════ */}
+      <div className="px-4 sm:px-6 lg:px-12 xl:px-16 py-6">
+      <div className="max-w-4xl mx-auto">
 
         {/* ── Tab Bar ── */}
-        <div className="flex gap-1 glass-card rounded-xl p-1.5 mb-6">
+        <div className="flex items-center gap-1 bg-[#111714] border border-white/8 rounded-xl p-1 mb-6">
           {(["edit", "trips", "photos"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 activeTab === tab
-                  ? "glass-button-dark text-white"
-                  : "text-gray-300 hover:text-white"
+                  ? "bg-[#C6A16E]/[0.12] border border-[#C6A16E]/30 text-[#C6A16E]"
+                  : "text-[#8E8A81] hover:text-[#F5F3EE] border border-transparent"
               }`}
             >
               {tab === "edit"
@@ -338,7 +345,7 @@ const Profile: React.FC = () => {
 
         {/* ── Edit Profile Tab ── */}
         {activeTab === "edit" && (
-          <form onSubmit={handleSubmit} className="glass-card rounded-xl shadow-sm p-6 space-y-5">
+          <form onSubmit={handleSubmit} className="site-card rounded-2xl p-6 space-y-5">
             <div className="grid gap-5 sm:grid-cols-2">
               {/* Name */}
               <div>
@@ -347,7 +354,7 @@ const Profile: React.FC = () => {
                 </label>
                 <input
                   type="text" id="name" name="name" value={formData.name} onChange={handleChange} required
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-white/40 glass-input text-white placeholder-gray-400 ${errors.name ? "border-red-400" : ""}`}
+                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none site-input ${errors.name ? "border-red-700/50" : ""}`}
                 />
                 {errors.name && <p className="mt-1 text-xs text-red-300">{errors.name}</p>}
               </div>
@@ -359,7 +366,7 @@ const Profile: React.FC = () => {
                 </label>
                 <input
                   type="email" id="email" name="email" value={formData.email} onChange={handleChange} required
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-white/40 glass-input text-white placeholder-gray-400 ${errors.email ? "border-red-400" : ""}`}
+                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none site-input ${errors.email ? "border-red-700/50" : ""}`}
                 />
                 {errors.email && <p className="mt-1 text-xs text-red-300">{errors.email}</p>}
               </div>
@@ -379,7 +386,7 @@ const Profile: React.FC = () => {
                 <label htmlFor="travelStyle" className="block text-sm font-medium text-white mb-1.5">Travel Style</label>
                 <select
                   id="travelStyle" name="travelStyle" value={formData.travelStyle} onChange={handleChange}
-                  className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white/40 text-white [color-scheme:dark]"
+                  className="w-full px-4 py-2.5 site-input rounded-lg [color-scheme:dark]"
                 >
                   <option value="">Select a style</option>
                   <option value="budget">Budget backpacker</option>
@@ -396,7 +403,7 @@ const Profile: React.FC = () => {
                 <label htmlFor="budgetRange" className="block text-sm font-medium text-white mb-1.5">Budget Range</label>
                 <select
                   id="budgetRange" name="budgetRange" value={formData.budgetRange} onChange={handleChange}
-                  className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white/40 text-white [color-scheme:dark]"
+                  className="w-full px-4 py-2.5 site-input rounded-lg [color-scheme:dark]"
                 >
                   <option value="">Select budget range</option>
                   <option value="budget">Budget (NPR 2,000–5,000/day)</option>
@@ -412,7 +419,7 @@ const Profile: React.FC = () => {
                 <textarea
                   id="interests" name="interests" value={formData.interests} onChange={handleChange}
                   placeholder="e.g., Hiking, Photography, Local Food, History" rows={3}
-                  className="w-full px-4 py-2.5 glass-input rounded-lg focus:outline-none focus:ring-2 focus:ring-white/40 resize-none text-white placeholder-gray-400"
+                  className="w-full px-4 py-2.5 site-input rounded-lg resize-none"
                 />
               </div>
             </div>
@@ -420,13 +427,13 @@ const Profile: React.FC = () => {
             <div className="flex gap-3 pt-2">
               <button
                 type="button" onClick={() => navigate("/homepage")}
-                className="flex-1 px-4 py-2.5 glass-button rounded-lg text-white font-medium"
+                className="btn-outline flex-1 px-4 py-2.5 rounded-lg text-sm font-medium"
               >
                 Cancel
               </button>
               <button
                 type="submit" disabled={isSubmitting}
-                className="flex-1 px-4 py-2.5 glass-button-dark rounded-lg text-white font-semibold disabled:opacity-60"
+                className="btn-primary flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-60"
               >
                 {isSubmitting ? "Saving..." : "Save Changes"}
               </button>
@@ -436,118 +443,96 @@ const Profile: React.FC = () => {
 
         {/* ── My Trips Tab ── */}
         {activeTab === "trips" && (
-          <div className="glass-card rounded-xl shadow-sm p-6">
-            {/* Summary row */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="glass-button rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-white">{trips.length}</p>
-                <p className="text-xs text-gray-300 mt-1">Total</p>
-              </div>
-              <div className="glass-button rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-yellow-300">{upcomingCount}</p>
-                <p className="text-xs text-gray-300 mt-1">Upcoming</p>
-              </div>
-              <div className="glass-button rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-green-300">{completedCount}</p>
-                <p className="text-xs text-gray-300 mt-1">Completed</p>
-              </div>
+          <div>
+            <div className="grid grid-cols-3 gap-3 mb-5">
+              {[
+                { val: trips.length,   label: "Total Trips", color: "text-[#C6A16E]" },
+                { val: upcomingCount,  label: "Upcoming",    color: "text-[#C6A16E]" },
+                { val: completedCount, label: "Completed",   color: "text-[#8FA68E]" },
+              ].map(({ val, label, color }) => (
+                <div key={label} className="site-card rounded-xl p-4 text-center">
+                  <p className={`text-3xl font-bold font-heading ${color}`}>{val}</p>
+                  <p className="text-xs text-[#8E8A81] mt-1 uppercase tracking-widest">{label}</p>
+                </div>
+              ))}
             </div>
-
             {isLoadingTrips ? (
-              <p className="text-gray-200 text-center py-8">Loading trips...</p>
+              <div className="flex items-center justify-center gap-3 py-12 text-[#B8B4AA]">
+                <div className="w-4 h-4 rounded-full border-2 border-[#C6A16E] border-t-transparent animate-spin" />
+                <span className="text-sm">Loading trips…</span>
+              </div>
             ) : trips.length === 0 ? (
-              <div className="text-center py-10">
-                <CalendarDays className="w-10 h-10 text-white/30 mx-auto mb-3" />
-                <p className="text-gray-300">You haven't joined any trips yet.</p>
-                <button
-                  onClick={() => navigate("/hikes")}
-                  className="mt-4 glass-button-dark px-5 py-2 rounded-full text-sm text-white font-medium"
-                >
-                  Browse Hikes
-                </button>
+              <div className="site-card rounded-2xl p-12 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-[#C6A16E]/10 border border-[#C6A16E]/20 flex items-center justify-center mx-auto mb-4">
+                  <CalendarDays className="w-8 h-8 text-[#C6A16E]" />
+                </div>
+                <p className="text-[#F5F3EE] font-medium mb-1 font-heading">No trips yet</p>
+                <p className="text-[#8E8A81] text-sm mb-4">Join a hike to start your adventure.</p>
+                <button onClick={() => navigate("/hikes")} className="btn-primary px-5 py-2 rounded-md text-sm font-semibold">Browse Hikes</button>
               </div>
             ) : (
-              <ul className="space-y-3">
+              <div className="space-y-3">
                 {trips.map((trip) => {
                   const status = getTripStatus(trip.date);
+                  const sStyle = { Upcoming: "bg-[#C6A16E]/10 border-[#C6A16E]/25 text-[#C6A16E]", Ongoing: "bg-[#8FA68E]/10 border-[#8FA68E]/25 text-[#8FA68E]", Completed: "bg-white/5 border-white/10 text-[#8E8A81]" }[status];
                   return (
-                    <li key={trip._id} className="glass-button rounded-lg p-4 flex items-center justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-white truncate">{trip.title}</p>
-                        <p className="text-xs text-gray-300 mt-0.5">
-                          {trip.location} • {formatDate(trip.date)}
-                        </p>
+                    <div key={trip._id} className="site-card rounded-xl p-4 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-lg bg-[#C6A16E]/10 border border-[#C6A16E]/20 flex items-center justify-center shrink-0">
+                          <CalendarDays className="w-5 h-5 text-[#C6A16E]" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-[#F5F3EE] truncate text-sm">{trip.title}</p>
+                          <p className="text-xs text-[#8E8A81] mt-0.5">{trip.location} · {formatDate(trip.date)}</p>
+                        </div>
                       </div>
-                      <span
-                        className={`text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0 ${
-                          status === "Completed"
-                            ? "bg-green-500/40 text-green-200"
-                            : status === "Upcoming"
-                            ? "bg-yellow-500/40 text-yellow-200"
-                            : "bg-blue-500/40 text-blue-200"
-                        }`}
-                      >
-                        {status}
-                      </span>
-                    </li>
+                      <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border shrink-0 ${sStyle}`}>{status}</span>
+                    </div>
                   );
                 })}
-              </ul>
+              </div>
             )}
           </div>
         )}
 
         {/* ── Photos Tab ── */}
         {activeTab === "photos" && (
-          <div className="glass-card rounded-xl shadow-sm p-6">
+          <div>
             {isLoadingPhotos ? (
-              <p className="text-gray-200 text-center py-8">Loading photos...</p>
+              <div className="flex items-center justify-center gap-3 py-12 text-[#B8B4AA]">
+                <div className="w-4 h-4 rounded-full border-2 border-[#C6A16E] border-t-transparent animate-spin" />
+                <span className="text-sm">Loading photos…</span>
+              </div>
             ) : userPhotos.length === 0 ? (
-              <div className="text-center py-10">
-                <Camera className="w-10 h-10 text-white/30 mx-auto mb-3" />
-                <p className="text-gray-300">You haven't uploaded any trail photos yet.</p>
-                <button
-                  onClick={() => navigate("/homepage")}
-                  className="mt-4 glass-button-dark px-5 py-2 rounded-full text-sm text-white font-medium"
-                >
-                  Go to Homepage
-                </button>
+              <div className="site-card rounded-2xl p-12 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-[#8FA68E]/10 border border-[#8FA68E]/20 flex items-center justify-center mx-auto mb-4">
+                  <Camera className="w-8 h-8 text-[#8FA68E]" />
+                </div>
+                <p className="text-[#F5F3EE] font-medium mb-1 font-heading">No photos yet</p>
+                <p className="text-[#8E8A81] text-sm mb-4">Share your trail experiences with the community.</p>
+                <button onClick={() => navigate("/homepage")} className="btn-primary px-5 py-2 rounded-md text-sm font-semibold">Upload Photos</button>
               </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
                 {userPhotos.map((photo) => {
-                  const imageList =
-                    photo.images && photo.images.length > 0
-                      ? photo.images
-                      : photo.imageData
-                      ? [photo.imageData]
-                      : [];
+                  const imageList = photo.images?.length ? photo.images : photo.imageData ? [photo.imageData] : [];
                   const firstImage = imageList[0];
                   return (
-                    <div
-                      key={photo._id}
-                      className="relative aspect-square rounded-lg overflow-hidden glass border border-white/20"
-                    >
+                    <div key={photo._id} className="relative aspect-square rounded-xl overflow-hidden site-card group">
                       {firstImage ? (
-                        <img
-                          src={firstImage}
-                          alt={photo.caption || "Trail photo"}
-                          className="w-full h-full object-cover"
-                        />
+                        <img src={firstImage} alt={photo.caption || "Trail photo"}
+                          className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500" />
                       ) : (
-                        <div className="w-full h-full glass-dark flex items-center justify-center">
-                          <Camera className="w-8 h-8 text-white/30" />
+                        <div className="w-full h-full bg-[#111714] flex items-center justify-center">
+                          <Camera className="w-8 h-8 text-[#8E8A81]/30" />
                         </div>
                       )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F0C]/65 via-transparent to-transparent pointer-events-none" />
                       {imageList.length > 1 && (
-                        <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                          {imageList.length}
-                        </div>
+                        <div className="absolute top-2 right-2 bg-[#0B0F0C]/70 border border-white/15 text-[#B8B4AA] text-[10px] font-medium px-2 py-0.5 rounded-md">+{imageList.length - 1}</div>
                       )}
                       {photo.caption && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-2 line-clamp-2">
-                          {photo.caption}
-                        </div>
+                        <p className="absolute bottom-0 left-0 right-0 px-3 py-2 text-xs text-[#F5F3EE] line-clamp-1">{photo.caption}</p>
                       )}
                     </div>
                   );
@@ -557,6 +542,7 @@ const Profile: React.FC = () => {
           </div>
         )}
 
+      </div>
       </div>
     </div>
   );

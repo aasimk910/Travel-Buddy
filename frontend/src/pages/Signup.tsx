@@ -1,4 +1,4 @@
-﻿// src/pages/Signup.tsx
+// src/pages/Signup.tsx
 // #region Imports
 import React, { useEffect, useState, useRef } from "react";
 import { useScrollReveal } from "../hooks/useScrollReveal";
@@ -6,12 +6,14 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { Map } from "lucide-react";
 import { GOOGLE_CLIENT_ID, VITE_RECAPTCHA_SITE_KEY } from "../config/env";
 import ReCAPTCHA from "react-google-recaptcha";
 import GoogleAuthButton from "../components/auth/GoogleAuthButton";
-import AuthHeader from "../components/auth/AuthHeader";
 import StatusAlert from "../components/common/StatusAlert";
 import { signup as signupRequest, googleAuth, storeToken } from "../services/auth";
+import { getSiteStats, type SiteStats } from "../services/hikes";
+import { getReviews } from "../services/reviews";
 
 // #endregion Imports
 
@@ -42,12 +44,24 @@ const Signup: React.FC = () => {
   const { loginWithProfile, isAuthenticated } = useAuth();
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [siteStats, setSiteStats] = useState<SiteStats | null>(null);
+  const [avgRating, setAvgRating] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
       navigate(redirectPath, { replace: true });
     }
   }, [isAuthenticated, navigate, redirectPath]);
+
+  useEffect(() => {
+    getSiteStats().then(setSiteStats).catch(() => {});
+    getReviews().then(reviews => {
+      if (reviews.length > 0) {
+        const avg = reviews.reduce((s: number, r: any) => s + r.rating, 0) / reviews.length;
+        setAvgRating(avg.toFixed(1));
+      }
+    }).catch(() => {});
+  }, []);
 
   // ---------- Formik setup ----------
   const {
@@ -182,18 +196,65 @@ const Signup: React.FC = () => {
 
   // ---------- UI ----------
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8" ref={revealRef}>
-      <div className="reveal reveal-fade">
-        <AuthHeader
-          title="Create your account"
-          subtitle="Start planning smarter trips with people who match your vibe."
+    <div className="min-h-screen flex bg-[#0B0F0C]" ref={revealRef}>
+
+      {/* Left panel — cinematic nature image (desktop only) */}
+      <div className="hidden lg:flex lg:w-[38%] xl:w-[42%] relative flex-col justify-end overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('https://images.pexels.com/photos/1271620/pexels-photo-1271620.jpeg?auto=compress&cs=tinysrgb&w=1200')" }}
         />
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#0B0F0C]/90 via-[#0B0F0C]/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F0C] via-[#0B0F0C]/30 to-transparent" />
+
+        <div className="relative px-10 pb-12 z-10">
+          {/* Stats */}
+          <div className="flex gap-4 mb-8">
+            {[
+              { value: siteStats ? `${siteStats.userCount.toLocaleString()}+` : '—', label: 'Hikers' },
+              { value: siteStats ? `${siteStats.hikeCount}+` : '—', label: 'Trails' },
+              { value: avgRating ? `${avgRating}\u2605` : '—', label: 'Rating' },
+            ].map((s, i) => (
+              <div key={i} className="bg-[#161D19]/70 border border-white/10 rounded-xl px-4 py-3 text-center">
+                <p className="text-[#C6A16E] font-bold text-xl font-heading">{s.value}</p>
+                <p className="text-[#8E8A81] text-[10px] uppercase tracking-widest mt-0.5">{s.label}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="h-px bg-gradient-to-r from-[#C6A16E]/40 to-transparent mb-8" />
+
+          <div className="mb-3">
+            <span className="section-label">Join the Community</span>
+          </div>
+          <blockquote className="font-heading text-2xl text-[#F5F3EE] leading-snug italic mb-3">
+            “Not all those who wander are lost.”
+          </blockquote>
+          <p className="text-[#8E8A81] text-sm">— J.R.R. Tolkien</p>
+        </div>
       </div>
 
-      {/* Card */}
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl reveal reveal-scale delay-100">
-        <div className="glass-card py-8 px-6 shadow-sm rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
+      {/* Right panel — form */}
+      <div className="flex-1 flex flex-col justify-center py-8 px-6 sm:px-10 lg:px-16 xl:px-20 overflow-y-auto">
+        <div className="mx-auto w-full max-w-2xl">
+
+          {/* Logo + heading */}
+          <div className="mb-6 reveal reveal-fade">
+            <div className="flex items-center gap-2.5 mb-5">
+              <div className="p-2 rounded-lg bg-[#1E2820] border border-[#C6A16E]/25">
+                <Map className="w-5 h-5 text-[#C6A16E]" />
+              </div>
+              <span className="text-xl font-semibold text-[#F5F3EE] font-heading tracking-wide">Travel Buddy</span>
+            </div>
+            <h1 className="text-3xl font-bold text-[#F5F3EE] font-heading mb-2">Create your account</h1>
+            <p className="text-[#8E8A81] text-sm">Start planning smarter trips with people who match your vibe.</p>
+          </div>
+
+          {/* Form card */}
+          <div className="site-card rounded-2xl overflow-hidden reveal reveal-scale delay-100">
+            <div className="h-1 w-full bg-gradient-to-r from-[#8FA68E]/60 via-[#8FA68E]/30 to-transparent" />
+            <div className="px-6 py-6 sm:px-8">
+          <form className="space-y-5" onSubmit={handleSubmit} noValidate>
             <StatusAlert message={status} />
 
             {/* Name & Email */}
@@ -201,7 +262,7 @@ const Signup: React.FC = () => {
               <div>
                 <label
                   htmlFor="name"
-                  className="block text-sm font-medium text-white"
+                  className="block text-sm font-medium text-[#B8B4AA]"
                 >
                   Full name
                 </label>
@@ -214,7 +275,7 @@ const Signup: React.FC = () => {
                   value={values.name}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`mt-1 block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white placeholder-gray-300 ${
+                  className={`mt-1 block w-full px-3 py-2 site-input rounded-md sm:text-sm ${
                     touched.name && errors.name
                       ? "border-red-300"
                       : ""
@@ -228,7 +289,7 @@ const Signup: React.FC = () => {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-white"
+                  className="block text-sm font-medium text-[#B8B4AA]"
                 >
                   Email address
                 </label>
@@ -241,7 +302,7 @@ const Signup: React.FC = () => {
                   value={values.email}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`mt-1 block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white placeholder-gray-300 ${
+                  className={`mt-1 block w-full px-3 py-2 site-input rounded-md sm:text-sm ${
                     touched.email && errors.email
                       ? "border-red-300"
                       : ""
@@ -258,7 +319,7 @@ const Signup: React.FC = () => {
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium text-white"
+                  className="block text-sm font-medium text-[#B8B4AA]"
                 >
                   Password
                 </label>
@@ -271,7 +332,7 @@ const Signup: React.FC = () => {
                   value={values.password}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`mt-1 block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white placeholder-gray-300 ${
+                  className={`mt-1 block w-full px-3 py-2 site-input rounded-md sm:text-sm ${
                     touched.password && errors.password
                       ? "border-red-300"
                       : ""
@@ -287,7 +348,7 @@ const Signup: React.FC = () => {
               <div>
                 <label
                   htmlFor="confirmPassword"
-                  className="block text-sm font-medium text-white"
+                  className="block text-sm font-medium text-[#B8B4AA]"
                 >
                   Confirm password
                 </label>
@@ -300,7 +361,7 @@ const Signup: React.FC = () => {
                   value={values.confirmPassword}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`mt-1 block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white placeholder-gray-300 ${
+                  className={`mt-1 block w-full px-3 py-2 site-input rounded-md sm:text-sm ${
                     touched.confirmPassword && errors.confirmPassword
                       ? "border-red-300"
                       : ""
@@ -319,7 +380,7 @@ const Signup: React.FC = () => {
               <div>
                 <label
                   htmlFor="country"
-                  className="block text-sm font-medium text-white"
+                  className="block text-sm font-medium text-[#B8B4AA]"
                 >
                   Home country (optional)
                 </label>
@@ -331,14 +392,14 @@ const Signup: React.FC = () => {
                   value={values.country}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="mt-1 block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white placeholder-gray-300"
+                  className="mt-1 block w-full px-3 py-2 site-input rounded-md sm:text-sm"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="travelStyle"
-                  className="block text-sm font-medium text-white"
+                  className="block text-sm font-medium text-[#B8B4AA]"
                 >
                   Travel style (optional)
                 </label>
@@ -348,14 +409,14 @@ const Signup: React.FC = () => {
                   value={values.travelStyle}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="mt-1 block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white [color-scheme:dark]"
+                  className="mt-1 block w-full px-3 py-2.5 site-input rounded-md sm:text-sm [color-scheme:dark]"
                 >
-                  <option value="" className="bg-gray-900 text-white">Select a style</option>
-                  <option value="budget" className="bg-gray-900 text-white">Budget backpacker</option>
-                  <option value="comfort" className="bg-gray-900 text-white">Comfort / mid-range</option>
-                  <option value="luxury" className="bg-gray-900 text-white">Luxury</option>
-                  <option value="adventure" className="bg-gray-900 text-white">Adventure / outdoors</option>
-                  <option value="slow" className="bg-gray-900 text-white">Slow travel</option>
+                  <option value="" className="bg-[#161D19]">Select a style</option>
+                  <option value="budget" className="bg-[#161D19]">Budget backpacker</option>
+                  <option value="comfort" className="bg-[#161D19]">Comfort / mid-range</option>
+                  <option value="luxury" className="bg-[#161D19]">Luxury</option>
+                  <option value="adventure" className="bg-[#161D19]">Adventure / outdoors</option>
+                  <option value="slow" className="bg-[#161D19]">Slow travel</option>
                 </select>
               </div>
             </div>
@@ -364,7 +425,7 @@ const Signup: React.FC = () => {
               <div>
                 <label
                   htmlFor="budgetRange"
-                  className="block text-sm font-medium text-white"
+                  className="block text-sm font-medium text-[#B8B4AA]"
                 >
                   Budget per day in NPR (optional)
                 </label>
@@ -374,21 +435,21 @@ const Signup: React.FC = () => {
                   value={values.budgetRange}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="mt-1 block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white [color-scheme:dark]"
+                  className="mt-1 block w-full px-3 py-2.5 site-input rounded-md sm:text-sm [color-scheme:dark]"
                 >
-                  <option value="" className="bg-gray-900 text-white">Choose a range</option>
-                  <option value="<3000" className="bg-gray-900 text-white">&lt; NPR 3,000</option>
-                  <option value="3000-6000" className="bg-gray-900 text-white">NPR 3,000–6,000</option>
-                  <option value="6000-10000" className="bg-gray-900 text-white">NPR 6,000–10,000</option>
-                  <option value="10000-15000" className="bg-gray-900 text-white">NPR 10,000–15,000</option>
-                  <option value=">15000" className="bg-gray-900 text-white">&gt; NPR 15,000</option>
+                  <option value="" className="bg-[#161D19]">Choose a range</option>
+                  <option value="<3000" className="bg-[#161D19]">&lt; NPR 3,000</option>
+                  <option value="3000-6000" className="bg-[#161D19]">NPR 3,000–6,000</option>
+                  <option value="6000-10000" className="bg-[#161D19]">NPR 6,000–10,000</option>
+                  <option value="10000-15000" className="bg-[#161D19]">NPR 10,000–15,000</option>
+                  <option value=">15000" className="bg-[#161D19]">&gt; NPR 15,000</option>
                 </select>
               </div>
 
               <div>
                 <label
                   htmlFor="interests"
-                  className="block text-sm font-medium text-white"
+                  className="block text-sm font-medium text-[#B8B4AA]"
                 >
                   Top interests (optional)
                 </label>
@@ -400,7 +461,7 @@ const Signup: React.FC = () => {
                   value={values.interests}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="mt-1 block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white placeholder-gray-300"
+                  className="mt-1 block w-full px-3 py-2 site-input rounded-md sm:text-sm"
                 />
               </div>
             </div>
@@ -423,21 +484,21 @@ const Signup: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting || !recaptchaToken}
-                className="w-full flex justify-center py-2.5 px-4 rounded-md shadow-sm text-sm font-medium text-white glass-button-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-70"
+                className="btn-primary w-full flex justify-center py-3 px-4 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#C6A16E]/40 focus:ring-offset-0 disabled:opacity-70"
               >
                 {isSubmitting ? "Creating account..." : "Create account"}
               </button>
             </div>
           </form>
 
-          {/* Google button at bottom — matched to Login */}
+          {/* Google button at bottom � matched to Login */}
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/30" />
+                <div className="w-full border-t border-white/10" />
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="px-2 glass-strong text-gray-300">
+                <span className="px-2 bg-[#161D19] text-[#8E8A81]">
                   Or continue with Google
                 </span>
               </div>
@@ -454,16 +515,18 @@ const Signup: React.FC = () => {
           </div>
 
           {/* Footer */}
-          <p className="mt-6 text-center text-sm text-gray-200">
+          <p className="mt-6 text-center text-sm text-[#8E8A81]">
             Already have an account?{" "}
             <Link
               to="/login"
               state={{ from: redirectPath }}
-              className="font-medium text-white hover:text-gray-200"
+              className="font-medium text-[#C6A16E] hover:text-[#D4AE7A] transition-colors"
             >
               Sign in
             </Link>
           </p>
+          </div>
+        </div>
         </div>
       </div>
     </div>

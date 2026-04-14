@@ -71,29 +71,59 @@ const UpcomingTrips: React.FC = () => {
   };
 
   return (
-    <div className="glass-card rounded-lg p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-semibold text-white">Upcoming Trips</h3>
-        <a href="#" className="text-sm text-gray-300 hover:text-white">View all</a>
+    <div className="site-card rounded-xl overflow-hidden">
+      {/* Header with subtle background */}
+      <div className="relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-20"
+          style={{ backgroundImage: "url('https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&cs=tinysrgb&w=400')" }}
+        />
+        <div className="absolute inset-0 bg-[#161D19]/80" />
+        <div className="relative flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="w-4 h-4 text-[#C6A16E]" />
+            <p className="section-label">Upcoming Trips</p>
+          </div>
+          <a href="/hikes" className="text-[10px] font-medium text-[#C6A16E] hover:text-[#D4AE7A] transition-colors">
+            Browse more
+          </a>
+        </div>
       </div>
-      {isLoading ? (
-        <p className="text-center text-gray-300 py-4">Loading...</p>
-      ) : trips.length === 0 ? (
-        <p className="text-center text-gray-400 py-4 text-sm">No upcoming trips yet. Join a hike to get started!</p>
-      ) : (
-        <ul className="space-y-3">
-          {trips.map((trip) => (
-            <li key={trip._id} className="p-3 rounded-lg glass-button hover:opacity-90 transition cursor-pointer">
-              <p className="font-semibold text-white mb-1">{trip.title}</p>
-              <p className="text-xs text-gray-300 mb-1">{trip.location}</p>
-              <div className="flex items-center gap-1 text-xs text-gray-400">
-                <CalendarDays className="w-3 h-3" />
-                <span>{formatDate(trip.date)}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+
+      <div className="p-3">
+        {isLoading ? (
+          <div className="flex items-center justify-center gap-2 py-5 text-[#B8B4AA]">
+            <div className="w-3.5 h-3.5 rounded-full border-2 border-[#C6A16E] border-t-transparent animate-spin" />
+            <span className="text-xs">Loading…</span>
+          </div>
+        ) : trips.length === 0 ? (
+          <div className="text-center py-5">
+            <CalendarDays className="w-7 h-7 text-[#8E8A81]/30 mx-auto mb-2" />
+            <p className="text-xs text-[#8E8A81]">No upcoming trips yet.</p>
+            <a href="/hikes" className="inline-block mt-2 text-[11px] text-[#C6A16E] hover:text-[#D4AE7A] underline">
+              Join a hike
+            </a>
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {trips.map((trip) => (
+              <li
+                key={trip._id}
+                className="flex items-start gap-3 rounded-lg bg-[#111714] border border-white/6 px-3 py-2.5 hover:border-[#C6A16E]/20 transition-all cursor-pointer group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-[#C6A16E]/10 border border-[#C6A16E]/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <CalendarDays className="w-4 h-4 text-[#C6A16E]" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-[#F5F3EE] group-hover:text-[#F5F3EE] line-clamp-1">{trip.title}</p>
+                  <p className="text-[10px] text-[#8E8A81] mt-0.5 truncate">{trip.location}</p>
+                  <p className="text-[10px] text-[#C6A16E] mt-0.5 font-medium">{formatDate(trip.date)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };

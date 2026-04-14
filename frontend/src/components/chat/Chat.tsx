@@ -244,9 +244,15 @@ const Chat = ({ roomId }: ChatProps) => {
           </div>
         )}
         {isLoading ? (
-          <p className="text-center text-glass-dim">Loading messages...</p>
+          <div className="flex items-center justify-center gap-2 py-8 text-[#B8B4AA]">
+            <div className="w-3.5 h-3.5 rounded-full border-2 border-[#C6A16E] border-t-transparent animate-spin" />
+            <span className="text-sm">Loading messages…</span>
+          </div>
         ) : messages.length === 0 ? (
-          <p className="text-center text-glass-dim">No messages yet. Start the conversation!</p>
+          <div className="flex flex-col items-center justify-center py-12 gap-2 text-center">
+            <span className="text-2xl">💬</span>
+            <p className="text-sm text-[#8E8A81]">No messages yet. Start the conversation!</p>
+          </div>
         ) : (
           <>
             {hasMore && (
@@ -262,7 +268,7 @@ const Chat = ({ roomId }: ChatProps) => {
                     setIsLoadingMore(false);
                   }}
                   disabled={isLoadingMore}
-                  className="text-xs text-indigo-300 hover:text-indigo-100 disabled:opacity-50 transition-colors"
+                  className="text-xs text-[#C6A16E] hover:text-[#D4AE7A] disabled:opacity-50 transition-colors"
                 >
                   {isLoadingMore ? "Loading..." : "Load older messages"}
                 </button>
@@ -272,8 +278,14 @@ const Chat = ({ roomId }: ChatProps) => {
               const msgKey = m._id || String(idx);
               return (
               <div key={msgKey} className={`flex mb-4 ${m.senderId === userId ? 'justify-end' : 'justify-start'}`}>
-              <div className={`rounded-lg p-3 max-w-lg ${m.senderId === userId ? 'glass-dark text-glass' : 'glass-strong'}`}>
-                <div className="font-bold mb-1 text-white/80">{m.senderId === userId ? 'Me' : (m.senderName || m.senderId)}</div>
+              <div className={`rounded-xl p-3 max-w-lg ${
+                m.senderId === userId
+                  ? 'bg-[#1E2820] border border-[#C6A16E]/20 text-[#F5F3EE]'
+                  : 'bg-[#161D19] border border-white/8 text-[#F5F3EE]'
+              }`}>
+                <div className={`font-semibold text-xs mb-1 ${
+                  m.senderId === userId ? 'text-[#C6A16E]' : 'text-[#8FA68E]'
+                }`}>{m.senderId === userId ? 'Me' : (m.senderName || m.senderId)}</div>
                 {m.attachment && (
                   <div className="mb-2">
                     {m.attachment.type.startsWith('image/') ? (
@@ -294,7 +306,7 @@ const Chat = ({ roomId }: ChatProps) => {
                         download={m.attachment.name}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 p-2 rounded glass-button transition"
+                        className="flex items-center gap-2 p-2 rounded bg-[#111714] border border-white/8 hover:border-[#C6A16E]/25 transition"
                       >
                         <FileText className="w-5 h-5 flex-shrink-0" />
                         <span className="text-sm truncate">{m.attachment.name}</span>
@@ -303,9 +315,9 @@ const Chat = ({ roomId }: ChatProps) => {
                   </div>
                 )}
                 {m.message && m.message !== 'Sent an image' && (
-                  <p className={`${m.senderId === userId ? 'text-glass' : 'text-white/90'}`}>{m.message}</p>
+                  <p className="text-sm text-[#F5F3EE] leading-relaxed">{m.message}</p>
                 )}
-                <p className="text-xs text-white/40 mt-1">
+                <p className="text-[10px] text-[#8E8A81] mt-1.5">
                   {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
@@ -316,66 +328,46 @@ const Chat = ({ roomId }: ChatProps) => {
           </>
         )}
       </div>
-      <div className="p-4 border-t border-white/20">
+      <div className="p-3 border-t border-white/8 bg-[#0D1210]">
         {/* Selected file preview */}
         {selectedFile && (
-          <div className="mb-3 p-2 rounded-lg glass-button flex items-center justify-between">
+          <div className="mb-3 px-3 py-2 rounded-lg bg-[#161D19] border border-white/8 flex items-center justify-between">
             <div className="flex items-center gap-2 overflow-hidden">
               {selectedFile.type.startsWith('image/') ? (
-                <img 
-                  src={URL.createObjectURL(selectedFile)} 
-                  alt="Preview" 
-                  className="w-10 h-10 object-cover rounded"
-                />
+                <img src={URL.createObjectURL(selectedFile)} alt="Preview" className="w-9 h-9 object-cover rounded-lg" />
               ) : (
-                <FileText className="w-8 h-8 text-glass-dim" />
+                <FileText className="w-7 h-7 text-[#8E8A81]" />
               )}
-              <span className="text-sm text-glass-light truncate">{selectedFile.name}</span>
+              <span className="text-sm text-[#B8B4AA] truncate">{selectedFile.name}</span>
             </div>
-            <button 
-              onClick={clearSelectedFile}
-              className="p-1 glass-button rounded"
-              title="Remove file"
-            >
-              <X className="w-5 h-5 text-red-400" />
+            <button onClick={clearSelectedFile} className="p-1 rounded-md hover:bg-red-900/30 text-[#8E8A81] hover:text-red-400 transition-colors">
+              <X className="w-4 h-4" />
             </button>
           </div>
         )}
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && !isUploading && sendMessage()}
-            placeholder="Type a message..."
-            className="flex-1 p-2 rounded-lg glass-input"
+            placeholder="Type a message…"
+            className="flex-1 px-4 py-2.5 site-input rounded-xl text-sm"
             disabled={isUploading}
           />
-          {/* Hidden file input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            onChange={handleFileSelect}
-            className="hidden"
-            accept="image/*"
-          />
-          <button 
+          <input ref={fileInputRef} type="file" onChange={handleFileSelect} className="hidden" accept="image/*" />
+          <button
             onClick={() => fileInputRef.current?.click()}
-            className="ml-2 p-2 glass-button text-glass-dim hover:text-glass-light" 
-            title="Attach file"
-            disabled={isUploading}
+            className="p-2.5 rounded-xl bg-[#161D19] border border-white/8 text-[#8E8A81] hover:text-[#C6A16E] hover:border-[#C6A16E]/25 transition-all"
+            title="Attach file" disabled={isUploading}
           >
-            <Paperclip className="w-6 h-6" />
+            <Paperclip className="w-5 h-5" />
           </button>
-          <button 
-            onClick={sendMessage} 
-            className="ml-2 p-2 glass-button-dark disabled:opacity-50"
+          <button
+            onClick={sendMessage}
+            className="p-2.5 rounded-xl btn-primary disabled:opacity-50"
             disabled={isUploading || (!message.trim() && !selectedFile)}
           >
-            {isUploading ? (
-              <Loader2 className="w-6 h-6 text-glass-light animate-spin" />
-            ) : (
-              <Send className="w-6 h-6 text-glass-light" />
-            )}
+            {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
           </button>
         </div>
       </div>

@@ -55,10 +55,12 @@ const HikeHotelsPanel: React.FC<HikeHotelsPanelProps> = ({ hikeId }) => {
   if (!hikeId) {
     return (
       <div className="h-full flex items-center justify-center text-center p-6">
-        <div className="space-y-2 text-glass-dim">
-          <BedDouble className="w-8 h-8 mx-auto text-glass-light" />
-          <p className="font-semibold">Select a hike to view accommodation</p>
-          <p className="text-sm">Hotels for that trail will appear here with booking options.</p>
+        <div className="space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-[#8FA68E]/10 border border-[#8FA68E]/20 flex items-center justify-center mx-auto">
+            <BedDouble className="w-7 h-7 text-[#8FA68E]" />
+          </div>
+          <p className="font-semibold text-[#F5F3EE] font-heading">Select a hike</p>
+          <p className="text-sm text-[#8E8A81]">Hotels for that trail will appear here with booking options.</p>
         </div>
       </div>
     );
@@ -66,8 +68,9 @@ const HikeHotelsPanel: React.FC<HikeHotelsPanelProps> = ({ hikeId }) => {
 
   if (isLoading) {
     return (
-      <div className="h-full flex items-center justify-center text-glass-light">
-        Loading accommodation...
+      <div className="h-full flex items-center justify-center gap-2 text-[#B8B4AA]">
+        <div className="w-4 h-4 rounded-full border-2 border-[#C6A16E] border-t-transparent animate-spin" />
+        <span className="text-sm">Loading accommodation…</span>
       </div>
     );
   }
@@ -83,10 +86,12 @@ const HikeHotelsPanel: React.FC<HikeHotelsPanelProps> = ({ hikeId }) => {
   if (!hotels.length) {
     return (
       <div className="h-full flex items-center justify-center text-center p-6">
-        <div className="space-y-2 text-glass-dim">
-          <BedDouble className="w-8 h-8 mx-auto text-glass-light" />
-          <p className="font-semibold">No hotels linked to this hike yet</p>
-          <p className="text-sm">Try another hike or add hotels to this trail.</p>
+        <div className="space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-[#8FA68E]/10 border border-[#8FA68E]/20 flex items-center justify-center mx-auto">
+            <BedDouble className="w-7 h-7 text-[#8FA68E]" />
+          </div>
+          <p className="font-semibold text-[#F5F3EE] font-heading">No accommodation yet</p>
+          <p className="text-sm text-[#8E8A81]">Try another hike or add hotels to this trail.</p>
         </div>
       </div>
     );

@@ -32,25 +32,6 @@ const App = () => {
   return (
     <ErrorBoundary>
       <div className="min-h-screen">
-        {/* Fixed full-screen mountain background video — served from /public */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            zIndex: -2,
-            pointerEvents: 'none',
-          }}
-        >
-          <source src="/vid2.mp4" type="video/mp4" />
-        </video>
         <Routes>
           {/* --- Public routes (no auth required) --- */}
           <Route path="/" element={<Landing />} />

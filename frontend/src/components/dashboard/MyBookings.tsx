@@ -65,20 +65,23 @@ const MyBookings: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="glass-card rounded-xl p-6 text-center text-glass-dim text-sm">
+      <div className="site-card rounded-xl p-6 text-center text-[#8E8A81] text-sm">
         Please log in to view your bookings.
       </div>
     );
   }
 
   return (
-    <div className="glass-card rounded-xl p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-glass">My Hotel Bookings</h3>
+    <div>
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <p className="section-label mb-1">My Stays</p>
+          <h2 className="text-xl font-bold text-[#F5F3EE] font-heading">Hotel Bookings</h2>
+        </div>
         <button
           onClick={fetchBookings}
           disabled={loading}
-          className="glass-button p-1.5 rounded-lg disabled:opacity-50"
+          className="btn-outline p-2 rounded-lg disabled:opacity-50"
           title="Refresh"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -86,17 +89,23 @@ const MyBookings: React.FC = () => {
       </div>
 
       {loading && (
-        <div className="text-center py-8 text-glass-dim text-sm">Loading bookings...</div>
+        <div className="flex items-center justify-center gap-3 py-12 text-[#B8B4AA]">
+          <div className="w-4 h-4 rounded-full border-2 border-[#C6A16E] border-t-transparent animate-spin" />
+          <span className="text-sm">Loading bookings…</span>
+        </div>
       )}
 
       {!loading && error && (
-        <div className="text-center py-6 text-red-400 text-sm">{error}</div>
+        <div className="site-card rounded-xl p-6 text-center text-red-400 text-sm">{error}</div>
       )}
 
       {!loading && !error && bookings.length === 0 && (
-        <div className="text-center py-8">
-          <Hotel className="w-10 h-10 text-glass-dim mx-auto mb-3 opacity-40" />
-          <p className="text-glass-dim text-sm">No hotel bookings yet.</p>
+        <div className="site-card rounded-2xl p-12 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-[#C6A16E]/10 border border-[#C6A16E]/20 flex items-center justify-center mx-auto mb-4">
+            <Hotel className="w-8 h-8 text-[#C6A16E]" />
+          </div>
+          <p className="text-[#F5F3EE] font-medium mb-1 font-heading">No hotel bookings yet</p>
+          <p className="text-[#8E8A81] text-sm">Book accommodation on a hike to see it here.</p>
         </div>
       )}
 
@@ -108,18 +117,16 @@ const MyBookings: React.FC = () => {
             const isExpanded = expanded === b._id;
 
             return (
-              <div key={b._id} className="glass-card rounded-xl overflow-hidden">
+              <div key={b._id} className="site-card rounded-xl overflow-hidden">
                 {/* Header row */}
                 <button
                   onClick={() => setExpanded(isExpanded ? null : b._id)}
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left"
                 >
-                  {/* Status dot */}
                   <span className={`w-2 h-2 rounded-full shrink-0 ${st.dot}`} />
-
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-glass font-semibold text-sm truncate">
+                      <span className="text-[#F5F3EE] font-semibold text-sm truncate">
                         {b.bookingReference}
                       </span>
                       {/* Confirmed badge — prominent */}
@@ -128,44 +135,42 @@ const MyBookings: React.FC = () => {
                         {st.label}
                       </span>
                     </div>
-                    <p className="text-glass-dim text-xs mt-0.5 truncate">
+                    <p className="text-[#8E8A81] text-xs mt-0.5 truncate">
                       {new Date(b.checkInDate).toLocaleDateString('en-NP', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      {' ? '}
+                      {' → '}
                       {new Date(b.checkOutDate).toLocaleDateString('en-NP', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </p>
                   </div>
-
-                  <span className="text-glass font-bold text-sm shrink-0">
+                  <span className="text-[#C6A16E] font-bold text-sm shrink-0">
                     NPR {b.totalPrice.toLocaleString()}
                   </span>
                 </button>
 
                 {/* Expanded details */}
                 {isExpanded && (
-                  <div className="px-4 pb-4 border-t border-white/10 pt-3 space-y-2 text-xs">
+                  <div className="px-4 pb-4 border-t border-white/8 pt-3 space-y-2 text-xs">
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="flex items-center gap-2 text-glass-dim">
-                        <Hash className="w-3.5 h-3.5 shrink-0" />
-                        <span>Ref: <span className="text-glass font-mono">{b.bookingReference}</span></span>
+                      <div className="flex items-center gap-2 text-[#8E8A81]">
+                        <Hash className="w-3.5 h-3.5 shrink-0 text-[#C6A16E]" />
+                        <span>Ref: <span className="text-[#F5F3EE] font-mono">{b.bookingReference}</span></span>
                       </div>
-                      <div className="flex items-center gap-2 text-glass-dim">
-                        <CreditCard className="w-3.5 h-3.5 shrink-0" />
+                      <div className="flex items-center gap-2 text-[#8E8A81]">
+                        <CreditCard className="w-3.5 h-3.5 shrink-0 text-[#C6A16E]" />
                         <span>Payment: <span className={`font-semibold ${pay.cls}`}>{pay.label}</span></span>
                       </div>
-                      <div className="flex items-center gap-2 text-glass-dim">
-                        <Calendar className="w-3.5 h-3.5 shrink-0" />
+                      <div className="flex items-center gap-2 text-[#8E8A81]">
+                        <Calendar className="w-3.5 h-3.5 shrink-0 text-[#8FA68E]" />
                         <span>{b.numberOfNights} night{b.numberOfNights !== 1 ? 's' : ''} — {b.numberOfRooms} room{b.numberOfRooms !== 1 ? 's' : ''}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-glass-dim">
-                        <span>NPR {b.pricePerNight.toLocaleString()} / night</span>
+                      <div className="flex items-center gap-2 text-[#8E8A81]">
+                        <span className="text-[#C6A16E] font-medium">NPR {b.pricePerNight.toLocaleString()}</span> / night
                       </div>
                     </div>
-
                     {b.guestName && (
-                      <p className="text-glass-dim">Guest: <span className="text-glass">{b.guestName}</span></p>
+                      <p className="text-[#8E8A81]">Guest: <span className="text-[#F5F3EE]">{b.guestName}</span></p>
                     )}
                     {b.specialRequests && (
-                      <p className="text-glass-dim">Requests: <span className="text-glass">{b.specialRequests}</span></p>
+                      <p className="text-[#8E8A81]">Requests: <span className="text-[#B8B4AA]">{b.specialRequests}</span></p>
                     )}
 
                     {/* Confirmation banner when confirmed */}

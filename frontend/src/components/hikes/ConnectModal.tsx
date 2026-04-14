@@ -3,7 +3,7 @@
 // #region Imports
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarDays, Users, Ruler } from "lucide-react";
+import { CalendarDays, Users, Ruler, MapPin, X } from "lucide-react";
 import { useToast } from "../../context/ToastContext";
 import { useAuth } from "../../context/AuthContext";
 import { joinHike, getHike } from "../../services/hikes";
@@ -26,18 +26,18 @@ L.Icon.Default.mergeOptions({
 
 const startIcon = L.divIcon({
   className: '',
-  html: `<div style="background:#22c55e;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:8px;font-weight:700">S</span></div>`,
+  html: `<div style="background:#C6A16E;width:16px;height:16px;border-radius:50%;border:3px solid #0B0F0C;box-shadow:0 0 8px rgba(198,161,110,0.7);"></div>`,
   iconSize: [16, 16], iconAnchor: [8, 8],
 });
 const endIcon = L.divIcon({
   className: '',
-  html: `<div style="background:#ef4444;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center"><span style="color:white;font-size:8px;font-weight:700">E</span></div>`,
+  html: `<div style="background:#ef4444;width:16px;height:16px;border-radius:50%;border:3px solid #0B0F0C;box-shadow:0 0 8px rgba(239,68,68,0.6);"></div>`,
   iconSize: [16, 16], iconAnchor: [8, 8],
 });
 const hotelIcon = L.divIcon({
   className: '',
-  html: `<div style="background:#0f766e;width:26px;height:26px;border-radius:7px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;"><svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/><polyline points='9 22 9 12 15 12 15 22'/></svg></div>`,
-  iconSize: [26, 26], iconAnchor: [13, 13],
+  html: `<div style="background:#8FA68E;width:28px;height:28px;border-radius:8px;border:2px solid #0B0F0C;box-shadow:0 4px 12px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;"><svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='#0B0F0C' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/><polyline points='9 22 9 12 15 12 15 22'/></svg></div>`,
+  iconSize: [28, 28], iconAnchor: [14, 14],
 });
 // #endregion Setup
 
@@ -297,174 +297,173 @@ const ConnectModal: React.FC<ConnectModalProps> = ({ open, hike, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B0F0C]/80 p-4"
+      role="dialog" aria-modal="true"
       aria-labelledby={`connect-dialog-title-${hike._id}`}
-      aria-describedby={`connect-dialog-desc-${hike._id}`}
       id={`connect-dialog-${hike._id}`}
     >
-      <div ref={dialogRef} className="glass-card rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 glass-nav px-6 py-4 flex items-center justify-end rounded-t-2xl">
-          <button type="button" onClick={handleClose} className="px-3 py-1.5 text-gray-200 hover:text-white glass-button rounded-lg text-sm font-medium transition-colors">
-            Cancel
+      <div
+        ref={dialogRef}
+        className="w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl border border-white/10"
+        style={{ background: 'linear-gradient(145deg,#1B2420 0%,#161D19 55%,#121A16 100%)', boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}
+      >
+
+        {/* ── Cover image with overlay ── */}
+        <div className="relative h-52 sm:h-64 overflow-hidden rounded-t-2xl">
+          {hike.imageUrl ? (
+            <img src={hike.imageUrl} alt={hike.title} className="w-full h-full object-cover" />
+          ) : (
+            <div
+              className="w-full h-full bg-cover bg-center"
+              style={{ backgroundImage: "url('https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&cs=tinysrgb&w=700')" }}
+            />
+          )}
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#161D19] via-[#161D19]/40 to-transparent" />
+          {/* Close button */}
+          <button
+            type="button" onClick={handleClose}
+            className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-xl bg-[#0B0F0C]/70 border border-white/15 text-[#8E8A81] hover:text-[#F5F3EE] transition-all"
+          >
+            <X className="w-4 h-4" />
           </button>
+          {/* Badges over image */}
+          <div className="absolute top-3 left-3 flex gap-2">
+            <span className="surface-pill inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium">{place}</span>
+            <span className="surface-pill inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium">{difficultyText}</span>
+          </div>
+          {/* Title on image */}
+          <div className="absolute bottom-0 left-0 right-0 px-6 pb-4">
+            <h2
+              id={`connect-dialog-title-${hike._id}`}
+              className="text-2xl sm:text-3xl font-bold text-[#F5F3EE] font-heading leading-tight"
+            >
+              {hike.title}
+            </h2>
+          </div>
         </div>
 
-        <div className="p-6">
-          <div className="rounded-2xl overflow-hidden mb-6">
-            <div className="h-56 sm:h-72 bg-gray-200 relative">
-              {hike.imageUrl ? (
-                <img src={hike.imageUrl} alt={hike.title} className="h-full w-full object-cover" />
-              ) : (
-                <div className="h-full w-full bg-gray-100" />
-              )}
-              <div className="absolute top-3 left-3 flex gap-2">
-                <span className="inline-flex items-center rounded-full glass-strong px-3 py-1 text-[11px] font-medium text-black shadow-sm">{place}</span>
-                <span className="inline-flex items-center rounded-full glass-strong px-3 py-1 text-[11px] font-medium text-black shadow-sm">{difficultyText}</span>
+        {/* ── Body ── */}
+        <div className="px-6 pt-4 pb-6 space-y-5">
+
+          {/* Meta row */}
+          <div className="flex flex-wrap gap-4 text-sm text-[#B8B4AA]">
+            <span className="flex items-center gap-1.5">
+              <CalendarDays className="w-4 h-4 text-[#C6A16E] shrink-0" />
+              {new Date(hike.date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <MapPin className="w-4 h-4 text-[#C6A16E] shrink-0" />
+              {hike.location}
+            </span>
+          </div>
+
+          {/* Spots + CTA */}
+          <div className="flex items-center justify-between gap-3 bg-[#111714] border border-white/8 rounded-xl px-5 py-3.5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-[#C6A16E]/10 border border-[#C6A16E]/25 flex items-center justify-center">
+                <Users className="w-4 h-4 text-[#C6A16E]" />
+              </div>
+              <div>
+                <p className="text-[#F5F3EE] text-sm font-semibold">{hike.spotsLeft} spots left</p>
+                <p className="text-[#8E8A81] text-xs">Join before it fills up</p>
               </div>
             </div>
+            {isCheckingConnection ? (
+              <button type="button" disabled className="btn-primary px-5 py-2.5 rounded-xl text-sm font-semibold opacity-60">
+                Loading…
+              </button>
+            ) : isAlreadyConnected ? (
+              <button type="button" onClick={handleGoToDashboard} className="btn-primary px-5 py-2.5 rounded-xl text-sm font-semibold">
+                Go to Dashboard
+              </button>
+            ) : (
+              <button type="button" onClick={handleJoin} disabled={isJoining || hike.spotsLeft <= 0}
+                className="btn-primary px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60">
+                {isJoining ? "Joining…" : "Join Hike"}
+              </button>
+            )}
           </div>
 
-          <h2 id={`connect-dialog-title-${hike._id}`} className="text-2xl sm:text-3xl font-bold text-white">
-            {hike.title}
-          </h2>
-          <div id={`connect-dialog-desc-${hike._id}`} className="mt-2 inline-flex items-center gap-2 text-sm text-gray-200">
-            <CalendarDays className="w-4 h-4" />
-            <span>{new Date(hike.date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</span>
-          </div>
-
-          <div className="mt-6 glass-card rounded-xl overflow-hidden">
-            <div className="px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full glass-button-dark flex items-center justify-center text-white">
-                  <Users className="w-4 h-4" />
-                </div>
-                <span className="text-sm text-white">Spots left: {hike.spotsLeft}</span>
-              </div>
-              {isCheckingConnection ? (
-                <button type="button" disabled className="px-5 py-2 glass-button-dark rounded-full font-semibold opacity-60 transition-colors shadow-lg text-white">
-                  Loading...
-                </button>
-              ) : isAlreadyConnected ? (
-                <button type="button" onClick={handleGoToDashboard} className="px-5 py-2 glass-button-dark rounded-full font-semibold transition-colors shadow-lg text-white hover:opacity-90">
-                  Go to Dashboard
-                </button>
-              ) : (
-                <button type="button" onClick={handleJoin} disabled={isJoining || hike.spotsLeft <= 0} className="px-5 py-2 glass-button-dark rounded-full font-semibold disabled:opacity-60 transition-colors shadow-lg text-white">
-                  {isJoining ? "Joining..." : "Join Hike"}
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-6 glass-card rounded-xl overflow-hidden">
-            <div className="px-6 py-4">
-              <p className="text-xs text-gray-300 mb-2">Organized By</p>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full glass-button-dark text-white flex items-center justify-center">TB</div>
-                <div>
-                  <p className="text-sm font-medium text-white">Travel Buddy</p>
-                  <p className="text-xs text-gray-300">Hike Leader</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
+          {/* Description */}
           {hike.description && (
-            <div className="mt-6 glass-card rounded-xl overflow-hidden">
-              <div className="px-6 py-4">
-                <p className="text-xs text-gray-300 mb-2">About Hike</p>
-                <p className="text-sm text-gray-200">{hike.description}</p>
-              </div>
+            <div>
+              <p className="section-label mb-2">About This Hike</p>
+              <p className="text-sm text-[#B8B4AA] leading-relaxed">{hike.description}</p>
             </div>
           )}
 
           {/* Trail Route Map */}
           {(hike.startPoint || hike.endPoint) && (
-            <div className="mt-6 glass-card rounded-xl overflow-hidden">
-              <div className="px-6 py-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Ruler className="w-4 h-4 text-indigo-300" />
-                  <p className="text-sm font-semibold text-white">Trail Route</p>
-                  {routeLoading && (
-                    <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
-                  )}
-                  {routeDistance !== null && !routeLoading && (
-                    <span className="ml-auto px-3 py-1 bg-indigo-600/40 border border-indigo-400/40 rounded-full text-xs font-bold text-indigo-200">
-                      {formatDistance(routeDistance)}
-                    </span>
-                  )}
-                </div>
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Ruler className="w-4 h-4 text-[#C6A16E]" />
+                <p className="section-label">Trail Route</p>
+                {routeLoading && (
+                  <div className="w-3.5 h-3.5 border-2 border-[#C6A16E] border-t-transparent rounded-full animate-spin ml-1" />
+                )}
+                {routeDistance !== null && !routeLoading && (
+                  <span className="ml-auto surface-pill rounded-full px-3 py-0.5 text-xs font-bold">
+                    {formatDistance(routeDistance)}
+                  </span>
+                )}
+              </div>
 
-                <div className="rounded-lg overflow-hidden border border-white/20" style={{ height: '220px' }}>
-                  {(() => {
-                    const sp = hike.startPoint;
-                    const ep = hike.endPoint;
-                    const center: [number, number] = sp
-                      ? [sp.lat, sp.lng]
-                      : ep
-                      ? [ep.lat, ep.lng]
-                      : [27.7172, 85.324];
-                    return (
-                      <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
-                        <TileLayer
-                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        />
-                        {sp && <Marker position={[sp.lat, sp.lng]} icon={startIcon} />}
-                        {ep && <Marker position={[ep.lat, ep.lng]} icon={endIcon} />}
-                        {routeGeometry && routeGeometry.length > 0 && (
-                          <Polyline positions={routeGeometry} pathOptions={{ color: '#6366f1', weight: 4 }}>
-                            <Tooltip sticky>
-                              <span className="font-semibold">
-                                Trail: {routeDistance !== null ? formatDistance(routeDistance) : '...'}
-                              </span>
+              <div className="rounded-xl overflow-hidden border border-white/10" style={{ height: '220px' }}>
+                {(() => {
+                  const sp = hike.startPoint;
+                  const ep = hike.endPoint;
+                  const center: [number, number] = sp ? [sp.lat, sp.lng] : ep ? [ep.lat, ep.lng] : [27.7172, 85.324];
+                  return (
+                    <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                      />
+                      {sp && <Marker position={[sp.lat, sp.lng]} icon={startIcon} />}
+                      {ep && <Marker position={[ep.lat, ep.lng]} icon={endIcon} />}
+                      {routeGeometry && routeGeometry.length > 0 && (
+                        <Polyline positions={routeGeometry} pathOptions={{ color: '#C6A16E', weight: 4, opacity: 0.85 }}>
+                          <Tooltip sticky>
+                            <span className="font-semibold">Trail: {routeDistance !== null ? formatDistance(routeDistance) : '...'}</span>
+                          </Tooltip>
+                        </Polyline>
+                      )}
+                      {hotelTrailMarkers.map((hotel) => (
+                        <React.Fragment key={`hotel-trail-${hotel._id}`}>
+                          {hotel.nearestTrailPoint && (
+                            <Polyline
+                              positions={[hotel.nearestTrailPoint, hotel.position]}
+                              pathOptions={{ color: '#8FA68E', weight: 1.5, opacity: 0.7, dashArray: '4 4' }}
+                            />
+                          )}
+                          <Marker position={hotel.position} icon={hotelIcon}>
+                            <Tooltip permanent={false} direction="top" offset={[0, -14]}>
+                              <span className="font-semibold text-xs">{hotel.name}</span>
                             </Tooltip>
-                          </Polyline>
-                        )}
-                        {hotelTrailMarkers.map((hotel) => (
-                          <React.Fragment key={`hotel-trail-${hotel._id}`}>
-                            {hotel.nearestTrailPoint && (
-                              <Polyline
-                                positions={[hotel.nearestTrailPoint, hotel.position]}
-                                pathOptions={{ color: '#0f766e', weight: 1.5, opacity: 0.7, dashArray: '4 4' }}
-                              />
-                            )}
-                            <Marker position={hotel.position} icon={hotelIcon}>
-                              <Tooltip permanent={false} direction="top" offset={[0, -14]}>
-                                <span className="font-semibold text-xs">{hotel.name}</span>
-                              </Tooltip>
-                            </Marker>
-                          </React.Fragment>
-                        ))}
-                      </MapContainer>
-                    );
-                  })()}
-                </div>
+                          </Marker>
+                        </React.Fragment>
+                      ))}
+                    </MapContainer>
+                  );
+                })()}
+              </div>
 
-                <div className="flex flex-wrap gap-4 mt-2 text-xs text-gray-400">
-                  <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-full bg-green-500" /> Start</span>
-                  <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-full bg-red-500" /> End</span>
-                  {hotelTrailMarkers.length > 0 && (
-                    <span className="flex items-center gap-1">
-                      <span className="inline-block w-3 h-3 rounded" style={{ background: '#0f766e' }} /> Accommodation
-                    </span>
-                  )}
-                  {routeDistance !== null && !routeLoading && (
-                    <span className="ml-auto font-semibold text-indigo-300">Trail distance: {formatDistance(routeDistance)}</span>
-                  )}
-                </div>
+              <div className="flex flex-wrap gap-4 mt-2 text-[11px] text-[#8E8A81]">
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#C6A16E] inline-block" /> Start</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" /> End</span>
+                {hotelTrailMarkers.length > 0 && (
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-md bg-[#8FA68E] inline-block" /> Accommodation</span>
+                )}
               </div>
             </div>
           )}
 
           {/* Hotels Along Trail */}
           {fullHike.hotels && fullHike.hotels.length > 0 && (
-            <div className="mt-6 glass-card rounded-xl overflow-hidden">
-              <div className="px-6 py-4">
-                <HotelDetails hotels={fullHike.hotels} hikeId={fullHike._id} hikeDate={fullHike.date} />
-              </div>
+            <div>
+              <p className="section-label mb-3">Accommodation Along Trail</p>
+              <HotelDetails hotels={fullHike.hotels} hikeId={fullHike._id} hikeDate={fullHike.date} />
             </div>
           )}
         </div>

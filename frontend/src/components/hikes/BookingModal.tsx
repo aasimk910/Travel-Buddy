@@ -4,7 +4,7 @@
 // #region Imports
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Calendar, Users, AlertCircle, CheckCircle } from "lucide-react";
+import { X, Calendar, Users, AlertCircle, CheckCircle, BedDouble, MapPin, BadgeCheck } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { Hotel, HotelPackage, createBooking } from "../../services/hikes";
@@ -187,212 +187,200 @@ const BookingModal: React.FC<BookingModalProps> = ({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[70] flex items-stretch justify-end bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-[#0B0F0C]/85 p-4"
       onClick={onClose}
     >
       <div
-        className="glass-card ml-auto h-full w-full max-w-xl overflow-hidden flex flex-col rounded-none border-l border-white/10 shadow-2xl sm:max-w-2xl"
+        className="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-2xl border border-white/10 flex flex-col"
+        style={{ background: 'linear-gradient(145deg,#1B2420 0%,#161D19 55%,#121A16 100%)', boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="glass-nav px-6 py-5 flex items-center justify-between border-b border-white/10 flex-shrink-0">
-          <h3 className="text-2xl font-bold text-white">Book Hotel</h3>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <X className="w-6 h-6 text-gray-300" />
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-white/8 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-[#C6A16E]/10 border border-[#C6A16E]/25 flex items-center justify-center">
+              <BedDouble className="w-4.5 h-4.5 text-[#C6A16E]" />
+            </div>
+            <div>
+              <p className="section-label leading-none mb-0.5">Reserve Your Stay</p>
+              <h3 className="text-base font-bold text-[#F5F3EE] font-heading leading-tight">Book Hotel</h3>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/6 border border-white/10 text-[#8E8A81] hover:text-[#F5F3EE] transition-all">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="p-8 space-y-5 overflow-y-auto flex-1 min-h-0">
-          {/* Hotel Info */}
-          <div className="glass-card-inner rounded-lg p-6 border border-white/10">
-            <h4 className="text-xl font-bold text-white mb-2">{hotel.name}</h4>
-            <p className="text-base text-gray-200 mb-1">Package: {pkg.name}</p>
-            <p className="text-lg text-emerald-400 font-semibold">
-              NPR {pkg.pricePerNight.toLocaleString()}/night
-            </p>
+        <div className="px-6 py-5 space-y-5 flex-1 overflow-y-auto">
+
+          {/* ── Hotel + Package info ── */}
+          <div className="site-card rounded-xl p-4 flex flex-col gap-2">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h4 className="text-base font-bold text-[#F5F3EE] font-heading truncate">{hotel.name}</h4>
+                {hotel.location && (
+                  <p className="text-xs text-[#8E8A81] flex items-center gap-1 mt-0.5">
+                    <MapPin className="w-3 h-3 text-[#C6A16E] shrink-0" />
+                    {hotel.location}
+                  </p>
+                )}
+              </div>
+              <span className="surface-pill rounded-full px-2.5 py-0.5 text-[11px] font-semibold shrink-0">{pkg.roomType}</span>
+            </div>
+            <div className="h-px bg-white/8" />
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-[#8E8A81]">Package: <span className="text-[#B8B4AA] font-medium">{pkg.name}</span></p>
+              <p className="text-base font-bold text-[#C6A16E] font-heading">
+                NPR {pkg.pricePerNight.toLocaleString()}<span className="text-xs font-normal text-[#8E8A81]">/night</span>
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3 text-[11px] text-[#8E8A81]">
+              <span>Min {pkg.minStayNights} night{pkg.minStayNights !== 1 ? 's' : ''}</span>
+              {pkg.maxStayNights && <span>Max {pkg.maxStayNights} nights</span>}
+              <span className="text-[#8FA68E]">{pkg.availableRooms} rooms available</span>
+            </div>
           </div>
 
-          {/* Check-in Date */}
-          <div>
-            <label className="text-base font-semibold text-white mb-3 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-indigo-400" />
-              Check-in Date
-            </label>
-            <input
-              type="date"
-              value={checkInDate}
-              min={today}
-              max={hikeDate ? hikeDate.slice(0, 10) : undefined}
-              onChange={(e) => handleDateChange("checkIn", e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <p className="text-sm text-gray-400 mt-1">Before or on: {new Date(hikeDate).toLocaleDateString()}</p>
+          {/* ── Dates ── */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-widest text-[#8E8A81] flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-[#C6A16E]" /> Check-in
+              </label>
+              <input
+                type="date" value={checkInDate}
+                min={today} max={hikeDate ? hikeDate.slice(0, 10) : undefined}
+                onChange={(e) => handleDateChange("checkIn", e.target.value)}
+                className="site-input w-full px-3 py-2.5 rounded-lg text-sm [color-scheme:dark]"
+              />
+              <p className="text-[10px] text-[#8E8A81]">On or before hike date</p>
+            </div>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-widest text-[#8E8A81] flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-[#C6A16E]" /> Check-out
+              </label>
+              <input
+                type="date" value={checkOutDate}
+                min={checkInDate || today}
+                onChange={(e) => handleDateChange("checkOut", e.target.value)}
+                className="site-input w-full px-3 py-2.5 rounded-lg text-sm [color-scheme:dark]"
+              />
+            </div>
           </div>
 
-          {/* Check-out Date */}
-          <div>
-            <label className="text-base font-semibold text-white mb-3 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-indigo-400" />
-              Check-out Date
+          {/* ── Rooms ── */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-widest text-[#8E8A81] flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-[#C6A16E]" /> Number of Rooms
             </label>
-            <input
-              type="date"
-              value={checkOutDate}
-              min={checkInDate || today}
-              onChange={(e) => handleDateChange("checkOut", e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-
-          {/* Number of Rooms */}
-          <div>
-            <label className="text-base font-semibold text-white mb-3 flex items-center gap-2">
-              <Users className="w-5 h-5 text-indigo-400" />
-              Rooms
-            </label>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => handleNumberOfRoomsChange(numberOfRooms - 1)}
                 disabled={numberOfRooms <= 1}
-                className="px-4 py-2 rounded-lg bg-white/10 text-white disabled:opacity-50 hover:bg-white/20 transition-colors"
-              >
-                -
-              </button>
+                className="w-9 h-9 rounded-lg bg-[#111714] border border-white/10 text-[#F5F3EE] disabled:opacity-40 hover:border-[#C6A16E]/30 transition-all font-bold text-lg"
+              >−</button>
               <input
-                type="number"
-                value={numberOfRooms}
+                type="number" value={numberOfRooms}
                 onChange={(e) => handleNumberOfRoomsChange(parseInt(e.target.value))}
-                min="1"
-                max={pkg.availableRooms}
-                className="glass-input flex-1 px-4 py-2 text-center rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                min="1" max={pkg.availableRooms}
+                className="site-input flex-1 px-3 py-2.5 text-center rounded-lg text-sm"
               />
               <button
                 onClick={() => handleNumberOfRoomsChange(numberOfRooms + 1)}
                 disabled={numberOfRooms >= pkg.availableRooms}
-                className="px-4 py-2 rounded-lg bg-white/10 text-white disabled:opacity-50 hover:bg-white/20 transition-colors"
-              >
-                +
-              </button>
+                className="w-9 h-9 rounded-lg bg-[#111714] border border-white/10 text-[#F5F3EE] disabled:opacity-40 hover:border-[#C6A16E]/30 transition-all font-bold text-lg"
+              >+</button>
             </div>
-            <p className="text-sm text-gray-400 mt-1">
-              Available: {pkg.availableRooms}
-            </p>
           </div>
 
-          {/* Special Requests */}
-          <div>
-            <label className="text-base font-semibold text-white mb-2">
-              Special Requests (Optional)
+          {/* ── Special Requests ── */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-widest text-[#8E8A81]">
+              Special Requests <span className="normal-case text-[10px] font-normal">(optional)</span>
             </label>
             <textarea
               value={specialRequests}
               onChange={(e) => setSpecialRequests(e.target.value)}
-              placeholder="Early check-in, high floor, city view..."
-              className="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-              rows={3}
+              placeholder="Early check-in, high floor, city view…"
+              className="site-input w-full px-3 py-2.5 rounded-lg text-sm resize-none"
+              rows={2}
             />
           </div>
 
-          {/* Price Calculation Info */}
-          {checkInDate && checkOutDate && (
-            <div className="glass-card-inner rounded-lg p-6 border border-white/10 space-y-3">
-              <div className="flex justify-between text-base">
-                <span className="text-gray-300">Number of Nights:</span>
-                <span className="text-white font-semibold">{nights}</span>
-              </div>
-              <div className="flex justify-between text-base">
-                <span className="text-gray-300">Price per Night:</span>
-                <span className="text-white font-semibold">NPR {pkg.pricePerNight.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-base">
-                <span className="text-gray-300">Number of Rooms:</span>
-                <span className="text-white font-semibold">{numberOfRooms}</span>
-              </div>
-              <div className="border-t border-white/10 pt-3 flex justify-between">
-                <span className="text-white font-bold text-lg">Total Price:</span>
-                <span className="text-emerald-400 font-bold text-xl">NPR {calculatedPrice.toLocaleString()}</span>
+          {/* ── Price breakdown ── */}
+          {checkInDate && checkOutDate && nights > 0 && (
+            <div className="bg-[#111714] border border-white/8 rounded-xl p-4 space-y-2.5">
+              <p className="section-label mb-1">Price Breakdown</p>
+              {[
+                { label: 'Nights', value: `${nights}` },
+                { label: 'Rate per night', value: `NPR ${pkg.pricePerNight.toLocaleString()}` },
+                { label: 'Rooms', value: `${numberOfRooms}` },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex justify-between text-xs">
+                  <span className="text-[#8E8A81]">{label}</span>
+                  <span className="text-[#B8B4AA] font-medium">{value}</span>
+                </div>
+              ))}
+              <div className="h-px bg-white/8" />
+              <div className="flex justify-between items-baseline">
+                <span className="text-sm font-semibold text-[#F5F3EE]">Total</span>
+                <span className="text-xl font-bold text-[#C6A16E] font-heading">
+                  NPR {calculatedPrice.toLocaleString()}
+                </span>
               </div>
             </div>
           )}
 
-          {/* Validation Message */}
-          {checkInDate && checkOutDate && nights < pkg.minStayNights && (
-            <div className="flex items-start gap-3 p-4 bg-yellow-500/20 border border-yellow-400/40 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-yellow-200">
-                Minimum stay is {pkg.minStayNights} night(s). Please adjust dates.
-              </p>
+          {/* ── Validation warning ── */}
+          {checkInDate && checkOutDate && nights > 0 && nights < pkg.minStayNights && (
+            <div className="flex items-start gap-2.5 px-4 py-3 bg-amber-900/20 border border-amber-700/30 rounded-xl">
+              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-300">Minimum stay is {pkg.minStayNights} night(s). Please adjust your dates.</p>
             </div>
           )}
 
-          {/* Buttons */}
-          <div className="pt-4 space-y-3">
+          {/* ── Buttons ── */}
+          <div className="space-y-2.5 pt-1">
             {!bookingId ? (
-            <>
-              <div className="flex gap-3">
+              <>
                 <button
-                  onClick={calculatePrice}
-                  disabled={!checkInDate || !checkOutDate}
-                  className="flex-1 px-4 py-3 rounded-lg bg-indigo-600/60 hover:bg-indigo-600 border border-indigo-400/40 text-white font-semibold transition-colors disabled:opacity-50"
+                  onClick={handleBooking}
+                  disabled={isLoading || !calculatedPrice || !user}
+                  className="btn-primary w-full py-3 rounded-xl font-semibold text-sm disabled:opacity-50"
                 >
-                  Calculate Price
+                  {isLoading ? "Creating Booking…" : `Confirm Booking${calculatedPrice ? ` — NPR ${calculatedPrice.toLocaleString()}` : ''}`}
                 </button>
-                <button
-                  onClick={onClose}
-                  className="flex-1 px-4 py-3 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition-colors"
-                >
+                <button onClick={onClose} className="btn-outline w-full py-2.5 rounded-xl text-sm font-medium">
                   Cancel
                 </button>
-              </div>
-
-              <button
-                onClick={handleBooking}
-                disabled={isLoading || !calculatedPrice || !user}
-                className="w-full px-4 py-3 rounded-lg bg-emerald-600/60 hover:bg-emerald-600 border border-emerald-400/40 text-white font-bold text-lg transition-colors disabled:opacity-50"
-              >
-                {isLoading ? "Creating Booking..." : "Confirm Booking"}
-              </button>
-
-              {!user && (
-                <p className="text-sm text-yellow-300 text-center">
-                  Please log in to complete booking
-                </p>
-              )}
-            </>
-          ) : (
-            <>
-              <div className="glass-card-inner rounded-lg p-4 border border-emerald-400/40 bg-emerald-400/10">
-                <p className="text-base text-white mb-2 flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Booking Created Successfully!
-                </p>
-                <p className="text-sm text-gray-200">
-                  Reference: <span className="font-mono text-emerald-400">{bookingReference}</span>
-                </p>
-              </div>
-
-              <KhaltiPaymentButton
-                bookingId={bookingId}
-                amount={calculatedPrice}
-                onPaymentSuccess={() => {
-                  showSuccess("Payment successful! Your booking is confirmed.");
-                  onClose();
-                }}
-                onPaymentFailure={() => {
-                  showError("Payment failed. Your booking is still pending.");
-                }}
-              />
-
-              <button
-                onClick={onClose}
-                className="w-full px-4 py-3 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition-colors"
-              >
-                Close
-              </button>
-            </>
-          )}
+                {!user && (
+                  <p className="text-xs text-amber-400 text-center flex items-center justify-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" /> Please log in to complete booking
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="flex items-start gap-3 px-4 py-3.5 bg-[#8FA68E]/10 border border-[#8FA68E]/25 rounded-xl">
+                  <BadgeCheck className="w-5 h-5 text-[#8FA68E] shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-[#F5F3EE]">Booking Created!</p>
+                    <p className="text-xs text-[#8E8A81] mt-0.5">
+                      Reference: <span className="font-mono text-[#C6A16E]">{bookingReference}</span>
+                    </p>
+                  </div>
+                </div>
+                <KhaltiPaymentButton
+                  bookingId={bookingId}
+                  amount={calculatedPrice}
+                  onPaymentSuccess={() => { showSuccess("Payment successful! Your booking is confirmed."); onClose(); }}
+                  onPaymentFailure={() => { showError("Payment failed. Your booking is still pending."); }}
+                />
+                <button onClick={onClose} className="btn-outline w-full py-2.5 rounded-xl text-sm font-medium">
+                  Close
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

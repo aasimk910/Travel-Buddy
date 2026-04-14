@@ -10,41 +10,43 @@ import { Map } from "lucide-react";
 // #region Component
 const SiteFooter: React.FC = () => {
   return (
-    <footer className="glass-nav">
-      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 pt-6 pb-8 grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-12">
+    <footer className="bg-[#080C0A]">
+      {/* Decorative gold rule */}
+      <hr className="gold-rule" />
+      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 pt-10 pb-8 grid grid-cols-1 gap-10 sm:grid-cols-3 sm:gap-12">
         {/* Brand */}
-        <div className="space-y-3">
-          <Link to="/" className="flex items-center gap-2 w-fit">
-            <div className="glass-button-dark p-2 rounded-lg shadow-sm">
-              <Map className="w-4 h-4 text-white" />
+        <div className="space-y-4">
+          <Link to="/" className="flex items-center gap-2.5 w-fit group">
+            <div className="p-2 rounded-lg bg-[#1E2820] border border-white/10 group-hover:border-[#C6A16E]/40 transition-colors">
+              <Map className="w-4 h-4 text-[#C6A16E]" />
             </div>
-            <span className="text-sm font-semibold text-white">Travel Buddy</span>
+            <span className="text-sm font-semibold text-[#F5F3EE] tracking-wide font-heading">Travel Buddy</span>
           </Link>
-          <p className="text-xs text-gray-200">Find hiking friends, share routes, and turn solo weekend plans into small group adventures across Nepal.</p>
+          <p className="text-xs text-[#8E8A81] leading-relaxed">Find hiking friends, share routes, and turn solo weekend plans into small group adventures across Nepal.</p>
         </div>
 
         {/* Explore */}
-        <div className="text-xs text-gray-200">
-          <p className="mb-3 font-semibold text-white">Explore</p>
-          <ul className="space-y-2">
-            <li><Link to="/hikes" className="hover:text-white transition-colors">Hikes</Link></li>
-            <li><Link to="/maps" className="hover:text-white transition-colors">Maps</Link></li>
-            <li><Link to="/shop" className="hover:text-white transition-colors">Shop</Link></li>
+        <div className="text-xs text-[#8E8A81]">
+          <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#C6A16E]">Explore</p>
+          <ul className="space-y-2.5">
+            <li><Link to="/hikes" className="hover:text-[#F5F3EE] transition-colors">Hikes</Link></li>
+            <li><Link to="/maps" className="hover:text-[#F5F3EE] transition-colors">Maps</Link></li>
+            <li><Link to="/shop" className="hover:text-[#F5F3EE] transition-colors">Shop</Link></li>
           </ul>
         </div>
 
         {/* Company */}
-        <div className="text-xs text-gray-200">
-          <p className="mb-3 font-semibold text-white">Company</p>
-          <ul className="space-y-2">
-            <li><Link to="/about" className="hover:text-white transition-colors">About</Link></li>
+        <div className="text-xs text-[#8E8A81]">
+          <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#C6A16E]">Company</p>
+          <ul className="space-y-2.5">
+            <li><Link to="/about" className="hover:text-[#F5F3EE] transition-colors">About</Link></li>
           </ul>
         </div>
       </div>
 
-      <div className="border-t border-white/20">
+      <div className="border-t border-white/8">
         <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-4 flex justify-center">
-          <p className="text-[11px] text-gray-200">© {new Date().getFullYear()} Travel Buddy. All rights reserved.</p>
+          <p className="text-[11px] text-[#8E8A81]">© {new Date().getFullYear()} Travel Buddy. All rights reserved.</p>
         </div>
       </div>
     </footer>

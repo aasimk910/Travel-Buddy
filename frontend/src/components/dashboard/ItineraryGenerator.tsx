@@ -40,11 +40,11 @@ const TRAVEL_STYLES = [
 ];
 
 const STYLE_COLORS: Record<string, string> = {
-  emerald: 'bg-emerald-500/20 border-emerald-400/60 text-emerald-300',
-  blue:    'bg-blue-500/20 border-blue-400/60 text-blue-300',
-  purple:  'bg-purple-500/20 border-purple-400/60 text-purple-300',
-  orange:  'bg-orange-500/20 border-orange-400/60 text-orange-300',
-  teal:    'bg-teal-500/20 border-teal-400/60 text-teal-300',
+  emerald: 'bg-[#8FA68E]/15 border-[#8FA68E]/50 text-[#8FA68E]',
+  blue:    'bg-[#C6A16E]/15 border-[#C6A16E]/50 text-[#C6A16E]',
+  purple:  'bg-[#C6A16E]/15 border-[#C6A16E]/50 text-[#C6A16E]',
+  orange:  'bg-[#C6A16E]/20 border-[#C6A16E]/60 text-[#D4AE7A]',
+  teal:    'bg-[#8FA68E]/15 border-[#8FA68E]/50 text-[#8FA68E]',
 };
 
 // Popular Nepal hiking and trekking destinations
@@ -248,308 +248,315 @@ const ItineraryGenerator: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-5 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/30 to-purple-500/30 border border-indigo-400/30 flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-indigo-300" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">AI Itinerary Generator</h2>
-            <p className="text-xs text-white/50">Powered by Gemini AI — plan your perfect trip</p>
-          </div>
-        </div>
 
-        {/* Mode tabs */}
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5 border border-white/10">
-          <button type="button"
-            onClick={() => setActiveTab('guided')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              activeTab === 'guided'
-                ? 'bg-indigo-500/30 border border-indigo-400/40 text-indigo-200'
-                : 'text-white/40 hover:text-white/70'
-            }`}>
-            <LayoutList className="w-3.5 h-3.5" /> Guided Form
-          </button>
-          <button type="button"
-            onClick={() => setActiveTab('custom')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              activeTab === 'custom'
-                ? 'bg-purple-500/30 border border-purple-400/40 text-purple-200'
-                : 'text-white/40 hover:text-white/70'
-            }`}>
-            <PenLine className="w-3.5 h-3.5" /> Custom Prompt
-          </button>
+      {/* ══ HEADER ═══════════════════════════════════════════════════ */}
+      <div className="relative overflow-hidden rounded-2xl mb-5 shrink-0">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('https://images.pexels.com/photos/2258536/pexels-photo-2258536.jpeg?auto=compress&cs=tinysrgb&w=1200')" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0B0F0C]/96 via-[#0B0F0C]/80 to-[#0B0F0C]/40" />
+
+        <div className="relative flex items-center justify-between px-6 py-4 gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#C6A16E]/15 border border-[#C6A16E]/30 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 text-[#C6A16E]" />
+            </div>
+            <div>
+              <p className="section-label mb-0.5">Powered by Groq AI</p>
+              <h2 className="text-lg font-bold text-[#F5F3EE] font-heading leading-tight">AI Itinerary Generator</h2>
+            </div>
+          </div>
+
+          {/* Mode tabs */}
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-[#0B0F0C]/60 border border-white/10">
+            <button type="button"
+              onClick={() => setActiveTab('guided')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                activeTab === 'guided'
+                  ? 'bg-[#C6A16E]/15 border border-[#C6A16E]/35 text-[#C6A16E]'
+                  : 'text-[#8E8A81] hover:text-[#F5F3EE]'
+              }`}>
+              <LayoutList className="w-3.5 h-3.5" /> Guided Form
+            </button>
+            <button type="button"
+              onClick={() => setActiveTab('custom')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                activeTab === 'custom'
+                  ? 'bg-[#8FA68E]/15 border border-[#8FA68E]/35 text-[#8FA68E]'
+                  : 'text-[#8E8A81] hover:text-[#F5F3EE]'
+              }`}>
+              <PenLine className="w-3.5 h-3.5" /> Custom Prompt
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Main grid */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-5 min-h-0 overflow-hidden">
+      {/* ══ MAIN GRID ════════════════════════════════════════════════ */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-4 min-h-0 overflow-hidden">
 
-        {/* -- LEFT — Form (mode-conditional) ---------------- */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 overflow-y-auto pr-1 min-h-0" style={{ scrollbarWidth: 'thin' }}>
+        {/* ── LEFT: Form ─────────────────────────────────────────── */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3 overflow-y-auto min-h-0 pr-0.5">
 
-        {activeTab === 'custom' ? (
-          /* --- Custom Prompt panel ----------------------- */
-          <>
-            <div className="glass-card rounded-xl p-4 space-y-3 flex-1 flex flex-col">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-purple-300 uppercase tracking-widest">Your Prompt</p>
-                <span className="text-[10px] text-white/40">{customPrompt.length} chars</span>
-              </div>
-              <p className="text-xs text-white/50 leading-relaxed">
-                Describe exactly what you want — destination, duration, budget, style, special requests. The AI will follow your instructions precisely.
-              </p>
-              <textarea
-                value={customPrompt}
-                onChange={e => setCustomPrompt(e.target.value)}
-                placeholder={"e.g. Plan a 5-day budget trek to Poon Hill starting from Kathmandu for 2 people. We love photography and local food. Total budget Rs 30,000. Include teahouse accommodation and sunrise viewpoints."}
-                className="flex-1 min-h-[200px] w-full px-3 py-3 rounded-lg glass-input text-sm text-white placeholder:text-white/40 resize-none leading-relaxed"
-                autoFocus
-              />
-            </div>
-
-            {/* Example prompts */}
-            <div className="glass-card rounded-xl p-4 space-y-2">
-              <p className="text-xs font-semibold text-white/50 uppercase tracking-widest">Examples — click to use</p>
-              {EXAMPLE_PROMPTS.map((ex, i) => (
-                <button key={i} type="button"
-                  onClick={() => setCustomPrompt(ex)}
-                  className="w-full text-left px-3 py-2.5 rounded-lg border border-white/10 text-xs text-white/55 hover:border-purple-400/30 hover:text-white/90 hover:bg-purple-500/10 transition-all leading-relaxed">
-                  {ex}
-                </button>
-              ))}
-            </div>
-          </>
-        ) : (
-          /* --- Guided Form panels ------------------------ */
-          <>
-
-          {/* Where to */}
-          <div className="glass-card rounded-xl p-4 space-y-3">
-            <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">Where to?</p>
-
-            {/* Destination input */}
-            <div>
-              <label className="block text-xs text-white/55 mb-1">Destination <span className="text-red-400">*</span></label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-400 z-10" />
-                <input
-                  ref={destinationInputRef}
-                  type="text" name="destination"
-                  value={formData.destination}
-                  onChange={handleChange}
-                  onFocus={handleDestinationFocus}
-                  placeholder="e.g., Pokhara, Nepal"
-                  className="w-full pl-9 pr-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder:text-white/40"
-                  required autoComplete="off"
+          {activeTab === 'custom' ? (
+            <>
+              <div className="site-card rounded-xl p-4 space-y-3 flex-1 flex flex-col">
+                <div className="flex items-center justify-between">
+                  <p className="section-label">Your Prompt</p>
+                  <span className="text-[10px] text-[#8E8A81]">{customPrompt.length} chars</span>
+                </div>
+                <p className="text-xs text-[#8E8A81] leading-relaxed">
+                  Describe exactly what you want — destination, duration, budget, style, special requests.
+                </p>
+                <textarea
+                  value={customPrompt}
+                  onChange={e => setCustomPrompt(e.target.value)}
+                  placeholder="e.g. Plan a 5-day budget trek to Poon Hill starting from Kathmandu for 2 people. We love photography and local food. Total budget Rs 30,000. Include teahouse accommodation and sunrise viewpoints."
+                  className="flex-1 min-h-[180px] w-full site-input px-3 py-3 rounded-lg text-sm resize-none leading-relaxed"
+                  autoFocus
                 />
-                {showSuggestions && filteredSuggestions.length > 0 && (
-                  <div
-                    ref={suggestionsRef}
-                    className="glass-dark absolute z-30 w-full mt-1 rounded-xl border border-white/10 shadow-2xl max-h-52 overflow-y-auto"
-                  >
-                    {filteredSuggestions.map((s, i) => (
-                      <button key={i} type="button" onClick={() => handleDestinationSelect(s)}
-                        className="w-full px-4 py-2.5 text-left text-sm text-gray-200 hover:bg-indigo-500/20 flex items-center gap-2 border-b border-white/5 last:border-0">
-                        <MapPin className="w-3.5 h-3.5 text-indigo-400 shrink-0" />{s}
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
-            </div>
 
-            {/* Starting location */}
-            <div>
-              <label className="block text-xs text-white/55 mb-1">Starting Location</label>
-              <div className="relative">
-                <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                <input type="text" name="startingLocation" value={formData.startingLocation} onChange={handleChange}
-                  placeholder="e.g., Kathmandu"
-                  className="w-full pl-9 pr-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder:text-white/40" autoComplete="off" />
-              </div>
-            </div>
-          </div>
-
-          {/* When */}
-          <div className="glass-card rounded-xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">When?</p>
-              {tripDays && tripDays > 0 && (
-                <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300">
-                  <Clock className="w-3 h-3" />{tripDays} day{tripDays > 1 ? 's' : ''}
-                </span>
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs text-white/55 mb-1">Start Date <span className="text-red-400">*</span></label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                  <input type="date" name="startDate" value={formData.startDate} onChange={handleChange}
-                    className="w-full pl-9 pr-2 py-2.5 rounded-lg glass-input text-sm text-white [color-scheme:dark]" required />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs text-white/55 mb-1">End Date <span className="text-red-400">*</span></label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                  <input type="date" name="endDate" value={formData.endDate} onChange={handleChange}
-                    min={formData.startDate}
-                    className="w-full pl-9 pr-2 py-2.5 rounded-lg glass-input text-sm text-white [color-scheme:dark]" required />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Budget & Style */}
-          <div className="glass-card rounded-xl p-4 space-y-3">
-            <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">Budget & Style</p>
-            <div>
-              <label className="block text-xs text-white/55 mb-1">Budget (NPR)</label>
-              <div className="relative">
-                <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                <input type="text" name="budget" value={formData.budget} onChange={handleChange}
-                  placeholder="e.g., 50000"
-                  className="w-full pl-9 pr-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder:text-white/40" />
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs text-white/55 mb-2">Travel Style</label>
-              <div className="flex flex-wrap gap-2">
-                {TRAVEL_STYLES.map(s => (
-                  <button key={s.value} type="button" onClick={() => setFormData(p => ({ ...p, travelStyle: s.value }))}
-                    className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
-                      formData.travelStyle === s.value
-                        ? STYLE_COLORS[s.color]
-                        : 'border-white/10 text-white/50 hover:border-white/25 hover:text-white/80'
-                    }`}>
-                    {s.label}
+              <div className="site-card rounded-xl p-4 space-y-2">
+                <p className="section-label mb-2">Examples — click to use</p>
+                {EXAMPLE_PROMPTS.map((ex, i) => (
+                  <button key={i} type="button" onClick={() => setCustomPrompt(ex)}
+                    className="w-full text-left px-3 py-2.5 rounded-lg border border-white/8 text-xs text-[#B8B4AA] hover:border-[#C6A16E]/25 hover:text-[#F5F3EE] hover:bg-[#C6A16E]/5 transition-all leading-relaxed">
+                    {ex}
                   </button>
                 ))}
               </div>
-            </div>
-          </div>
 
-          {/* Interests */}
-          <div className="glass-card rounded-xl p-4 space-y-3">
-            <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">Interests</p>
-            <div className="flex flex-wrap gap-2">
-              {INTEREST_CHIPS.map(({ label, icon }) => (
-                <button key={label} type="button" onClick={() => toggleInterest(label)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
-                    selectedInterests.includes(label)
-                      ? 'bg-indigo-500/20 border-indigo-400/60 text-indigo-300'
-                      : 'border-white/10 text-white/50 hover:border-white/25 hover:text-white/80'
-                  }`}>
-                  {icon}{label}
+              <div className="flex gap-3 pb-1">
+                <button type="submit" disabled={isLoading}
+                  className="btn-primary flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm disabled:opacity-50">
+                  {isLoading
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating…</>
+                    : <><Sparkles className="w-4 h-4" /> Generate with My Prompt</>}
                 </button>
-              ))}
-            </div>
-            <input type="text" name="interests" value={formData.interests} onChange={handleChange}
-              placeholder="Or type custom interests..."
-              className="w-full px-3 py-2 rounded-lg glass-input text-xs text-white placeholder:text-white/40" />
-          </div>
+                <button type="button" onClick={handleReset}
+                  className="btn-outline px-4 py-3 rounded-xl">
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Where to */}
+              <div className="site-card rounded-xl p-4 space-y-3">
+                <p className="section-label">Where to?</p>
+                <div>
+                  <label className="block text-xs text-[#8E8A81] mb-1">Destination <span className="text-red-400">*</span></label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#C6A16E] z-10" />
+                    <input
+                      ref={destinationInputRef}
+                      type="text" name="destination"
+                      value={formData.destination}
+                      onChange={handleChange}
+                      onFocus={handleDestinationFocus}
+                      placeholder="e.g., Pokhara, Nepal"
+                      className="w-full pl-9 pr-3 py-2.5 site-input rounded-lg text-sm"
+                      required autoComplete="off"
+                    />
+                    {showSuggestions && filteredSuggestions.length > 0 && (
+                      <div ref={suggestionsRef}
+                        className="absolute z-30 w-full mt-1 rounded-xl bg-[#161D19] border border-white/10 shadow-2xl max-h-48 overflow-y-auto">
+                        {filteredSuggestions.map((s, i) => (
+                          <button key={i} type="button" onClick={() => handleDestinationSelect(s)}
+                            className="w-full px-4 py-2.5 text-left text-sm text-[#B8B4AA] hover:bg-[#C6A16E]/[0.08] hover:text-[#F5F3EE] flex items-center gap-2 border-b border-white/5 last:border-0 transition-colors">
+                            <MapPin className="w-3.5 h-3.5 text-[#C6A16E] shrink-0" />{s}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs text-[#8E8A81] mb-1">Starting Location</label>
+                  <div className="relative">
+                    <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8A81]" />
+                    <input type="text" name="startingLocation" value={formData.startingLocation} onChange={handleChange}
+                      placeholder="e.g., Kathmandu"
+                      className="w-full pl-9 pr-3 py-2.5 site-input rounded-lg text-sm" autoComplete="off" />
+                  </div>
+                </div>
+              </div>
 
-          {/* Notes */}
-          <div className="glass-card rounded-xl p-4 space-y-2">
-            <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest">Additional Notes</p>
-            <textarea name="additionalNotes" value={formData.additionalNotes} onChange={handleChange}
-              placeholder="Special requirements, dietary needs, mobility restrictions..."
-              rows={3}
-              className="w-full px-3 py-2.5 rounded-lg glass-input text-sm text-white placeholder:text-white/40 resize-none" />
-          </div>
+              {/* When */}
+              <div className="site-card rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="section-label">When?</p>
+                  {tripDays && tripDays > 0 && (
+                    <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#C6A16E]/10 border border-[#C6A16E]/25 text-[#C6A16E]">
+                      <Clock className="w-3 h-3" />{tripDays} day{tripDays > 1 ? 's' : ''}
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-[#8E8A81] mb-1">Start Date <span className="text-red-400">*</span></label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8A81]" />
+                      <input type="date" name="startDate" value={formData.startDate} onChange={handleChange}
+                        className="w-full pl-9 pr-2 py-2.5 site-input rounded-lg text-sm [color-scheme:dark]" required />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-[#8E8A81] mb-1">End Date <span className="text-red-400">*</span></label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8A81]" />
+                      <input type="date" name="endDate" value={formData.endDate} onChange={handleChange}
+                        min={formData.startDate}
+                        className="w-full pl-9 pr-2 py-2.5 site-input rounded-lg text-sm [color-scheme:dark]" required />
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pb-2">
-            <button type="submit" disabled={isLoading}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl glass-button-dark text-white font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-              {isLoading
-                ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
-                : <><Sparkles className="w-4 h-4" /> Generate Itinerary</>}
-            </button>
-            <button type="button" onClick={handleReset}
-              className="px-4 py-3 rounded-xl glass-button border border-white/10 text-white/50 hover:text-white transition-all">
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          </div>
+              {/* Budget & Style */}
+              <div className="site-card rounded-xl p-4 space-y-3">
+                <p className="section-label">Budget & Style</p>
+                <div>
+                  <label className="block text-xs text-[#8E8A81] mb-1">Budget (NPR)</label>
+                  <div className="relative">
+                    <Wallet className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8A81]" />
+                    <input type="text" name="budget" value={formData.budget} onChange={handleChange}
+                      placeholder="e.g., 50000"
+                      className="w-full pl-9 pr-3 py-2.5 site-input rounded-lg text-sm" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs text-[#8E8A81] mb-2">Travel Style</label>
+                  <div className="flex flex-wrap gap-2">
+                    {TRAVEL_STYLES.map(s => (
+                      <button key={s.value} type="button" onClick={() => setFormData(p => ({ ...p, travelStyle: s.value }))}
+                        className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                          formData.travelStyle === s.value
+                            ? STYLE_COLORS[s.color]
+                            : 'border-white/10 text-[#8E8A81] hover:border-white/25 hover:text-[#F5F3EE]'
+                        }`}>
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-          </>
-          )} {/* end guided form else */}
+              {/* Interests */}
+              <div className="site-card rounded-xl p-4 space-y-3">
+                <p className="section-label">Interests</p>
+                <div className="flex flex-wrap gap-2">
+                  {INTEREST_CHIPS.map(({ label, icon }) => (
+                    <button key={label} type="button" onClick={() => toggleInterest(label)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                        selectedInterests.includes(label)
+                          ? 'bg-[#C6A16E]/[0.12] border-[#C6A16E]/40 text-[#C6A16E]'
+                          : 'border-white/10 text-[#8E8A81] hover:border-white/25 hover:text-[#F5F3EE]'
+                      }`}>
+                      {icon}{label}
+                    </button>
+                  ))}
+                </div>
+                <input type="text" name="interests" value={formData.interests} onChange={handleChange}
+                  placeholder="Or type custom interests…"
+                  className="w-full px-3 py-2 site-input rounded-lg text-xs" />
+              </div>
 
-          {/* --- Shared Actions --------------------------------- */}
-          {activeTab === 'custom' && (
-          <div className="flex gap-3 pb-2">
-            <button type="submit" disabled={isLoading}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-purple-500/30 to-indigo-500/30 border border-purple-400/40 text-white font-semibold text-sm hover:from-purple-500/40 hover:to-indigo-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-              {isLoading
-                ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
-                : <><Sparkles className="w-4 h-4" /> Generate with My Prompt</>}
-            </button>
-            <button type="button" onClick={handleReset}
-              className="px-4 py-3 rounded-xl glass-button border border-white/10 text-white/50 hover:text-white transition-all">
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          </div>
+              {/* Notes */}
+              <div className="site-card rounded-xl p-4 space-y-2">
+                <p className="section-label">Additional Notes</p>
+                <textarea name="additionalNotes" value={formData.additionalNotes} onChange={handleChange}
+                  placeholder="Special requirements, dietary needs, mobility restrictions…"
+                  rows={3}
+                  className="w-full px-3 py-2.5 site-input rounded-lg text-sm resize-none" />
+              </div>
+
+              <div className="flex gap-3 pb-1">
+                <button type="submit" disabled={isLoading}
+                  className="btn-primary flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm disabled:opacity-50">
+                  {isLoading
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating…</>
+                    : <><Sparkles className="w-4 h-4" /> Generate Itinerary</>}
+                </button>
+                <button type="button" onClick={handleReset}
+                  className="btn-outline px-4 py-3 rounded-xl">
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              </div>
+            </>
           )}
         </form>
 
-        {/* -- RIGHT — Output --------------------------------- */}
-        <div className="glass-card rounded-xl flex flex-col h-full overflow-hidden">
-
+        {/* ── RIGHT: Output ──────────────────────────────────────── */}
+        <div className="site-card rounded-xl flex flex-col overflow-hidden">
           {/* Output header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 shrink-0">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/8 shrink-0">
             <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-indigo-400" />
-              <span className="font-semibold text-white text-sm">Your Itinerary</span>
+              <FileText className="w-4 h-4 text-[#C6A16E]" />
+              <span className="font-semibold text-[#F5F3EE] text-sm font-heading">Your Itinerary</span>
               {generatedItinerary && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-medium">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#8FA68E]/15 border border-[#8FA68E]/30 text-[#8FA68E] font-medium">
                   Ready
                 </span>
               )}
             </div>
             {generatedItinerary && (
               <button onClick={handleDownloadPDF}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-medium hover:bg-emerald-500/30 transition-all">
+                className="btn-outline flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium">
                 <Download className="w-3.5 h-3.5" /> Download PDF
               </button>
             )}
           </div>
 
           {/* Output body */}
-          <div className="h-0 flex-1 overflow-y-auto px-5 py-4" style={{ scrollbarWidth: 'thin' }}>
+          <div className="flex-1 overflow-y-auto px-5 py-4">
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center h-full gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center">
-                  <Sparkles className="w-7 h-7 text-indigo-400 animate-pulse" />
+              <div className="flex flex-col items-center justify-center h-full gap-5 text-center">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-2xl bg-[#C6A16E]/10 border border-[#C6A16E]/25 flex items-center justify-center">
+                    <Sparkles className="w-7 h-7 text-[#C6A16E] animate-pulse" />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-[#C6A16E] border-t-transparent animate-spin bg-[#0B0F0C]" />
                 </div>
-                <div className="text-center">
-                  <p className="text-white font-medium mb-1">Planning your trip...</p>
-                  <p className="text-white/55 text-sm">Groq AI is crafting your itinerary</p>
+                <div>
+                  <p className="text-[#F5F3EE] font-semibold font-heading mb-1">Planning your adventure…</p>
+                  <p className="text-[#8E8A81] text-sm">Groq AI is crafting your day-by-day itinerary</p>
                 </div>
-                <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
               </div>
             ) : generatedItinerary ? (
-              <div className="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed pr-2">
+              <div className="text-sm text-[#B8B4AA] whitespace-pre-wrap leading-relaxed">
                 {generatedItinerary}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full gap-4 text-center px-8">
-                <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                  <Mountain className="w-8 h-8 text-white/30" />
+              <div className="flex flex-col items-center justify-center h-full gap-5 text-center px-8">
+                {/* Cinematic background image in the empty state */}
+                <div className="relative w-32 h-20 rounded-xl overflow-hidden mb-2">
+                  <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: "url('https://images.pexels.com/photos/618833/pexels-photo-618833.jpeg?auto=compress&cs=tinysrgb&w=300')" }}
+                  />
+                  <div className="absolute inset-0 bg-[#0B0F0C]/55" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Mountain className="w-8 h-8 text-[#C6A16E]/70" />
+                  </div>
                 </div>
                 <div>
-                  <p className="text-white/60 font-medium mb-1">No itinerary yet</p>
-                  <p className="text-white/40 text-xs leading-relaxed">
-                    Fill in your destination and dates on the left,<br />
-                    then click <span className="text-indigo-400 font-medium">Generate Itinerary</span>
+                  <p className="text-[#F5F3EE] font-semibold font-heading mb-1">Ready to plan your trek?</p>
+                  <p className="text-[#8E8A81] text-xs leading-relaxed">
+                    Fill in your destination and dates,<br />
+                    then click <span className="text-[#C6A16E] font-medium">Generate Itinerary</span>
                   </p>
                 </div>
-                <div className="grid grid-cols-3 gap-3 w-full max-w-xs mt-2">
-                  {['Destination', 'Dates', 'Budget'].map(step => (
-                    <div key={step} className="glass-card rounded-lg p-2.5 text-center border border-white/5">
-                      <p className="text-[10px] text-white/45">{step}</p>
+                <div className="grid grid-cols-3 gap-2 w-full max-w-xs">
+                  {[
+                    { step: '1', text: 'Destination' },
+                    { step: '2', text: 'Dates' },
+                    { step: '3', text: 'Generate' },
+                  ].map(({ step, text }) => (
+                    <div key={step} className="bg-[#111714] border border-white/8 rounded-lg p-2.5 text-center">
+                      <p className="text-[10px] font-bold text-[#C6A16E] mb-0.5">{step}</p>
+                      <p className="text-[10px] text-[#8E8A81]">{text}</p>
                     </div>
                   ))}
                 </div>

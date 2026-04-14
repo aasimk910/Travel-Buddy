@@ -6,9 +6,9 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { Map } from "lucide-react";
 import { GOOGLE_CLIENT_ID } from "../config/env";
 import GoogleAuthButton from "../components/auth/GoogleAuthButton";
-import AuthHeader from "../components/auth/AuthHeader";
 import StatusAlert from "../components/common/StatusAlert";
 import { login as loginRequest, googleAuth, storeToken } from "../services/auth";
 
@@ -170,147 +170,156 @@ const Login: React.FC = () => {
 
   // ---------- UI ----------
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8" ref={revealRef}>
-      <div className="reveal reveal-fade">
-        <AuthHeader
-          title="Sign in to your account"
-          subtitle="Access your trips, matches, and saved destinations."
+    <div className="min-h-screen flex bg-[#0B0F0C]" ref={revealRef}>
+
+      {/* Left panel — cinematic nature image (desktop only) */}
+      <div className="hidden lg:flex lg:w-[45%] xl:w-[50%] relative flex-col justify-end overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-top"
+          style={{ backgroundImage: "url('https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=1200')" }}
         />
-      </div>
+        {/* Multi-layer atmospheric overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#0B0F0C]/90 via-[#0B0F0C]/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F0C] via-[#0B0F0C]/30 to-transparent" />
 
-      {/* Card */}
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md reveal reveal-scale delay-100">
-        <div className="glass-card py-8 px-4 shadow rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
-            <StatusAlert message={status} />
-
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-white"
-              >
-                Email address
-              </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  value={values.email}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={`block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white placeholder-gray-300 ${
-                    touched.email && errors.email
-                      ? "border-red-300"
-                      : ""
-                  }`}
-                />
+        <div className="relative px-10 pb-12 z-10">
+          {/* Feature list */}
+          <div className="mb-8 space-y-3">
+            {[
+              { icon: '\uD83C\uDFD4\uFE0F', text: 'Discover hikes across Nepal' },
+              { icon: '\uD83D\uDC65', text: 'Connect with fellow adventurers' },
+              { icon: '\uD83D\uDDFA\uFE0F', text: 'Plan and track expenses together' },
+            ].map((f, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#C6A16E]/15 border border-[#C6A16E]/25 flex items-center justify-center text-sm shrink-0">
+                  {f.icon}
+                </div>
+                <span className="text-[#B8B4AA] text-sm">{f.text}</span>
               </div>
-              {touched.email && errors.email && (
-                <p className="mt-1 text-xs text-red-300">{errors.email}</p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-white"
-              >
-                Password
-              </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                  value={values.password}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={`block w-full px-3 py-2 glass-input rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-white sm:text-sm text-white placeholder-gray-300 ${
-                    touched.password && errors.password
-                      ? "border-red-300"
-                      : ""
-                  }`}
-                />
-              </div>
-              {touched.password && errors.password && (
-                <p className="mt-1 text-xs text-red-300">{errors.password}</p>
-              )}
-            </div>
-
-            {/* Remember me / Forgot password */}
-              <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 text-sm text-gray-200">
-                <input
-                  id="remember"
-                  name="remember"
-                  type="checkbox"
-                  checked={values.remember}
-                  onChange={handleChange}
-                  className="h-4 w-4 rounded border-white/30 text-white focus:ring-white glass"
-                />
-                <span>Remember me</span>
-              </label>
-              <Link
-                to="/forgot-password"
-                className="text-xs font-medium text-white hover:text-gray-200"
-              >
-                Forgot password?
-              </Link>
-            </div>
-
-            {/* Submit */}
-            <div>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex w-full justify-center rounded-md glass-button-dark py-2 px-4 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-60"
-              >
-                {isSubmitting ? "Signing in..." : "Sign in"}
-              </button>
-            </div>
-          </form>
-
-          {/* Divider + Google button at bottom (matches Signup) */}
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-white/30" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="glass-strong px-2 text-gray-300">
-                  Or continue with Google
-                </span>
-              </div>
-            </div>
-
-            <div className="flex justify-center mt-2">
-              <GoogleAuthButton
-                onCredential={(cred) => handleGoogleResponse(cred)}
-                clientId={GOOGLE_CLIENT_ID}
-                renderOptions={{ theme: "outline", size: "large", type: "standard", text: "continue_with" }}
-                className="w-full max-w-xs"
-              />
-            </div>
+            ))}
           </div>
 
-          {/* Link to signup */}
-          <p className="mt-6 text-center text-sm text-gray-200">
-            Don&apos;t have an account?{" "}
-            <Link
-              to="/signup"
-              state={{ from: redirectPath }}
-              className="font-medium text-white hover:text-gray-200"
-            >
-              Sign up
-            </Link>
-          </p>
+          <div className="h-px bg-gradient-to-r from-[#C6A16E]/40 to-transparent mb-8" />
+
+          <div className="mb-3">
+            <span className="section-label">Travel Buddy</span>
+          </div>
+          <blockquote className="font-heading text-2xl xl:text-3xl text-[#F5F3EE] leading-snug italic mb-3">
+            “The world is a book, and those who do not travel read only one page.”
+          </blockquote>
+          <p className="text-[#8E8A81] text-sm">— Saint Augustine</p>
+        </div>
+      </div>
+
+      {/* Right panel — form */}
+      <div className="flex-1 flex flex-col justify-center py-10 px-6 sm:px-10 lg:px-16 xl:px-20">
+        <div className="mx-auto w-full max-w-md">
+
+          {/* Logo + heading */}
+          <div className="mb-8 reveal reveal-fade">
+            <div className="flex items-center gap-2.5 mb-6">
+              <div className="p-2 rounded-lg bg-[#1E2820] border border-[#C6A16E]/25">
+                <Map className="w-5 h-5 text-[#C6A16E]" />
+              </div>
+              <span className="text-xl font-semibold text-[#F5F3EE] font-heading tracking-wide">Travel Buddy</span>
+            </div>
+            <h1 className="text-3xl font-bold text-[#F5F3EE] font-heading mb-2">Welcome back</h1>
+            <p className="text-[#8E8A81] text-sm">Sign in to access your trips and adventures.</p>
+          </div>
+
+          {/* Form card */}
+          <div className="site-card rounded-2xl overflow-hidden reveal reveal-scale delay-100">
+            <div className="h-1 w-full bg-gradient-to-r from-[#C6A16E]/70 via-[#E8D5B0]/40 to-transparent" />
+            <div className="px-6 py-7 sm:px-8">
+
+              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+                <StatusAlert message={status} />
+
+                {/* Email */}
+                <div className="space-y-1.5">
+                  <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-widest text-[#8E8A81]">
+                    Email address
+                  </label>
+                  <input
+                    id="email" name="email" type="email" autoComplete="email"
+                    placeholder="you@example.com"
+                    value={values.email} onChange={handleChange} onBlur={handleBlur}
+                    className={`block w-full px-4 py-3 site-input rounded-xl text-sm ${
+                      touched.email && errors.email ? "border-red-700/50" : ""
+                    }`}
+                  />
+                  {touched.email && errors.email && (
+                    <p className="text-xs text-red-400">{errors.email}</p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-widest text-[#8E8A81]">
+                      Password
+                    </label>
+                    <Link to="/forgot-password" className="text-xs text-[#C6A16E] hover:text-[#D4AE7A] transition-colors">
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <input
+                    id="password" name="password" type="password" autoComplete="current-password"
+                    placeholder="••••••••"
+                    value={values.password} onChange={handleChange} onBlur={handleBlur}
+                    className={`block w-full px-4 py-3 site-input rounded-xl text-sm ${
+                      touched.password && errors.password ? "border-red-700/50" : ""
+                    }`}
+                  />
+                  {touched.password && errors.password && (
+                    <p className="text-xs text-red-400">{errors.password}</p>
+                  )}
+                </div>
+
+                {/* Remember me */}
+                <label className="flex items-center gap-2.5 text-sm text-[#B8B4AA] cursor-pointer">
+                  <input
+                    id="remember" name="remember" type="checkbox"
+                    checked={values.remember} onChange={handleChange}
+                    className="h-4 w-4 rounded border-white/20 bg-[#161D19] text-[#C6A16E] focus:ring-[#C6A16E]/30 focus:ring-offset-0"
+                  />
+                  <span>Remember me</span>
+                </label>
+
+                {/* Submit */}
+                <button
+                  type="submit" disabled={isSubmitting}
+                  className="btn-primary flex w-full justify-center rounded-xl py-3 px-4 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#C6A16E]/40 focus:ring-offset-0 disabled:opacity-60"
+                >
+                  {isSubmitting ? "Signing in…" : "Sign in"}
+                </button>
+              </form>
+
+              {/* Divider */}
+              <div className="my-5 flex items-center gap-3">
+                <div className="flex-1 h-px bg-white/8" />
+                <span className="text-xs text-[#8E8A81]">or continue with</span>
+                <div className="flex-1 h-px bg-white/8" />
+              </div>
+
+              <div className="flex justify-center">
+                <GoogleAuthButton
+                  onCredential={(cred) => handleGoogleResponse(cred)}
+                  clientId={GOOGLE_CLIENT_ID}
+                  renderOptions={{ theme: "outline", size: "large", type: "standard", text: "continue_with" }}
+                  className="w-full max-w-xs"
+                />
+              </div>
+
+              <p className="mt-5 text-center text-sm text-[#8E8A81]">
+                Don&apos;t have an account?{" "}
+                <Link to="/signup" state={{ from: redirectPath }}
+                  className="font-medium text-[#C6A16E] hover:text-[#D4AE7A] transition-colors">
+                  Create one free
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

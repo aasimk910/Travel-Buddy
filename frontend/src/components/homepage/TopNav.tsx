@@ -16,30 +16,30 @@ const TopNav: React.FC = () => {
 
   // Handles getLinkClass logic.
   const getLinkClass = (path: string) => {
-    const baseClass = "transition-colors";
+    const base = "nav-link tracking-wide text-sm";
     if (location.pathname === path) {
-      return `${baseClass} text-white font-medium border-b-2 border-white pb-1`;
+      return `${base} text-[#F5F3EE] font-medium active`;
     }
-    return `${baseClass} text-gray-200 hover:text-white`;
+    return `${base} text-[#8E8A81] hover:text-[#F5F3EE]`;
   };
 
   return (
-    <header className="glass-nav sticky top-0 z-10">
+    <header className="site-nav sticky top-0 z-40">
       <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 flex items-center justify-between h-16">
         <button
           type="button"
-          className="flex items-center gap-2 cursor-pointer"
+          className="flex items-center gap-2 cursor-pointer group"
           onClick={() => navigate(isAuthenticated ? "/homepage" : "/")}
         >
-          <div className="glass-button-dark p-2 rounded-lg shadow-sm">
-            <Map className="w-5 h-5 text-white" />
+          <div className="p-2 rounded-lg bg-[#1E2820] border border-white/10 group-hover:border-[#C6A16E]/40 transition-colors">
+            <Map className="w-5 h-5 text-[#C6A16E]" />
           </div>
-          <span className="text-base sm:text-lg font-semibold text-white">
+          <span className="text-base sm:text-lg font-semibold text-[#F5F3EE] tracking-wide font-heading">
             Travel Buddy
           </span>
         </button>
 
-        <nav className="hidden md:flex items-center gap-6 text-sm">
+        <nav className="hidden md:flex items-center gap-7 text-sm font-body">
           <Link to={isAuthenticated ? "/homepage" : "/"} className={getLinkClass(isAuthenticated ? "/homepage" : "/")}>
             Home
           </Link>
@@ -62,16 +62,16 @@ const TopNav: React.FC = () => {
             <>
               <button
                 onClick={() => navigate("/profile")}
-                className="hidden sm:flex items-center gap-2 text-sm text-gray-200 hover:text-white transition-colors"
+                className="hidden sm:flex items-center gap-2 text-sm text-[#B8B4AA] hover:text-[#F5F3EE] transition-colors"
               >
-                <div className="w-7 h-7 rounded-full glass-button-dark flex items-center justify-center text-xs font-semibold text-white">
+                <div className="w-7 h-7 rounded-full bg-[#1E2820] border border-[#C6A16E]/30 flex items-center justify-center text-xs font-semibold text-[#C6A16E]">
                   {user?.name?.[0]?.toUpperCase() ?? "U"}
                 </div>
                 <span className="max-w-[120px] truncate">{user?.name}</span>
               </button>
               <Link
                 to="/dashboard"
-                className="inline-flex items-center justify-center gap-1.5 rounded-full glass-button-dark px-4 py-1.5 text-sm font-medium text-white shadow-sm"
+                className="btn-primary inline-flex items-center justify-center gap-1.5 rounded-md px-4 py-1.5 text-sm"
               >
                 <LayoutDashboard className="w-3.5 h-3.5" />
                 Dashboard
@@ -79,7 +79,7 @@ const TopNav: React.FC = () => {
               {isAdmin && (
                 <Link
                   to="/admin"
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full glass-button-dark px-4 py-1.5 text-sm font-medium text-amber-300 shadow-sm hover:text-amber-200 transition-colors"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md border border-amber-700/40 bg-amber-900/20 px-4 py-1.5 text-sm font-medium text-amber-300 hover:bg-amber-900/30 transition-colors"
                   title="Admin Panel"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
@@ -88,7 +88,7 @@ const TopNav: React.FC = () => {
               )}
               <button
                 onClick={() => { logout?.(); navigate("/"); }}
-                className="hidden sm:inline-flex items-center justify-center rounded-full glass-button px-3 py-1.5 text-sm text-gray-200 hover:text-white transition-colors gap-1"
+                className="hidden sm:inline-flex items-center justify-center rounded-md btn-outline px-3 py-1.5 text-sm gap-1"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 Log out
@@ -98,13 +98,13 @@ const TopNav: React.FC = () => {
             <>
               <Link
                 to="/login"
-                className="px-4 py-2 text-sm glass-button rounded-lg text-white transition-colors"
+                className="btn-outline px-4 py-2 text-sm rounded-md inline-flex items-center"
               >
                 Login
               </Link>
               <Link
                 to="/signup"
-                className="px-4 py-2 text-sm glass-button-dark rounded-lg text-white transition-colors"
+                className="btn-primary px-4 py-2 text-sm rounded-md inline-flex items-center"
               >
                 Sign Up
               </Link>

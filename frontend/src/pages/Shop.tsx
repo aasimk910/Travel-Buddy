@@ -347,9 +347,9 @@ const STATIC_PRODUCTS: Product[] = [
 ];
 
 const BADGE_COLORS: Record<string, string> = {
-  'Best Seller': 'bg-amber-500/20 border-amber-400/40 text-amber-300',
-  'Top Rated':   'bg-indigo-500/20 border-indigo-400/40 text-indigo-300',
-  'New':         'bg-emerald-500/20 border-emerald-400/40 text-emerald-300',
+  'Best Seller': 'bg-[#C6A16E]/15 border-[#C6A16E]/40 text-[#C6A16E]',
+  'Top Rated':   'bg-[#8FA68E]/15 border-[#8FA68E]/40 text-[#8FA68E]',
+  'New':         'bg-emerald-500/15 border-emerald-400/30 text-emerald-400',
 };
 
 const SHIPPING_THRESHOLD = 10000;
@@ -361,6 +361,7 @@ const SHIPPING_FEE       = 350;
 const Shop: React.FC = () => {
   const [products, setProducts]             = useState<Product[]>(STATIC_PRODUCTS);
   const [productsLoading, setProductsLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<'default'|'price-asc'|'price-desc'|'rating'>('default');
   const [activeCategory, setActiveCategory] = useState('All');
   const [search, setSearch]                 = useState('');
   const [cartItems, setCartItems]           = useState<CartItem[]>(() => {
@@ -742,15 +743,22 @@ const Shop: React.FC = () => {
   const shipping     = subtotal === 0 ? 0 : shippingFree ? 0 : SHIPPING_FEE;
   const total        = subtotal + shipping;
 
-  // -- Filtered products ------------------------------------------------------
-  const filtered = products.filter(p => {
+  // -- Filtered + sorted products -------------------------------------------
+  const filtered = [...products.filter(p => {
     const matchCat    = activeCategory === 'All' || p.category === activeCategory;
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
+  })].sort((a, b) => {
+    if (sortBy === 'price-asc')  return a.price - b.price;
+    if (sortBy === 'price-desc') return b.price - a.price;
+    if (sortBy === 'rating')     return b.rating - a.rating;
+    return 0;
   });
 
+  const bestsellers = products.filter(p => p.badge === 'Best Seller' || p.badge === 'Top Rated');
+
   return (
-    <div className="min-h-screen w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8">
+    <div className="min-h-screen w-full">
 
       {/* Payment Success Popup Modal (shown after Khalti return) */}
       <PaymentSuccessModal
@@ -765,161 +773,268 @@ const Shop: React.FC = () => {
         }}
       />
 
-      {/* -- Header ------------------------------------------------------- */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Gear Shop</h1>
-          <p className="text-white/55 text-sm mt-1">Premium trekking &amp; outdoor equipment for every adventure</p>
-        </div>
-        <div className="flex items-center gap-3 self-start sm:self-auto">
-          <button
-            onClick={() => setOrdersOpen(true)}
-            className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl glass-button-dark text-white font-semibold shadow-lg"
-          >
-            <ClipboardList className="w-5 h-5" />
-            My Orders
-            {savedOrders.length > 0 && (
-              <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-purple-500 text-white text-[10px] font-bold flex items-center justify-center">
-                {savedOrders.length}
+      {/* ── Shop Hero Banner ──────────────────────────────────────────── */}
+      <div className="relative overflow-hidden">
+        {/* Background image with cinematic overlay */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('https://images.pexels.com/photos/1271620/pexels-photo-1271620.jpeg?auto=compress&cs=tinysrgb&w=1400')" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0B0F0C]/95 via-[#0B0F0C]/75 to-[#0B0F0C]/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F0C] via-transparent to-transparent" />
+
+        <div className="relative px-4 sm:px-6 lg:px-12 xl:px-16 py-16 lg:py-24">
+          <div className="max-w-2xl">
+            <p className="inline-flex items-center gap-2 surface-pill rounded-full px-3 py-1 text-xs font-medium mb-4">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#C6A16E] inline-block" />
+              Premium Trekking &amp; Outdoor Gear
+            </p>
+            <h1 className="text-4xl sm:text-5xl font-bold text-[#F5F3EE] mb-4 font-heading leading-[1.1]">
+              Gear Up for Your
+              <span className="block bg-gradient-to-r from-[#C6A16E] via-[#E8D5B0] to-[#F5F3EE] bg-clip-text text-transparent">
+                Next Adventure
               </span>
-            )}
-          </button>
-          <button
-            onClick={() => { setCartOpen(true); if (cartItems.length > 0) validateCartStock(); }}
-            className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl glass-button-dark text-white font-semibold shadow-lg"
-          >
-            <ShoppingCart className="w-5 h-5" />
-            Cart
-            {totalItems > 0 && (
-              <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center">
-                {totalItems}
-              </span>
-            )}
-          </button>
+            </h1>
+            <p className="text-[#B8B4AA] text-sm sm:text-base max-w-lg leading-relaxed mb-6">
+              Curated backpacks, tents, navigation tools, and safety gear trusted by Himalayan trekkers.
+            </p>
+            {/* Value props */}
+            <div className="flex flex-wrap gap-3 text-xs">
+              {[
+                { icon: <Tag className="w-3.5 h-3.5" />, text: 'Free shipping over NPR 10,000' },
+                { icon: <Shield className="w-3.5 h-3.5" />, text: '1-year warranty on all gear' },
+                { icon: <Package className="w-3.5 h-3.5" />, text: '3–5 day delivery' },
+              ].map((v, i) => (
+                <div key={i} className="flex items-center gap-1.5 bg-white/6 border border-white/10 rounded-full px-3 py-1.5 text-[#B8B4AA]">
+                  <span className="text-[#C6A16E]">{v.icon}</span>
+                  {v.text}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Action buttons — top right */}
+          <div className="absolute top-6 right-4 sm:right-6 lg:right-12 xl:right-16 flex items-center gap-3">
+            <button
+              onClick={() => setOrdersOpen(true)}
+              className="relative flex items-center gap-2 px-4 py-2 rounded-md btn-outline text-sm font-medium"
+            >
+              <ClipboardList className="w-4 h-4" />
+              <span className="hidden sm:inline">My Orders</span>
+              {savedOrders.length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#C6A16E] text-[#0B0F0C] text-[9px] font-bold flex items-center justify-center">
+                  {savedOrders.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => { setCartOpen(true); if (cartItems.length > 0) validateCartStock(); }}
+              className="relative flex items-center gap-2 px-4 py-2 rounded-md btn-primary text-sm font-semibold"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              Cart
+              {totalItems > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#0B0F0C] text-[#C6A16E] text-[9px] font-bold flex items-center justify-center border border-[#C6A16E]/40">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* -- Main layout: sidebar + grid ------------------------------- */}
-      <div className="flex gap-6 items-start">
-
-        {/* -- Left Sidebar ----------------------------------------------- */}
-        <aside className="w-52 shrink-0 flex flex-col gap-4 sticky top-24">
+      {/* ── Sticky filter toolbar ─────────────────────────────────────── */}
+      <div className="sticky top-[64px] z-30 bg-[#0B0F0C]/90 backdrop-blur-md border-b border-white/8">
+        <div className="px-4 sm:px-6 lg:px-12 xl:px-16 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
           {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8A81]" />
             <input
-              type="text" placeholder="Search gear..."
+              type="text" placeholder="Search gear…"
               value={search} onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl glass-input text-sm text-white placeholder:text-white/35 focus:outline-none"
+              className="w-full pl-9 pr-3 py-2 site-input rounded-lg text-sm focus:outline-none"
             />
           </div>
 
-          {/* Categories */}
-          <div className="glass-card rounded-2xl p-4 flex flex-col gap-1">
-            <div className="flex items-center gap-2 mb-2 px-1">
-              <SlidersHorizontal className="w-3.5 h-3.5 text-white/40" />
-              <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">Categories</p>
-            </div>
+          {/* Category pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide flex-1">
             {CATEGORIES.map(cat => (
               <button key={cat.label} onClick={() => setActiveCategory(cat.label)}
-                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all text-left w-full ${
+                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                   activeCategory === cat.label
-                    ? 'glass-button-dark border-transparent text-white'
-                    : 'border-transparent text-white/50 hover:bg-white/5 hover:text-white/80'
+                    ? 'bg-[#C6A16E]/15 border-[#C6A16E]/40 text-[#C6A16E]'
+                    : 'border-white/10 text-[#8E8A81] hover:border-white/25 hover:text-[#F5F3EE]'
                 }`}>
-                {cat.icon && <span className="shrink-0">{cat.icon}</span>}
+                {cat.icon && <span>{cat.icon}</span>}
                 {cat.label}
               </button>
             ))}
           </div>
 
-          <p className="text-white/35 text-xs px-1">{filtered.length} item{filtered.length !== 1 ? 's' : ''} found</p>
-        </aside>
+          {/* Sort */}
+          <div className="flex items-center gap-2 shrink-0">
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as typeof sortBy)}
+              className="site-input rounded-lg text-xs px-3 py-2 [color-scheme:dark] min-w-[140px]"
+            >
+              <option value="default" className="bg-[#161D19]">Featured</option>
+              <option value="price-asc" className="bg-[#161D19]">Price: Low → High</option>
+              <option value="price-desc" className="bg-[#161D19]">Price: High → Low</option>
+              <option value="rating" className="bg-[#161D19]">Top Rated</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
-        {/* -- Product grid ----------------------------------------------- */}
-        <div className="flex-1 min-w-0">
-          {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 gap-4">
-              <Mountain className="w-12 h-12 text-white/20" />
-              <p className="text-white/40 font-medium">No products found</p>
+      {/* ── Main content ─────────────────────────────────────────────── */}
+      <div className="px-4 sm:px-6 lg:px-12 xl:px-16 py-7">
+
+        {/* Result count + active filter hint */}
+        <div className="flex items-center gap-2 mb-5 text-xs text-[#8E8A81]">
+          <span className="text-[#F5F3EE] font-semibold">{filtered.length}</span> products
+          {activeCategory !== 'All' && (
+            <>
+              <span>in</span>
+              <button onClick={() => setActiveCategory('All')}
+                className="surface-pill rounded-full px-2.5 py-0.5 flex items-center gap-1 hover:opacity-80 transition-opacity">
+                {activeCategory} <X className="w-3 h-3" />
+              </button>
+            </>
+          )}
+          {search && (
+            <button onClick={() => setSearch('')}
+              className="surface-pill rounded-full px-2.5 py-0.5 flex items-center gap-1 hover:opacity-80 transition-opacity">
+              "{search}" <X className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+
+        {/* Featured bestsellers strip */}
+        {activeCategory === 'All' && !search && bestsellers.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Star className="w-3.5 h-3.5 text-[#C6A16E] fill-[#C6A16E]" />
+              <p className="section-label">Bestsellers</p>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
-          {filtered.map(product => {
-            const inCart = cartItems.find(i => i.product._id === product._id);
-            return (
-              <div key={product._id}
-              onClick={() => setSelectedProduct(product)}
-              className="glass-card rounded-2xl overflow-hidden flex flex-col group hover:border-white/30 transition-all duration-300 cursor-pointer">
-                <div className="relative h-48 overflow-hidden">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+              {bestsellers.slice(0, 6).map(product => (
+                <div key={`feat-${product._id}`}
+                  onClick={() => setSelectedProduct(product)}
+                  className="relative overflow-hidden rounded-xl cursor-pointer group h-36 sm:h-40">
                   <img
                     src={product.img.replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
                     alt={product.name}
-                    onError={(e) => { e.currentTarget.src = `https://placehold.co/400x300/1e1b4b/6366f1?text=${encodeURIComponent(product.name)}`; e.currentTarget.onerror = null; }}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    className="w-full h-full object-cover group-hover:scale-[1.07] transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F0C]/94 via-[#0B0F0C]/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                    <p className="text-[#F5F3EE] text-[11px] font-semibold font-heading line-clamp-1">{product.name}</p>
+                    <p className="text-[#C6A16E] text-[11px] font-bold mt-0.5">NPR {product.price.toLocaleString()}</p>
+                  </div>
                   {product.badge && (
-                    <span className={`absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${BADGE_COLORS[product.badge]}`}>
+                    <span className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-semibold border ${BADGE_COLORS[product.badge]}`}>
                       {product.badge}
                     </span>
                   )}
-                  <span className="absolute top-3 right-3 px-2 py-0.5 rounded-lg bg-black/40 backdrop-blur-sm text-[11px] text-white/70 border border-white/10">
-                    {product.category}
-                  </span>
-                  {(product.inStock === false || product.stock === 0) ? (
-                    <span className="absolute bottom-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/80 text-white">Out of Stock</span>
-                  ) : product.stock !== undefined && product.stock > 0 && product.stock <= 5 ? (
-                    <span className="absolute bottom-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/80 text-white">Only {product.stock} left!</span>
-                  ) : null}
                 </div>
+              ))}
+            </div>
+            <hr className="gold-rule mt-6" />
+          </div>
+        )}
 
-                <div className="p-4 flex flex-col gap-3 flex-1">
-                  <h3 className="font-semibold text-white text-sm leading-snug">{product.name}</h3>
-
-                  <div className="flex items-center gap-1.5">
-                    <div className="flex items-center gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-3 h-3 ${i < Math.floor(product.rating) ? 'text-amber-400 fill-amber-400' : 'text-white/20'}`} />
-                      ))}
-                    </div>
-                    <span className="text-xs text-white/55">{product.rating} ({product.reviews})</span>
-                  </div>
-
-                  <div className="flex items-center justify-between mt-auto">
-                    <p className="text-white font-bold text-lg">
-                      <span className="text-xs font-normal text-white/50 mr-0.5">NPR</span>
-                      {product.price.toLocaleString()}
-                    </p>
-
-                    {(!product.inStock || product.stock === 0) ? (
-                      <span className="px-3 py-1.5 rounded-xl bg-red-500/15 border border-red-400/30 text-red-400 text-xs font-semibold">Out of Stock</span>
-                    ) : inCart ? (
-                      <div onClick={e => e.stopPropagation()} className="flex items-center gap-1 rounded-xl border border-indigo-400/40 bg-indigo-500/10 px-1 py-1">
-                        <button onClick={() => changeQty(product._id, -1)}
-                          className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 transition-all text-white/70">
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="text-white text-sm font-semibold w-5 text-center">{inCart.qty}</span>
-                        <button onClick={() => changeQty(product._id, 1)}
-                          className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 transition-all text-white/70">
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button onClick={e => { e.stopPropagation(); addToCart(product); }}
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl glass-button-dark text-white text-xs font-semibold transition-all">
-                        <ShoppingCart className="w-3.5 h-3.5" /> Add to Cart
-                      </button>
-                    )}
-                  </div>
+        {/* Loading skeletons */}
+        {productsLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="site-card rounded-xl overflow-hidden animate-pulse">
+                <div className="h-52 bg-[#1B2420]" />
+                <div className="p-3 space-y-2">
+                  <div className="h-3 bg-[#1B2420] rounded w-3/4" />
+                  <div className="h-2.5 bg-[#1B2420] rounded w-1/2" />
+                  <div className="h-5 bg-[#1B2420] rounded w-1/3 mt-2" />
                 </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
+            <div className="w-20 h-20 rounded-2xl bg-[#161D19] border border-white/8 flex items-center justify-center">
+              <Mountain className="w-10 h-10 text-[#8E8A81]/30" />
             </div>
-          )}
-        </div>{/* end flex-1 product area */}
-      </div>{/* end sidebar + grid flex row */}
+            <div>
+              <p className="text-[#F5F3EE] font-medium font-heading mb-1">No products found</p>
+              <p className="text-sm text-[#8E8A81]">Try adjusting your search or category filter.</p>
+            </div>
+            <button onClick={() => { setSearch(''); setActiveCategory('All'); }} className="btn-outline rounded-md px-4 py-2 text-sm">
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {filtered.map(product => {
+              const inCart = cartItems.find(i => i.product._id === product._id);
+              return (
+                <div key={product._id}
+                  onClick={() => setSelectedProduct(product)}
+                  className="site-card rounded-xl overflow-hidden flex flex-col group cursor-pointer">
+                  {/* Image */}
+                  <div className="relative h-48 overflow-hidden bg-[#111714]">
+                    <img
+                      src={product.img.replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
+                      alt={product.name}
+                      onError={(e) => { e.currentTarget.src = `https://placehold.co/400x300/161D19/C6A16E?text=${encodeURIComponent(product.name)}`; e.currentTarget.onerror = null; }}
+                      className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F0C]/80 via-transparent to-transparent" />
+                    {product.badge && (
+                      <span className={`absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${BADGE_COLORS[product.badge]}`}>
+                        {product.badge}
+                      </span>
+                    )}
+                    {(product.inStock === false || product.stock === 0) ? (
+                      <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-900/70 text-red-300 border border-red-700/40">Out</span>
+                    ) : product.stock !== undefined && product.stock > 0 && product.stock <= 5 ? (
+                      <span className="absolute bottom-2.5 left-2.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-900/60 text-amber-300 border border-amber-700/40">Only {product.stock} left</span>
+                    ) : null}
+                  </div>
+
+                  {/* Card body */}
+                  <div className="p-3 flex flex-col gap-2 flex-1">
+                    <h3 className="font-semibold text-[#F5F3EE] text-xs leading-snug font-heading line-clamp-2">{product.name}</h3>
+
+                    <div className="flex items-center justify-between mt-auto">
+                      <p className="text-[#F5F3EE] font-bold text-sm leading-none">
+                        <span className="text-[#8E8A81] text-[10px] font-normal">NPR </span>
+                        {product.price.toLocaleString()}
+                      </p>
+
+                      {(!product.inStock || product.stock === 0) ? (
+                        <span className="text-red-400 text-[10px] font-medium">Sold out</span>
+                      ) : inCart ? (
+                        <div onClick={e => e.stopPropagation()} className="flex items-center gap-0.5 rounded-lg border border-[#C6A16E]/35 bg-[#C6A16E]/[0.08] px-1 py-0.5">
+                          <button onClick={() => changeQty(product._id, -1)} className="w-5 h-5 flex items-center justify-center rounded text-[#C6A16E] hover:bg-white/10">
+                            <Minus className="w-2.5 h-2.5" />
+                          </button>
+                          <span className="text-[#F5F3EE] text-xs font-bold w-4 text-center">{inCart.qty}</span>
+                          <button onClick={() => changeQty(product._id, 1)} className="w-5 h-5 flex items-center justify-center rounded text-[#C6A16E] hover:bg-white/10">
+                            <Plus className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button onClick={e => { e.stopPropagation(); addToCart(product); }}
+                          className="btn-primary flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold">
+                          <ShoppingCart className="w-3 h-3" /> Add
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>{/* end main content */}
 
       {/* -- Product detail modal ---------------------------------------- */}
       {selectedProduct && (
@@ -928,11 +1043,11 @@ const Shop: React.FC = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
             <div
               onClick={e => e.stopPropagation()}
-              className="pointer-events-auto w-full max-w-3xl glass-card rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-2xl"
+              className="pointer-events-auto w-full max-w-3xl site-card rounded-2xl overflow-hidden flex flex-col md:flex-row shadow-2xl border border-white/10"
               style={{ maxHeight: '92vh' }}
             >
               {/* -- Left: image gallery ------------------------- */}
-              <div className="md:w-96 shrink-0 flex flex-col bg-white/3">
+              <div className="md:w-96 shrink-0 flex flex-col bg-[#111714]">
                 {/* Main image */}
                 <div className="relative flex-1 min-h-64 md:min-h-0 overflow-hidden">
                   <img
@@ -963,7 +1078,7 @@ const Shop: React.FC = () => {
                       onClick={() => setActiveImg(src)}
                       className={`shrink-0 w-16 h-14 rounded-xl overflow-hidden border-2 transition-all ${
                         (activeImg || selectedProduct.images[0]) === src
-                          ? 'border-indigo-400 opacity-100 scale-105'
+                          ? 'border-[#C6A16E] opacity-100 scale-105'
                           : 'border-white/15 opacity-55 hover:opacity-90 hover:border-white/40'
                       }`}
                     >
@@ -982,31 +1097,20 @@ const Shop: React.FC = () => {
                 {/* Sticky header */}
                 <div className="flex items-start justify-between gap-3 px-6 pt-6 pb-4 border-b border-white/8">
                   <div>
-                    <span className="text-xs text-indigo-300/70 uppercase tracking-widest font-medium">{selectedProduct.category}</span>
-                    <h2 className="text-white font-bold text-xl leading-snug mt-0.5">{selectedProduct.name}</h2>
+                    <span className="text-xs text-[#C6A16E]/70 uppercase tracking-widest font-medium">{selectedProduct.category}</span>
+                    <h2 className="text-[#F5F3EE] font-bold text-xl leading-snug mt-0.5 font-heading">{selectedProduct.name}</h2>
                   </div>
                   <button onClick={() => setSelectedProduct(null)}
-                    className="hidden md:flex p-2 rounded-xl glass-button text-white/50 hover:text-white transition-all shrink-0 mt-0.5">
+                    className="hidden md:flex p-2 rounded-lg btn-outline text-[#8E8A81] hover:text-[#F5F3EE] transition-all shrink-0 mt-0.5">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
 
                 <div className="flex flex-col gap-4 px-6 py-5">
-                  {/* Rating */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-4 h-4 ${i < Math.floor(selectedProduct.rating) ? 'text-amber-400 fill-amber-400' : 'text-white/20'}`} />
-                      ))}
-                    </div>
-                    <span className="text-sm text-white font-semibold">{selectedProduct.rating}</span>
-                    <span className="text-xs text-white/40">({selectedProduct.reviews} reviews)</span>
-                  </div>
-
                   {/* Price + Stock */}
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-white/45 text-sm">NPR</span>
-                    <span className="text-white font-bold text-3xl">{selectedProduct.price.toLocaleString()}</span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-[#F5F3EE] font-bold text-3xl font-heading">{selectedProduct.price.toLocaleString()}</span>
+                    <span className="text-[#8E8A81] text-sm">NPR</span>
                   </div>
                   {(selectedProduct.inStock === false || selectedProduct.stock === 0) ? (
                     <span className="inline-block px-3 py-1 rounded-lg bg-red-500/15 border border-red-400/30 text-red-400 text-xs font-semibold">Out of Stock</span>
@@ -1021,7 +1125,7 @@ const Shop: React.FC = () => {
                   ) : null}
 
                   {/* Description */}
-                  <p className="text-white/60 text-sm leading-relaxed">{selectedProduct.description}</p>
+                  <p className="text-[#B8B4AA] text-sm leading-relaxed">{selectedProduct.description}</p>
 
                   {/* Highlights */}
                   <div className="grid grid-cols-2 gap-2">
@@ -1031,8 +1135,8 @@ const Shop: React.FC = () => {
                       { icon: <Shield className="w-3.5 h-3.5" />,  text: '1-year warranty' },
                       { icon: <Compass className="w-3.5 h-3.5" />, text: selectedProduct.category },
                     ].map((h, i) => (
-                      <div key={i} className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/5 border border-white/8 text-white/55 text-xs">
-                        {h.icon}{h.text}
+                      <div key={i} className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#111714] border border-white/8 text-[#8E8A81] text-xs">
+                        <span className="text-[#C6A16E]">{h.icon}</span>{h.text}
                       </div>
                     ))}
                   </div>
@@ -1047,23 +1151,23 @@ const Shop: React.FC = () => {
                         </div>
                       );
                       return inCart ? (
-                        <div className="flex items-center justify-between rounded-2xl border border-indigo-400/40 bg-indigo-500/10 px-4 py-3">
+                        <div className="flex items-center justify-between rounded-2xl border border-[#C6A16E]/35 bg-[#C6A16E]/[0.08] px-4 py-3">
                           <span className="text-white/60 text-sm">In cart</span>
                           <div className="flex items-center gap-3">
                             <button onClick={() => changeQty(selectedProduct._id, -1)}
-                              className="w-8 h-8 flex items-center justify-center rounded-xl glass-button transition-all text-white">
+                              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-all text-[#C6A16E]">
                               <Minus className="w-3.5 h-3.5" />
                             </button>
-                            <span className="text-white font-bold w-6 text-center text-lg">{inCart.qty}</span>
+                            <span className="text-[#F5F3EE] font-bold w-6 text-center text-lg">{inCart.qty}</span>
                             <button onClick={() => changeQty(selectedProduct._id, 1)}
-                              className="w-8 h-8 flex items-center justify-center rounded-xl glass-button transition-all text-white">
+                              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-all text-[#C6A16E]">
                               <Plus className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
                       ) : (
                         <button onClick={() => addToCart(selectedProduct)}
-                          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl glass-button-dark text-white font-semibold text-base transition-all">
+                          className="btn-primary w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-base">
                           <ShoppingCart className="w-5 h-5" /> Add to Cart
                         </button>
                       );
@@ -1083,224 +1187,240 @@ const Shop: React.FC = () => {
 
       {/* -- Orders drawer ------------------------------------------------- */}
       <div
-        className={`glass-dark fixed top-0 right-0 h-full w-full max-w-md z-50 flex flex-col transition-transform duration-300 ease-in-out border-l border-white/10 ${ordersOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 h-full w-full max-w-md z-50 flex flex-col transition-transform duration-300 ease-in-out border-l border-white/8 ${ordersOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        style={{ background: 'linear-gradient(180deg,#0F1612 0%,#0B0F0C 100%)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 shrink-0">
-          <div className="flex items-center gap-2">
-            <ClipboardList className="w-5 h-5 text-purple-400" />
-            <h2 className="text-white font-bold text-lg">My Orders</h2>
-            {savedOrders.length > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 text-xs font-semibold">
-                {savedOrders.length}
-              </span>
-            )}
+        <div className="relative overflow-hidden shrink-0">
+          <div className="absolute inset-0 bg-[url('https://images.pexels.com/photos/3278215/pexels-photo-3278215.jpeg?auto=compress&cs=tinysrgb&w=600')] bg-cover bg-center opacity-8" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0F1612]/90 to-[#0B0F0C]" />
+          <div className="relative flex items-center justify-between px-6 py-5 border-b border-white/8">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#C6A16E]/[0.12] border border-[#C6A16E]/25 flex items-center justify-center">
+                <ClipboardList className="w-4.5 h-4.5 text-[#C6A16E]" />
+              </div>
+              <div>
+                <h2 className="text-[#F5F3EE] font-bold text-base font-heading leading-tight">My Orders</h2>
+                {savedOrders.length > 0 && (
+                  <p className="text-[#8E8A81] text-xs">{savedOrders.length} order{savedOrders.length !== 1 ? 's' : ''} placed</p>
+                )}
+              </div>
+            </div>
+            <button onClick={() => setOrdersOpen(false)}
+              className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/6 border border-white/10 text-[#8E8A81] hover:text-[#F5F3EE] transition-all">
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <button onClick={() => setOrdersOpen(false)}
-            className="p-2 rounded-lg glass-button text-white/60 hover:text-white transition-all">
-            <X className="w-4 h-4" />
-          </button>
         </div>
 
         {/* Body */}
-        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 flex flex-col gap-4">
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 flex flex-col gap-3">
           {savedOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                <ClipboardList className="w-8 h-8 text-white/25" />
+            <div className="flex flex-col items-center justify-center h-full gap-5 text-center px-6">
+              <div className="relative w-24 h-24 rounded-2xl overflow-hidden">
+                <div className="absolute inset-0 bg-[url('https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=300')] bg-cover bg-center opacity-25" />
+                <div className="absolute inset-0 bg-[#161D19]/70" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <ClipboardList className="w-10 h-10 text-[#C6A16E]/50" />
+                </div>
               </div>
-              <p className="text-white/50 font-medium">No orders yet</p>
-              <p className="text-white/35 text-sm">Your placed orders will appear here.</p>
+              <div>
+                <p className="text-[#F5F3EE] font-semibold font-heading mb-1">No orders yet</p>
+                <p className="text-[#8E8A81] text-sm">Your placed orders will appear here.</p>
+              </div>
               <button onClick={() => setOrdersOpen(false)}
-                className="mt-2 flex items-center gap-1.5 px-5 py-2.5 rounded-xl glass-button-dark text-white text-sm font-semibold transition-all">
+                className="btn-primary flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold">
                 Browse Shop <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           ) : (
             savedOrders.map((order) => {
               const expanded = expandedOrderId === order.orderId;
+              const statusColor = {
+                delivered:        'text-[#8FA68E]',
+                out_for_delivery: 'text-amber-400',
+                processing:       'text-blue-400',
+                cancelled:        'text-red-400',
+              }[order.status] ?? 'text-[#C6A16E]';
+              const statusDot = {
+                delivered:        'bg-[#8FA68E]',
+                out_for_delivery: 'bg-amber-400 animate-pulse',
+                processing:       'bg-blue-400 animate-pulse',
+                cancelled:        'bg-red-400',
+              }[order.status] ?? 'bg-[#C6A16E] animate-pulse';
+
               return (
-                <div key={order.orderId} className="glass-card rounded-2xl">
-                  {/* Order card header — always visible */}
-                  <button
+                <div key={order.orderId}
+                  className="rounded-2xl border border-white/8"
+                  style={{ background: 'linear-gradient(145deg,#1B2420 0%,#161D19 100%)' }}
+                >
+                  {/* Order card header */}
+                  <div
                     onClick={() => setExpandedOrderId(expanded ? null : order.orderId)}
-                    className="w-full flex items-start justify-between px-4 py-4 hover:bg-white/5 transition-all gap-3"
-                  >
-                    <div className="text-left min-w-0 flex-1">
-                      {/* Row 1: order ID + payment badge */}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-white font-semibold text-sm truncate">{order.orderId}</p>
-                        <span className={`shrink-0 text-[11px] px-2 py-0.5 rounded-full border font-semibold ${
-                          order.paymentMethod === 'khalti'
-                            ? 'bg-purple-500/15 border-purple-400/30 text-purple-300'
-                            : 'bg-emerald-500/15 border-emerald-400/30 text-emerald-300'
-                        }`}>
-                          {order.paymentMethod === 'khalti' ? 'Khalti' : 'COD'}
-                        </span>
+                    className="px-4 py-4 hover:bg-white/[0.04] transition-all cursor-pointer w-full">
+                    {/* Product thumbnails strip */}
+                    {order.items.length > 0 && (
+                      <div className="flex gap-1.5 mb-3">
+                        {order.items.slice(0, 4).map((i, idx) => (
+                          <div key={idx} className="w-10 h-10 rounded-lg overflow-hidden border border-white/10 shrink-0 bg-[#111714]">
+                            <img
+                              src={(i.product.img || '').replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
+                              alt={i.product.name}
+                              onError={(e) => { e.currentTarget.src = 'https://placehold.co/40x40/161D19/C6A16E'; e.currentTarget.onerror = null; }}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ))}
+                        {order.items.length > 4 && (
+                          <div className="w-10 h-10 rounded-lg bg-[#111714] border border-white/10 flex items-center justify-center text-[10px] text-[#8E8A81] font-bold">
+                            +{order.items.length - 4}
+                          </div>
+                        )}
                       </div>
-                      {/* Row 2: status */}
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                          order.status === 'delivered'        ? 'bg-emerald-400' :
-                          order.status === 'out_for_delivery' ? 'bg-amber-400 animate-pulse' :
-                          order.status === 'processing'       ? 'bg-blue-400 animate-pulse' :
-                          order.status === 'cancelled'        ? 'bg-red-400' :
-                                                                'bg-indigo-400 animate-pulse'
-                        }`} />
-                        <p className={`text-xs font-semibold ${
-                          order.status === 'delivered'        ? 'text-emerald-400' :
-                          order.status === 'out_for_delivery' ? 'text-amber-400' :
-                          order.status === 'processing'       ? 'text-blue-400' :
-                          order.status === 'cancelled'        ? 'text-red-400' :
-                                                                'text-indigo-400'
-                        }`}>
-                          {order.status === 'cancelled' ? 'Cancelled' : (ORDER_STATUSES.find(s => s.key === order.status)?.label ?? 'Order Placed')}
-                        </p>
+                    )}
+
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="text-left min-w-0 flex-1">
+                        <p className="text-[#F5F3EE] font-mono text-xs font-semibold truncate mb-1">{order.orderId}</p>
+                        <div className="flex items-center gap-1.5">
+                          <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot}`} />
+                          <p className={`text-xs font-semibold ${statusColor}`}>
+                            {order.status === 'cancelled' ? 'Cancelled' : (ORDER_STATUSES.find(s => s.key === order.status)?.label ?? 'Order Placed')}
+                          </p>
+                          <span className="text-[#8E8A81] text-[10px]">·</span>
+                          <p className="text-[#8E8A81] text-[11px]">
+                            {order.placedAt.toLocaleDateString('en-NP', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          </p>
+                        </div>
                       </div>
-                      {/* Row 3: date */}
-                      <p className="text-white/40 text-xs mt-0.5">
-                        {order.placedAt.toLocaleDateString('en-NP', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </p>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <p className="text-[#C6A16E] font-bold text-base font-heading leading-none">NPR {order.total.toLocaleString()}</p>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-semibold ${
+                            order.paymentMethod === 'khalti'
+                              ? 'bg-purple-500/15 border-purple-400/25 text-purple-300'
+                              : 'bg-[#8FA68E]/[0.12] border-[#8FA68E]/25 text-[#8FA68E]'
+                          }`}>
+                            {order.paymentMethod === 'khalti' ? 'Khalti' : 'COD'}
+                          </span>
+                          {expanded ? <ChevronUp className="w-3.5 h-3.5 text-[#8E8A81]" /> : <ChevronDown className="w-3.5 h-3.5 text-[#8E8A81]" />}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      <p className="text-indigo-300 font-bold text-base">NPR {order.total.toLocaleString()}</p>
-                      {expanded
-                        ? <ChevronUp className="w-4 h-4 text-white/40" />
-                        : <ChevronDown className="w-4 h-4 text-white/40" />}
-                    </div>
-                  </button>
+                  </div>
 
                   {/* Expanded details */}
                   {expanded && (
-                    <div className="px-4 pb-4 space-y-3 border-t border-white/10 pt-3">
-                      {/* Placed timestamp */}
-                      <p className="text-white/35 text-[11px]">
-                        Placed on {order.placedAt.toLocaleDateString('en-NP', { day: '2-digit', month: 'long', year: 'numeric' })}
-                        {' at '}
-                        {order.placedAt.toLocaleTimeString('en-NP', { hour: '2-digit', minute: '2-digit' })}
-                      </p>
+                    <div className="px-4 pb-4 space-y-4 border-t border-white/8 pt-4">
 
-                      {/* Items */}
-                      <div className="space-y-2.5">
+                      {/* Items list */}
+                      <div className="space-y-2">
+                        <p className="section-label">Items Ordered</p>
                         {order.items.map(i => (
-                          <div key={i.product._id} className="flex items-center gap-3">
+                          <div key={i.product._id} className="flex items-center gap-3 bg-[#111714] border border-white/6 rounded-xl p-2.5">
                             <img
-                              src={i.product.img.replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
+                              src={(i.product.img || '').replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
                               alt={i.product.name}
-                              onError={(e) => { e.currentTarget.src = 'https://placehold.co/36x36/1e1b4b/6366f1'; e.currentTarget.onerror = null; }}
-                              className="w-9 h-9 rounded-lg object-cover shrink-0" />
+                              onError={(e) => { e.currentTarget.src = 'https://placehold.co/40x40/161D19/C6A16E'; e.currentTarget.onerror = null; }}
+                              className="w-10 h-10 rounded-lg object-cover shrink-0 border border-white/8" />
                             <div className="flex-1 min-w-0">
-                              <p className="text-white text-xs font-semibold line-clamp-1">{i.product.name}</p>
-                              <p className="text-white/40 text-[11px]">NPR {i.product.price.toLocaleString()} — {i.qty}</p>
+                              <p className="text-[#F5F3EE] text-xs font-semibold line-clamp-1 font-heading">{i.product.name}</p>
+                              <p className="text-[#8E8A81] text-[10px] mt-0.5">NPR {i.product.price.toLocaleString()} × {i.qty}</p>
                             </div>
-                            <p className="text-white text-xs font-semibold shrink-0">NPR {(i.product.price * i.qty).toLocaleString()}</p>
+                            <p className="text-[#C6A16E] text-xs font-bold shrink-0">NPR {(i.product.price * i.qty).toLocaleString()}</p>
                           </div>
                         ))}
                       </div>
 
                       {/* Price breakdown */}
-                      <div className="space-y-1 border-t border-white/10 pt-2.5">
+                      <div className="bg-[#111714] border border-white/6 rounded-xl px-4 py-3 space-y-2">
                         <div className="flex justify-between text-xs">
-                          <span className="text-white/45">Subtotal</span>
-                          <span className="text-white">NPR {order.subtotal.toLocaleString()}</span>
+                          <span className="text-[#8E8A81]">Subtotal</span>
+                          <span className="text-[#B8B4AA]">NPR {order.subtotal.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between text-xs">
-                          <span className="text-white/45">Shipping</span>
-                          <span className={order.shipping === 0 ? 'text-emerald-400' : 'text-white'}>
+                          <span className="text-[#8E8A81]">Shipping</span>
+                          <span className={order.shipping === 0 ? 'text-[#8FA68E] font-medium' : 'text-[#B8B4AA]'}>
                             {order.shipping === 0 ? 'FREE' : `NPR ${order.shipping.toLocaleString()}`}
                           </span>
                         </div>
-                        <div className="flex justify-between font-bold text-sm pt-1 border-t border-white/10">
-                          <span className="text-white">Total</span>
-                          <span className="text-indigo-300">NPR {order.total.toLocaleString()}</span>
+                        <div className="h-px bg-white/8" />
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-sm font-semibold text-[#F5F3EE]">Total</span>
+                          <span className="text-lg font-bold text-[#C6A16E] font-heading">NPR {order.total.toLocaleString()}</span>
                         </div>
                       </div>
 
-                      {/* Delivery Status Tracker */}
-                      <div className="border-t border-white/10 pt-3">
-                        <p className="text-white/40 text-[10px] uppercase tracking-widest mb-3">Delivery Status</p>
+                      {/* Delivery tracker */}
+                      <div>
+                        <p className="section-label mb-3">Delivery Status</p>
                         {order.status === 'cancelled' ? (
-                          <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20">
+                          <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-red-900/20 border border-red-700/30">
                             <div className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
-                            <p className="text-red-400 text-xs font-semibold">Order Cancelled</p>
-                            <p className="text-white/35 text-xs">This order has been cancelled.</p>
+                            <div>
+                              <p className="text-red-400 text-xs font-semibold">Order Cancelled</p>
+                              <p className="text-[#8E8A81] text-[10px] mt-0.5">This order has been cancelled.</p>
+                            </div>
                           </div>
                         ) : (
-                        <div className="flex flex-col gap-0">
-                          {ORDER_STATUSES.map((step, idx) => {
-                            const activeIdx = ORDER_STATUSES.findIndex(s => s.key === order.status);
-                            const isDone    = idx <= activeIdx;
-                            const isCurrent = idx === activeIdx;
-                            const isLast    = idx === ORDER_STATUSES.length - 1;
-                            return (
-                              <div key={step.key} className="flex items-start gap-3">
-                                {/* Dot + line */}
-                                <div className="flex flex-col items-center shrink-0">
-                                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
-                                    isCurrent
-                                      ? 'border-indigo-400 bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]'
-                                      : isDone
-                                        ? 'border-emerald-400 bg-emerald-500'
+                          <div className="flex flex-col">
+                            {ORDER_STATUSES.map((step, idx) => {
+                              const activeIdx = ORDER_STATUSES.findIndex(s => s.key === order.status);
+                              const isDone    = idx <= activeIdx;
+                              const isCurrent = idx === activeIdx;
+                              const isLast    = idx === ORDER_STATUSES.length - 1;
+                              return (
+                                <div key={step.key} className="flex items-start gap-3">
+                                  <div className="flex flex-col items-center shrink-0">
+                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
+                                      isCurrent ? 'border-[#C6A16E] bg-[#C6A16E] shadow-[0_0_8px_rgba(198,161,110,0.5)]'
+                                        : isDone  ? 'border-[#8FA68E] bg-[#8FA68E]'
                                         : 'border-white/15 bg-white/5'
-                                  }`}>
-                                    {isDone && !isCurrent && (
-                                      <Check className="w-2 h-2 text-white" />
+                                    }`}>
+                                      {isDone && !isCurrent && <Check className="w-2 h-2 text-[#0B0F0C]" />}
+                                      {isCurrent && <div className="w-1.5 h-1.5 rounded-full bg-[#0B0F0C]" />}
+                                    </div>
+                                    {!isLast && (
+                                      <div className={`w-0.5 h-7 mt-0.5 rounded-full ${idx < activeIdx ? 'bg-[#8FA68E]/50' : 'bg-white/8'}`} />
                                     )}
-                                    {isCurrent && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                                   </div>
-                                  {!isLast && (
-                                    <div className={`w-0.5 h-6 mt-0.5 rounded-full ${
-                                      idx < activeIdx ? 'bg-emerald-500/50' : 'bg-white/10'
-                                    }`} />
-                                  )}
+                                  <div className={`pb-5 ${isLast ? 'pb-0' : ''}`}>
+                                    <p className={`text-xs font-semibold ${isCurrent ? 'text-[#C6A16E]' : isDone ? 'text-[#B8B4AA]' : 'text-white/20'}`}>{step.label}</p>
+                                    <p className={`text-[10px] mt-0.5 ${isCurrent ? 'text-[#8E8A81]' : isDone ? 'text-[#8E8A81]/60' : 'text-white/10'}`}>{step.desc}</p>
+                                  </div>
                                 </div>
-                                {/* Label */}
-                                <div className={`pb-5 ${isLast ? 'pb-0' : ''}`}>
-                                  <p className={`text-xs font-semibold ${
-                                    isCurrent ? 'text-indigo-300' : isDone ? 'text-white/80' : 'text-white/25'
-                                  }`}>{step.label}</p>
-                                  <p className={`text-[11px] mt-0.5 ${
-                                    isCurrent ? 'text-white/55' : isDone ? 'text-white/35' : 'text-white/15'
-                                  }`}>{step.desc}</p>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        )}
-                      </div>
-
-                      {/* Delivery details */}
-                      <div className="space-y-1.5 border-t border-white/10 pt-2.5">
-                        <p className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Delivered To</p>
-                        <div className="flex items-center gap-2 text-xs">
-                          <User className="w-3 h-3 text-white/30 shrink-0" />
-                          <span className="text-white/80">{order.customer.name}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs">
-                          <Phone className="w-3 h-3 text-white/30 shrink-0" />
-                          <span className="text-white/70">{order.customer.phone}</span>
-                        </div>
-                        {order.customer.email && (
-                          <div className="flex items-center gap-2 text-xs">
-                            <Mail className="w-3 h-3 text-white/30 shrink-0" />
-                            <span className="text-white/70">{order.customer.email}</span>
+                              );
+                            })}
                           </div>
                         )}
-                        <div className="flex items-start gap-2 text-xs">
-                          <MapPin className="w-3 h-3 text-white/30 shrink-0 mt-0.5" />
-                          <span className="text-white/70">{order.customer.address}, {order.customer.city}</span>
-                        </div>
                       </div>
 
-                      {/* Payment badge */}
-                      <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs ${
+                      {/* Delivery address */}
+                      <div className="bg-[#111714] border border-white/6 rounded-xl p-3 space-y-1.5">
+                        <p className="section-label mb-2">Delivered To</p>
+                        {[
+                          { icon: <User className="w-3 h-3 text-[#C6A16E]" />, text: order.customer.name },
+                          { icon: <Phone className="w-3 h-3 text-[#C6A16E]" />, text: order.customer.phone },
+                          ...(order.customer.email ? [{ icon: <Mail className="w-3 h-3 text-[#C6A16E]" />, text: order.customer.email }] : []),
+                          { icon: <MapPin className="w-3 h-3 text-[#C6A16E]" />, text: `${order.customer.address}, ${order.customer.city}` },
+                        ].map(({ icon, text }, i) => (
+                          <div key={i} className="flex items-start gap-2 text-xs">
+                            <span className="mt-0.5 shrink-0">{icon}</span>
+                            <span className="text-[#B8B4AA]">{text}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Payment method */}
+                      <div className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border text-xs ${
                         order.paymentMethod === 'khalti'
-                          ? 'bg-purple-500/10 border-purple-400/30'
-                          : 'bg-emerald-500/10 border-emerald-400/30'
+                          ? 'bg-purple-500/[0.08] border-purple-400/20'
+                          : 'bg-[#8FA68E]/[0.08] border-[#8FA68E]/20'
                       }`}>
-                        {order.paymentMethod === 'khalti' ? <Heart className="w-4 h-4 text-purple-400" /> : <Banknote className="w-4 h-4 text-emerald-400" />}
-                        <span className={order.paymentMethod === 'khalti' ? 'text-purple-300 font-semibold' : 'text-emerald-300 font-semibold'}>
+                        {order.paymentMethod === 'khalti'
+                          ? <Heart className="w-4 h-4 text-purple-400 shrink-0" />
+                          : <Banknote className="w-4 h-4 text-[#8FA68E] shrink-0" />}
+                        <span className={`font-semibold ${order.paymentMethod === 'khalti' ? 'text-purple-300' : 'text-[#8FA68E]'}`}>
                           {order.paymentMethod === 'khalti' ? 'Paid via Khalti' : 'Cash on Delivery'}
                         </span>
                       </div>
@@ -1320,23 +1440,28 @@ const Shop: React.FC = () => {
 
       {/* -- Cart drawer --------------------------------------------------- */}
       <div
-        className={`glass-dark fixed top-0 right-0 h-full w-full max-w-md z-50 flex flex-col transition-transform duration-300 ease-in-out border-l border-white/10 ${cartOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 h-full w-full max-w-md z-50 flex flex-col transition-transform duration-300 ease-in-out border-l border-white/8 ${cartOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        style={{ background: 'linear-gradient(180deg,#0F1612 0%,#0B0F0C 100%)' }}
       >
         {/* Drawer header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 shrink-0">
-          <div className="flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-indigo-400" />
-            <h2 className="text-white font-bold text-lg">Your Cart</h2>
-            {totalItems > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 border border-indigo-400/40 text-indigo-300 text-xs font-semibold">
-                {totalItems} item{totalItems !== 1 ? 's' : ''}
-              </span>
-            )}
+        <div className="relative overflow-hidden shrink-0">
+          <div className="absolute inset-0 bg-[url('https://images.pexels.com/photos/1054218/pexels-photo-1054218.jpeg?auto=compress&cs=tinysrgb&w=600')] bg-cover bg-center opacity-8" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0F1612]/90 to-[#0B0F0C]" />
+          <div className="relative flex items-center justify-between px-6 py-5 border-b border-white/8">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#C6A16E]/[0.12] border border-[#C6A16E]/25 flex items-center justify-center">
+                <ShoppingCart className="w-4.5 h-4.5 text-[#C6A16E]" />
+              </div>
+              <div>
+                <h2 className="text-[#F5F3EE] font-bold text-base font-heading leading-tight">Your Cart</h2>
+                {totalItems > 0 && <p className="text-[#8E8A81] text-xs">{totalItems} item{totalItems !== 1 ? 's' : ''} selected</p>}
+              </div>
+            </div>
+            <button onClick={() => setCartOpen(false)}
+              className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/6 border border-white/10 text-[#8E8A81] hover:text-[#F5F3EE] transition-all">
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <button onClick={() => setCartOpen(false)}
-            className="p-2 rounded-lg glass-button text-white/60 hover:text-white transition-all">
-            <X className="w-4 h-4" />
-          </button>
         </div>
 
         {/* Drawer body */}
@@ -1359,7 +1484,7 @@ const Shop: React.FC = () => {
               <div className="flex justify-between items-start px-4 py-3 rounded-xl bg-white/5 border border-white/10">
                 <div>
                   <p className="text-white/40 text-[10px] uppercase tracking-widest">Order ID</p>
-                  <p className="text-indigo-300 font-mono font-semibold text-sm mt-0.5">{orderSnapshot.orderId}</p>
+                  <p className="text-[#C6A16E] font-mono font-semibold text-sm mt-0.5">{orderSnapshot.orderId}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-white/40 text-[10px] uppercase tracking-widest">Placed At</p>
@@ -1373,7 +1498,7 @@ const Shop: React.FC = () => {
               </div>
 
               {/* Items */}
-              <div className="glass-card rounded-xl p-4 space-y-3">
+              <div className="site-card rounded-xl p-4 space-y-3">
                 <p className="text-white/40 text-[10px] uppercase tracking-widest">Items Ordered</p>
                 {orderSnapshot.items.map(i => (
                   <div key={i.product._id} className="flex items-center gap-3">
@@ -1403,13 +1528,13 @@ const Shop: React.FC = () => {
                   </div>
                   <div className="flex justify-between font-bold text-base pt-1 border-t border-white/10">
                     <span className="text-white">Total Paid</span>
-                    <span className="text-indigo-300">NPR {orderSnapshot.total.toLocaleString()}</span>
+                    <span className="text-[#C6A16E]">NPR {orderSnapshot.total.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
 
               {/* Delivery info */}
-              <div className="glass-card rounded-xl p-4 space-y-2">
+              <div className="site-card rounded-xl p-4 space-y-2">
                 <p className="text-white/40 text-[10px] uppercase tracking-widest mb-2">Deliver To</p>
                 <div className="flex items-center gap-2 text-sm">
                   <User className="w-3.5 h-3.5 text-white/30 shrink-0" />
@@ -1435,11 +1560,11 @@ const Shop: React.FC = () => {
               <div className="w-full px-4 py-3 rounded-xl border bg-emerald-500/10 border-emerald-400/30">
                 <p className="text-white/40 text-[10px] uppercase tracking-widest mb-2">Delivery Status</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 rounded-full border-2 border-indigo-400 bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)] flex items-center justify-center shrink-0">
+                  <div className="w-4 h-4 rounded-full border-2 border-[#C6A16E] bg-[#C6A16E] shadow-[0_0_8px_rgba(198,161,110,0.5)] flex items-center justify-center shrink-0">
                     <div className="w-1.5 h-1.5 rounded-full bg-white" />
                   </div>
                   <div>
-                    <p className="text-indigo-300 text-sm font-semibold">Order Placed</p>
+                    <p className="text-[#C6A16E] text-sm font-semibold">Order Placed</p>
                     <p className="text-white/45 text-xs">Estimated delivery in 3-5 business days</p>
                   </div>
                 </div>
@@ -1463,11 +1588,11 @@ const Shop: React.FC = () => {
               </div>
 
               <button onClick={() => { setCartOpen(false); clearCart(); }}
-                className="w-full py-3 rounded-xl glass-button-dark text-white font-semibold transition-all">
+                className="btn-primary w-full py-3 rounded-xl font-semibold">
                 Continue Shopping
               </button>
               <button onClick={() => { setCartOpen(false); clearCart(); setOrdersOpen(true); }}
-                className="w-full flex items-center justify-center gap-2 text-sm text-white/50 hover:text-purple-300 transition-all py-1">
+                className="w-full flex items-center justify-center gap-2 text-sm text-[#8E8A81] hover:text-[#C6A16E] transition-all py-1">
                 <ClipboardList className="w-4 h-4" /> View all my orders
               </button>
             </div>
@@ -1485,62 +1610,62 @@ const Shop: React.FC = () => {
 
               {/* Full Name */}
               <div>
-                <label className="text-white/60 text-xs mb-1.5 block">Full Name <span className="text-red-400">*</span></label>
+                <label className="section-label mb-1.5 block">Full Name <span className="text-red-400">*</span></label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                   <input type="text" placeholder="e.g. Aasim Khan" value={customer.name}
                     onChange={e => setCustomer(c => ({ ...c, name: e.target.value }))}
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl glass-input text-sm" />
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl site-input text-sm" />
                 </div>
                 {detailsErrors.name && <p className="text-red-400 text-xs mt-1">{detailsErrors.name}</p>}
               </div>
 
               {/* Phone */}
               <div>
-                <label className="text-white/60 text-xs mb-1.5 block">Phone Number <span className="text-red-400">*</span></label>
+                <label className="section-label mb-1.5 block">Phone Number <span className="text-red-400">*</span></label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                   <input type="tel" placeholder="98XXXXXXXX" value={customer.phone}
                     onChange={e => setCustomer(c => ({ ...c, phone: e.target.value }))}
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl glass-input text-sm" />
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl site-input text-sm" />
                 </div>
                 {detailsErrors.phone && <p className="text-red-400 text-xs mt-1">{detailsErrors.phone}</p>}
               </div>
 
               {/* Email */}
               <div>
-                <label className="text-white/60 text-xs mb-1.5 block">Email Address <span className="text-white/30 font-normal">(optional)</span></label>
+                <label className="section-label mb-1.5 block">Email Address <span className="text-white/30 font-normal">(optional)</span></label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                   <input type="email" placeholder="you@example.com" value={customer.email}
                     onChange={e => setCustomer(c => ({ ...c, email: e.target.value }))}
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl glass-input text-sm" />
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl site-input text-sm" />
                 </div>
               </div>
 
               {/* Street Address */}
               <div>
-                <label className="text-white/60 text-xs mb-1.5 block">Street Address <span className="text-red-400">*</span></label>
+                <label className="section-label mb-1.5 block">Street Address <span className="text-red-400">*</span></label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3 w-4 h-4 text-white/30" />
                   <textarea placeholder="House / Street / Ward" rows={2} value={customer.address}
                     onChange={e => setCustomer(c => ({ ...c, address: e.target.value }))}
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl glass-input text-sm resize-none" />
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl site-input text-sm resize-none" />
                 </div>
                 {detailsErrors.address && <p className="text-red-400 text-xs mt-1">{detailsErrors.address}</p>}
               </div>
 
               {/* City */}
               <div>
-                <label className="text-white/60 text-xs mb-1.5 block">City / District <span className="text-red-400">*</span></label>
+                <label className="section-label mb-1.5 block">City / District <span className="text-red-400">*</span></label>
                 <input type="text" placeholder="e.g. Kathmandu" value={customer.city}
                   onChange={e => setCustomer(c => ({ ...c, city: e.target.value }))}
-                  className="w-full px-3 py-2.5 rounded-xl glass-input text-sm" />
+                  className="w-full px-3 py-2.5 rounded-xl site-input text-sm" />
                 {detailsErrors.city && <p className="text-red-400 text-xs mt-1">{detailsErrors.city}</p>}
               </div>
 
               <button onClick={validateAndProceed}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl glass-button-dark text-white font-bold text-sm transition-all mt-1">
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl btn-primary font-bold text-sm mt-1">
                 Continue to Payment <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -1618,7 +1743,7 @@ const Shop: React.FC = () => {
                 }}
                 className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg mt-2 ${
                   paymentMethod && !khaltiLoading
-                    ? 'glass-button-dark cursor-pointer'
+                    ? 'btn-primary cursor-pointer'
                     : 'bg-white/5 border border-white/10 text-white/30 cursor-not-allowed'
                 }`}
               >
@@ -1631,92 +1756,123 @@ const Shop: React.FC = () => {
             </div>
           ) : cartItems.length === 0 ? (
             /* -- Empty cart -- */
-            <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                <ShoppingCart className="w-8 h-8 text-white/25" />
+            <div className="flex flex-col items-center justify-center h-full gap-5 text-center px-6">
+              <div className="relative">
+                <div className="w-24 h-24 rounded-2xl overflow-hidden">
+                  <div className="absolute inset-0 bg-[url('https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=300')] bg-cover bg-center opacity-30" />
+                  <div className="absolute inset-0 bg-[#161D19]/70" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <ShoppingCart className="w-10 h-10 text-[#C6A16E]/50" />
+                  </div>
+                </div>
               </div>
-              <p className="text-white/50 font-medium">Your cart is empty</p>
-              <p className="text-white/35 text-sm">Browse the shop and add some gear!</p>
+              <div>
+                <p className="text-[#F5F3EE] font-semibold font-heading mb-1">Your cart is empty</p>
+                <p className="text-[#8E8A81] text-sm">Browse the shop and add some gear!</p>
+              </div>
               <button onClick={() => setCartOpen(false)}
-                className="mt-2 flex items-center gap-1.5 px-5 py-2.5 rounded-xl glass-button-dark text-white text-sm font-semibold transition-all">
+                className="btn-primary flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold">
                 Browse Shop <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           ) : (
             /* -- Cart items list -- */
-            <>
+            <div className="space-y-2.5">
               {cartItems.map(({ product, qty }) => (
-                <div key={product._id} className="flex gap-3 glass-card rounded-xl p-3">
-                  <img
-                    src={product.img.replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
-                    alt={product.name}
-                    onError={(e) => { e.currentTarget.src = `https://placehold.co/64x64/1e1b4b/6366f1?text=${encodeURIComponent(product.category)}`; e.currentTarget.onerror = null; }}
-                    className="w-16 h-16 rounded-lg object-cover shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-semibold leading-snug line-clamp-2 mb-1">{product.name}</p>
-                    <p className="text-indigo-300 text-sm font-bold">NPR {(product.price * qty).toLocaleString()}</p>
-                    <p className="text-white/35 text-[11px]">NPR {product.price.toLocaleString()} each</p>
+                <div key={product._id}
+                  className="flex gap-3.5 rounded-xl p-3"
+                  style={{ background: 'linear-gradient(145deg,#1B2420 0%,#161D19 100%)', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  {/* Product image */}
+                  <div className="relative w-18 h-18 rounded-xl overflow-hidden shrink-0 border border-white/8" style={{ width: 72, height: 72 }}>
+                    <img
+                      src={product.img.replace('?auto=compress&', '?auto=compress&cs=tinysrgb&')}
+                      alt={product.name}
+                      onError={(e) => { e.currentTarget.src = `https://placehold.co/72x72/161D19/C6A16E?text=${encodeURIComponent(product.category)}`; e.currentTarget.onerror = null; }}
+                      className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F0C]/40 to-transparent" />
                   </div>
-                  <div className="flex flex-col items-end justify-between shrink-0">
-                    <button onClick={() => removeItem(product._id)}
-                      className="p-1 rounded hover:bg-red-500/20 text-white/40 hover:text-red-400 transition-all">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                    <div className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-1 py-0.5">
-                      <button onClick={() => changeQty(product._id, -1)}
-                        className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 text-white/60 transition-all">
-                        <Minus className="w-2.5 h-2.5" />
-                      </button>
-                      <span className="text-white text-xs font-semibold w-4 text-center">{qty}</span>
-                      <button onClick={() => changeQty(product._id, 1)}
-                        className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 text-white/60 transition-all">
-                        <Plus className="w-2.5 h-2.5" />
-                      </button>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[#F5F3EE] text-sm font-semibold leading-snug line-clamp-2 mb-1.5 font-heading">{product.name}</p>
+                    <p className="text-[#8E8A81] text-[11px] mb-2">{product.category}</p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[#C6A16E] text-sm font-bold leading-none">NPR {(product.price * qty).toLocaleString()}</p>
+                        {qty > 1 && <p className="text-[#8E8A81] text-[10px] mt-0.5">{product.price.toLocaleString()} × {qty}</p>}
+                      </div>
+                      {/* Qty controls */}
+                      <div className="flex items-center gap-1 rounded-lg border border-[#C6A16E]/25 bg-[#C6A16E]/[0.06] px-1 py-0.5">
+                        <button onClick={() => changeQty(product._id, -1)}
+                          className="w-6 h-6 flex items-center justify-center rounded text-[#C6A16E] hover:bg-[#C6A16E]/15 transition-all">
+                          <Minus className="w-2.5 h-2.5" />
+                        </button>
+                        <span className="text-[#F5F3EE] text-xs font-bold w-5 text-center">{qty}</span>
+                        <button onClick={() => changeQty(product._id, 1)}
+                          className="w-6 h-6 flex items-center justify-center rounded text-[#C6A16E] hover:bg-[#C6A16E]/15 transition-all">
+                          <Plus className="w-2.5 h-2.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Remove */}
+                  <button onClick={() => removeItem(product._id)}
+                    className="self-start p-1.5 rounded-lg hover:bg-red-900/25 text-[#8E8A81] hover:text-red-400 transition-all mt-0.5 shrink-0">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               ))}
               <button onClick={clearCart}
-                className="flex items-center gap-1.5 text-xs text-white/40 hover:text-red-400 transition-all self-end">
-                <Trash2 className="w-3.5 h-3.5" /> Clear all
+                className="flex items-center gap-1.5 text-xs text-[#8E8A81] hover:text-red-400 transition-all self-end pt-1">
+                <Trash2 className="w-3 h-3" /> Clear all
               </button>
-            </>
+            </div>
           )}
         </div>
 
         {/* Drawer footer — order summary + checkout */}
         {!checkedOut && !paymentStep && !detailsStep && cartItems.length > 0 && (
-          <div className="px-6 py-5 border-t border-white/10 shrink-0 space-y-4">
-            {/* Free shipping banner */}
+          <div className="px-5 pt-4 pb-6 border-t border-white/8 shrink-0 space-y-3"
+            style={{ background: 'linear-gradient(180deg,#0D1210 0%,#0B0F0C 100%)' }}>
+
+            {/* Free shipping progress */}
             {!shippingFree ? (
-              <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-400/20">
-                <Tag className="w-4 h-4 text-amber-400 shrink-0" />
-                <p className="text-xs text-amber-300">
-                  Add <span className="font-bold">NPR {(SHIPPING_THRESHOLD - subtotal).toLocaleString()}</span> more for free shipping!
-                </p>
+              <div>
+                <div className="flex items-center justify-between text-[11px] mb-1.5">
+                  <span className="text-[#8E8A81]">NPR {subtotal.toLocaleString()} of NPR {SHIPPING_THRESHOLD.toLocaleString()}</span>
+                  <span className="text-[#C6A16E] font-medium">Free shipping at NPR {SHIPPING_THRESHOLD.toLocaleString()}</span>
+                </div>
+                <div className="h-1.5 bg-[#161D19] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-[#C6A16E] to-[#D4AE7A] rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(100, (subtotal / SHIPPING_THRESHOLD) * 100)}%` }}
+                  />
+                </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-400/20">
-                <Tag className="w-4 h-4 text-emerald-400 shrink-0" />
-                <p className="text-xs text-emerald-300 font-medium flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Free shipping unlocked!</p>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#8FA68E]/10 border border-[#8FA68E]/20">
+                <CheckCircle className="w-4 h-4 text-[#8FA68E] shrink-0" />
+                <p className="text-xs text-[#8FA68E] font-medium">Free shipping unlocked!</p>
               </div>
             )}
 
             {/* Totals */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-white/55">Subtotal</span>
-                <span className="text-white">NPR {subtotal.toLocaleString()}</span>
+            <div className="bg-[#111714] border border-white/8 rounded-xl px-4 py-3 space-y-2">
+              <div className="flex justify-between text-xs">
+                <span className="text-[#8E8A81]">Subtotal</span>
+                <span className="text-[#B8B4AA]">NPR {subtotal.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-white/55">Shipping</span>
-                <span className={shippingFree ? 'text-emerald-400 font-medium' : 'text-white'}>
+              <div className="flex justify-between text-xs">
+                <span className="text-[#8E8A81]">Shipping</span>
+                <span className={shippingFree ? 'text-[#8FA68E] font-medium' : 'text-[#B8B4AA]'}>
                   {shippingFree ? 'FREE' : `NPR ${SHIPPING_FEE.toLocaleString()}`}
                 </span>
               </div>
-              <div className="flex justify-between font-bold text-base pt-2 border-t border-white/10">
-                <span className="text-white">Total</span>
-                <span className="text-indigo-300 text-lg">NPR {total.toLocaleString()}</span>
+              <div className="h-px bg-white/8" />
+              <div className="flex justify-between items-baseline">
+                <span className="text-sm font-semibold text-[#F5F3EE]">Total</span>
+                <span className="text-xl font-bold text-[#C6A16E] font-heading">NPR {total.toLocaleString()}</span>
               </div>
             </div>
 
@@ -1724,7 +1880,7 @@ const Shop: React.FC = () => {
             {isAuthenticated ? (
               <button
                 onClick={() => setDetailsStep(true)}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl glass-button-dark text-white font-bold text-sm transition-all"
+                className="btn-primary w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm"
               >
                 Checkout — NPR {total.toLocaleString()} <ChevronRight className="w-4 h-4" />
               </button>
@@ -1744,13 +1900,13 @@ const Shop: React.FC = () => {
                     } catch { /* ignore */ }
                     navigate('/login', { state: { from: '/shop' } });
                   }}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl glass-button-dark text-white font-bold text-sm transition-all"
+                  className="btn-primary w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm"
                 >
                   <LogIn className="w-4 h-4" /> Log in to Checkout
                 </button>
                 <button
                   onClick={() => navigate('/signup')}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl glass-button text-white text-sm font-medium transition-all"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg btn-outline text-[#F5F3EE] text-sm font-medium"
                 >
                   Create a free account
                 </button>
