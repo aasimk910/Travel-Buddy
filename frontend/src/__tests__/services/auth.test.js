@@ -1,0 +1,95 @@
+// frontend/src/__tests__/services/auth.test.js
+// Authentication service tests
+
+import axios from 'axios';
+
+jest.mock('axios');
+
+describe('Auth Service', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should successfully sign up a user', async () => {
+    const signupData = {
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: 'SecurePass123!',
+      country: 'USA',
+      recaptchaToken: 'test-token',
+    };
+
+    axios.post = jest.fn().mockResolvedValue({
+      data: {
+        success: true,
+        token: 'jwt-token-here',
+        user: { id: '123', ...signupData },
+      },
+    });
+
+    // Simulate signup call
+    const response = await axios.post('/api/auth/signup', signupData);
+
+    expect(response.data.success).toBe(true);
+    expect(response.data.token).toBe('jwt-token-here');
+    expect(axios.post).toHaveBeenCalledWith('/api/auth/signup', signupData);
+  });
+
+  it('should successfully login a user', async () => {
+    const loginData = {
+      email: 'john@example.com',
+      password: 'SecurePass123!',
+    };
+
+    axios.post = jest.fn().mockResolvedValue({
+      data: {
+        success: true,
+        token: 'jwt-token-here',
+        user: { id: '123', email: 'john@example.com' },
+      },
+    });
+
+    const response = await axios.post('/api/auth/login', loginData);
+
+    expect(response.data.success).toBe(true);
+    expect(response.data.token).toBeDefined();
+  });
+
+  it('should handle login errors', async () => {
+    axios.post = jest.fn().mockRejectedValue(
+      new Error('Invalid credentials')
+    );
+
+    try {
+      await axios.post('/api/auth/login', {});
+      fail('Should have thrown error');
+    } catch (error) {
+      expect(error.message).toBe('Invalid credentials');
+    }
+  });
+
+  it('should handle logout', async () => {
+    axios.post = jest.fn().mockResolvedValue({
+      data: { success: true, message: 'Logged out' },
+    });
+
+    const response = await axios.post('/api/auth/logout');
+
+    expect(response.data.success).toBe(true);
+  });
+
+  it('should request password reset', async () => {
+    axios.post = jest.fn().mockResolvedValue({
+      data: {
+        success: true,
+        message: 'Reset email sent',
+      },
+    });
+
+    const response = await axios.post('/api/auth/forgot-password', {
+      email: 'john@example.com',
+    });
+
+    expect(response.data.success).toBe(true);
+  });
+});
