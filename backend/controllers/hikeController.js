@@ -50,21 +50,66 @@ const getHikes = async (req, res) => {
 // season, fitness, budget, accommodation preference, etc.) and returns the top matches.
 const getRecommendedHikes = async (req, res) => {
   try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    console.log("[Recommendations] Starting recommendations request, today:", today);
+    
+    // Check if ANY hikes exist in database
+    const totalHikesCount = await Hike.countDocuments();
+    console.log("[Recommendations] Total hikes in database:", totalHikesCount);
+
+    // If user is not authenticated, return all upcoming hikes sorted by date
+    if (!req.user) {
+      console.log("[Recommendations] No authenticated user. Returning all upcoming hikes.");
+      let allUpcoming = await Hike.find({ date: { $gte: today } })
+        .populate("hotels")
+        .sort({ date: 1 })
+        .limit(20);
+      console.log("[Recommendations] Found", allUpcoming.length, "upcoming hikes");
+      
+      // Fallback: if no upcoming hikes, return all hikes
+      if (allUpcoming.length === 0) {
+        console.log("[Recommendations] No upcoming hikes found. Returning all hikes.");
+        allUpcoming = await Hike.find()
+          .populate("hotels")
+          .sort({ date: 1 })
+          .limit(20);
+        console.log("[Recommendations] Fallback: Found", allUpcoming.length, "hikes total");
+      }
+      return res.json({ hikes: allUpcoming });
+    }
+
     const onboardingProfile = await OnboardingProfile.findOne({ userId: req.user._id }).lean();
 
-    console.log("[Recommendations] User:", req.user?.email, "Onboarding completed:", req.user?.onboardingCompleted, "Profile:", onboardingProfile || req.user?.hikingProfile);
+    console.log("[Recommendations] User:", req.user?.email, "Onboarding completed:", req.user?.onboardingCompleted);
 
     const profile = onboardingProfile || req.user?.hikingProfile;
 
     if (!req.user?.onboardingCompleted || !profile) {
-      console.log("[Recommendations] Onboarding not completed. Returning error.");
-      return res.status(400).json({
+      console.log("[Recommendations] Onboarding not completed. Returning all upcoming hikes.");
+      let allUpcoming = await Hike.find({ date: { $gte: today } })
+        .populate("hotels")
+        .sort({ date: 1 })
+        .limit(20);
+      console.log("[Recommendations] Found", allUpcoming.length, "upcoming hikes (no onboarding)");
+      
+      // Fallback: if no upcoming hikes, return all hikes
+      if (allUpcoming.length === 0) {
+        console.log("[Recommendations] No upcoming hikes found. Returning all hikes.");
+        allUpcoming = await Hike.find()
+          .populate("hotels")
+          .sort({ date: 1 })
+          .limit(20);
+        console.log("[Recommendations] Fallback: Found", allUpcoming.length, "hikes total");
+      }
+      return res.json({ 
         message: "Complete onboarding to get personalized hike recommendations.",
-        hikes: [],
+        hikes: allUpcoming 
       });
     }
 
-    console.log("[Recommendations] Using profile:", JSON.stringify(profile, null, 2));
+    console.log("[Recommendations] Using profile for personalized recommendations");
 
     const {
       experienceLevel,
@@ -81,13 +126,12 @@ const getRecommendedHikes = async (req, res) => {
       medicalConsiderations,
     } = profile;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     const allUpcoming = await Hike.find({ date: { $gte: today } })
       .populate("hotels")
       .sort({ date: 1 })
       .limit(100);
+
+    console.log("[Recommendations] Found", allUpcoming.length, "total upcoming hikes for scoring");
 
     const normalizedRegion = (preferredRegion || "").toLowerCase();
     const hasMedicalNotes = Boolean((medicalConsiderations || "").trim());
@@ -177,7 +221,18 @@ const getRecommendedHikes = async (req, res) => {
     const recommended = finalEntries.map((entry) => entry.hike);
 
     console.log("[Recommendations] Threshold:", minScoreThreshold, "Top score:", topScore);
-    console.log("[Recommendations] Returning", recommended.length, "hikes");
+    console.log("[Recommendations] Returning", recommended.length, "personalized hikes");
+
+    // Fallback: if scoring yielded no results, return all available hikes
+    if (recommended.length === 0) {
+      console.log("[Recommendations] No recommendations scored. Returning all available hikes.");
+      const allAvailable = await Hike.find()
+        .populate("hotels")
+        .sort({ date: 1 })
+        .limit(20);
+      console.log("[Recommendations] Fallback: returning", allAvailable.length, "total hikes");
+      return res.json({ hikes: allAvailable });
+    }
 
     return res.json({ hikes: recommended });
   } catch (err) {

@@ -1,6 +1,6 @@
 // src/pages/Homepage.tsx
 // #region Imports
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { useAuth } from "../context/AuthContext";
@@ -23,6 +23,11 @@ import { getToken } from "../services/auth";
 const Homepage: React.FC = () => {
   const { user } = useAuth();
   const revealRef = useScrollReveal();
+  const containerNodeRef = useRef<HTMLElement | null>(null);
+  const containerRef = useCallback((node: HTMLElement | null) => {
+    containerNodeRef.current = node;
+    revealRef(node);
+  }, [revealRef]);
   const [photos, setPhotos] = useState<any[]>([]);
   const [isLoadingPhotos, setIsLoadingPhotos] = useState(false);
   const [photosError, setPhotosError] = useState<string | null>(null);
@@ -51,7 +56,6 @@ const Homepage: React.FC = () => {
   // Handles fetchRecommendations logic.
   const fetchRecommendations = async () => {
     const token = getToken();
-    if (!token) return;
 
     setIsLoadingRecommendations(true);
     setRecommendationsError(null);
@@ -71,6 +75,13 @@ const Homepage: React.FC = () => {
       setIsLoadingRecommendations(false);
     }
   };
+
+  // Re-run scroll reveal when async hike cards are added to the DOM
+  useEffect(() => {
+    if (recommendedHikes.length > 0 && containerNodeRef.current) {
+      revealRef(containerNodeRef.current);
+    }
+  }, [recommendedHikes, revealRef]);
 
   useEffect(() => {
     fetchLatestPhotos();
@@ -139,7 +150,7 @@ const Homepage: React.FC = () => {
       </div>
 
       {/* ══ PAGE BODY ═════════════════════════════════════════════════ */}
-      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8" ref={revealRef}>
+      <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 py-8" ref={containerRef}>
 
         {/* ── Three-column layout: sidebar | main | right ── */}
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] xl:grid-cols-[300px_1fr_300px] gap-6 mb-10">
@@ -251,9 +262,10 @@ const Homepage: React.FC = () => {
 
             {!isLoadingRecommendations && !recommendationsError && recommendedHikes.length > 0 && (() => {
               const delays = ["delay-100", "delay-200", "delay-300", "delay-400", "delay-500", "delay-600"];
+              const visibleHikes = recommendedHikes.slice(0, 4);
               return (
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {recommendedHikes.map((hike, idx) => (
+                  {visibleHikes.map((hike, idx) => (
                     <article
                       key={hike._id}
                       className={`site-card rounded-xl overflow-hidden cursor-pointer group reveal reveal-up ${delays[Math.min(idx, 5)]}`}
@@ -294,6 +306,16 @@ const Homepage: React.FC = () => {
                       </div>
                     </article>
                   ))}
+                  {recommendedHikes.length > 4 && (
+                    <div className="sm:col-span-2 flex justify-center pt-1">
+                      <Link
+                        to="/hikes"
+                        className="btn-outline inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-medium"
+                      >
+                        Show More ({recommendedHikes.length - 4} more)
+                      </Link>
+                    </div>
+                  )}
                 </div>
               );
             })()}

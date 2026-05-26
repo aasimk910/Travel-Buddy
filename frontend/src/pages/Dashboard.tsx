@@ -70,10 +70,10 @@ const Dashboard: React.FC = () => {
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     active
                       ? 'bg-[#C6A16E]/15 border border-[#C6A16E]/35 text-[#C6A16E]'
-                      : 'text-[#8E8A81] hover:text-[#F5F3EE] hover:bg-white/6 border border-transparent'
+                      : 'text-white hover:text-[#F5F3EE] hover:bg-white/6 border border-transparent'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 shrink-0 ${active ? 'text-[#C6A16E]' : ''}`} />
+                  <Icon className={`w-3.5 h-3.5 shrink-0 ${active ? 'text-[#C6A16E]' : 'text-white'}`} />
                   {label}
                 </button>
               );

@@ -36,11 +36,11 @@ const DashboardNav: React.FC<DashboardNavProps> = ({ activeView, setActiveView }
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group ${
                     active
                       ? 'bg-[#C6A16E]/[0.12] border border-[#C6A16E]/30 text-[#C6A16E]'
-                      : 'border border-transparent text-[#8E8A81] hover:bg-white/5 hover:text-[#F5F3EE]'
+                      : 'border border-transparent text-white hover:bg-white/5 hover:text-[#F5F3EE]'
                   }`}
                 >
                   <Icon className={`w-4 h-4 shrink-0 ${
-                    active ? 'text-[#C6A16E]' : 'text-[#8E8A81] group-hover:text-[#C6A16E]'
+                    active ? 'text-[#C6A16E]' : 'text-white group-hover:text-[#C6A16E]'
                   } transition-colors`} />
                   {label}
                   {active && (

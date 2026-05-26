@@ -102,11 +102,14 @@ export const getUpcomingHikes = async (limit = 3): Promise<Hike[]> => {
   return upcoming.slice(0, limit);
 };
 
-export const getRecommendedHikes = async (token: string): Promise<Hike[]> => {
+export const getRecommendedHikes = async (token: string | null): Promise<Hike[]> => {
+  const headers: HeadersInit = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_BASE_URL}/api/hikes/recommended`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers,
   });
 
   const data = await res.json();

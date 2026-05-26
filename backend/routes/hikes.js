@@ -4,7 +4,7 @@
 
 // #region Imports
 const express = require("express");
-const { authenticateToken } = require("../middleware/auth");
+const { authenticateToken, optionalAuth } = require("../middleware/auth");
 const { createContentLimiter } = require("../middleware/rateLimiter");
 // #endregion Imports
 const {
@@ -21,8 +21,8 @@ const router = express.Router();
 
 // GET /api/hikes — paginated list of all hikes (public)
 router.get("/", getHikes);
-// GET /api/hikes/recommended — AI-scored personalized recommendations (auth required)
-router.get("/recommended", authenticateToken, getRecommendedHikes);
+// GET /api/hikes/recommended — AI-scored personalized recommendations (optional auth)
+router.get("/recommended", optionalAuth, getRecommendedHikes);
 // GET /api/hikes/:id — single hike with participants and linked hotels (public)
 router.get("/:id", getHikeById);
 // POST /api/hikes — create a new hike (auth + rate-limited)
